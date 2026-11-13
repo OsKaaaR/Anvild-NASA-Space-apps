@@ -39,7 +39,11 @@ from astropy.wcs import WCS
 from astropy.time import Time
 from astropy.coordinates import SkyCoord
 import astropy.units as u
-from astroquery.ipac.irsa import Irsa
+
+try:
+    from astroquery.ipac.irsa import Irsa
+except ImportError:
+    Irsa = None
 
 try:
     from reproject import reproject_interp

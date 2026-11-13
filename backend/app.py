@@ -32,10 +32,16 @@ except OSError:
     os.makedirs(CACHE_DIR, exist_ok=True)
 
 try:
-    import pipeline  # noqa: E402  (populated by pipeline worker)
-except ImportError as _pipe_err:
-    print(f"[WARNING] pipeline import failed: {_pipe_err}. Using stub fallback.")
-    import pipeline_stub as pipeline  # type: ignore
+    import pipeline
+except ImportError:
+    try:
+        from . import pipeline
+    except ImportError:
+        try:
+            from backend import pipeline
+        except ImportError as _pipe_err:
+            print(f"[WARNING] pipeline import failed: {_pipe_err}. Using stub fallback.")
+            import pipeline_stub as pipeline
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware

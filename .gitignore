@@ -2,8 +2,9 @@ __pycache__/
 *.pyc
 *.pyo
 .venv/
-cache/
-*.fits
-*.png
 .env
-
+cache/*.png
+cache/test_*
+cache/*.fits
+!cache/spherex_d71e2824c8003b46.fits
+!cache/spherex_5ef54c9cab031451.fits

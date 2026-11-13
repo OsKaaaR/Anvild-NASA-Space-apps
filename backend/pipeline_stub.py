@@ -9,6 +9,21 @@ def resolve_target(name: str):
     return (0.0, 0.0)
 
 def query_spherex(ra, dec, fov_arcmin=10.0, bandpass="SPHEREx-D2"):
+    import json
+    from pathlib import Path
+    cat_path = Path(__file__).resolve().parent.parent / "data" / "local_catalog.json"
+    if cat_path.exists():
+        try:
+            with open(cat_path, "r", encoding="utf-8") as f:
+                cat = json.load(f)
+            for tname, tentry in cat.items():
+                tra, tdec = tentry.get("ra", 0), tentry.get("dec", 0)
+                if ((ra - tra)**2 + (dec - tdec)**2)**0.5 <= 1.0:
+                    return tentry.get("observations", [])
+            for tentry in cat.values():
+                return tentry.get("observations", [])
+        except Exception:
+            pass
     return []
 
 def download_fits(url: str, cache_dir: str):
