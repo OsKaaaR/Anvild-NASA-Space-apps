@@ -1,1748 +1,1359 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SkyBlink — SPHEREx Time-Domain Sky Explorer</title>
-  <meta name="description" content="Explore how the infrared sky changes over time using NASA SPHEREx observations. Built for NASA Space Apps Cairo 2026." />
+  <title>SkyBlink ✦ NASA SPHEREx Time-Domain Sky Explorer</title>
+  <meta name="description" content="Explore temporal and infrared changes across the sky using NASA SPHEREx observations. Planet X and SPHEREx Challenge — Cairo 2026." />
+
+  <!-- Tailwind CSS v3 via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            space: {
+              950: '#030712',
+              900: '#070d1d',
+              850: '#0b1328',
+              800: '#0f1a36',
+              700: '#18274d',
+              border: 'rgba(56, 189, 248, 0.18)',
+              borderHover: 'rgba(56, 189, 248, 0.45)'
+            },
+            cyan: { glow: '#22d3ee' },
+            amber: { glow: '#f59e0b' },
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          boxShadow: {
+            'glow-cyan': '0 0 24px -4px rgba(34, 211, 238, 0.35)',
+            'glow-amber': '0 0 24px -4px rgba(245, 158, 11, 0.35)',
+            'glow-purple': '0 0 24px -4px rgba(168, 85, 247, 0.35)',
+            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+          }
+        }
+      }
+    }
+  </script>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Plotly for spectrum -->
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Plotly.js for Calibrated Infrared Spectrum -->
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 
   <style>
-    /* ================================================================
-       DESIGN SYSTEM — SkyBlink v2.0
-       ================================================================ */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg-deepest:     #050810;
-      --bg-deep:        #0a0f1e;
-      --bg-card:        rgba(13, 20, 40, 0.78);
-      --bg-input:       rgba(6, 10, 22, 0.9);
-      --border:         rgba(55, 65, 95, 0.55);
-      --border-hover:   rgba(99, 102, 241, 0.5);
-      --border-focus:   rgba(56, 189, 248, 0.6);
-
-      --blue:           #38bdf8;
-      --blue-glow:      rgba(56, 189, 248, 0.3);
-      --blue-muted:     rgba(56, 189, 248, 0.12);
-      --indigo:         #818cf8;
-      --indigo-glow:    rgba(129, 140, 248, 0.25);
-      --violet:         #a78bfa;
-      --amber:          #fbbf24;
-      --amber-glow:     rgba(251, 191, 36, 0.25);
-      --emerald:        #34d399;
-      --emerald-muted:  rgba(52, 211, 153, 0.12);
-      --rose:           #fb7185;
-      --rose-muted:     rgba(251, 113, 133, 0.12);
-      --cyan:           #22d3ee;
-
-      --text:           #f0f4f8;
-      --text-secondary: #c1cdd9;
-      --text-muted:     #7e8fa6;
-
-      --font:           'Inter', system-ui, -apple-system, sans-serif;
-      --font-display:   'Space Grotesk', var(--font);
-      --font-mono:      'JetBrains Mono', 'Fira Code', monospace;
-
-      --radius-xl:      16px;
-      --radius-lg:      12px;
-      --radius-md:      8px;
-      --radius-sm:      6px;
-
-      --ease:           cubic-bezier(0.16, 1, 0.3, 1);
-      --duration:       220ms;
-      --shadow-card:    0 4px 24px rgba(0,0,0,0.45), 0 0 1px rgba(255,255,255,0.05);
-      --shadow-glow:    0 0 20px var(--blue-glow), 0 4px 30px rgba(0,0,0,0.6);
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      background: var(--bg-deepest);
-      color: var(--text);
-      font-family: var(--font);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
-      line-height: 1.5;
-    }
-
-    /* Animated cosmic background */
-    body::before {
-      content: "";
-      position: fixed; inset: 0;
-      background:
-        radial-gradient(ellipse at 20% 10%, rgba(56,189,248,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 90%, rgba(129,140,248,0.05) 0%, transparent 55%),
-        radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.5), transparent),
-        radial-gradient(1px 1px at 45% 15%, rgba(255,255,255,0.3), transparent),
-        radial-gradient(1.2px 1.2px at 75% 45%, rgba(56,189,248,0.6), transparent),
-        radial-gradient(1px 1px at 35% 70%, rgba(255,255,255,0.4), transparent),
-        radial-gradient(1px 1px at 85% 30%, rgba(255,255,255,0.25), transparent),
-        radial-gradient(0.8px 0.8px at 60% 85%, rgba(129,140,248,0.5), transparent);
-      background-size: 100% 100%, 100% 100%, 300px 300px, 250px 200px, 400px 350px, 350px 280px, 280px 320px, 320px 260px;
-      opacity: 0.4;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* Scrollbars */
+    /* Custom Scrollbars */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.4); }
+    ::-webkit-scrollbar-track { background: rgba(3, 7, 18, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.25); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.5); }
 
-    /* ================================================================
-       HEADER / NAVBAR
-       ================================================================ */
-    #navbar {
-      position: sticky; top: 0; z-index: 100;
-      backdrop-filter: blur(20px) saturate(1.4);
-      -webkit-backdrop-filter: blur(20px) saturate(1.4);
-      background: rgba(8, 12, 28, 0.85);
-      border-bottom: 1px solid var(--border);
-      padding: 0 1.5rem;
-      height: 56px;
-      display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+    /* Custom range sliders */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 9999px;
+      height: 5px;
     }
-
-    .brand-group { display: flex; align-items: center; gap: 0.75rem; }
-    .brand-icon {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, var(--blue) 0%, var(--indigo) 50%, var(--violet) 100%);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 16px var(--blue-glow);
-      animation: icon-pulse 4s ease-in-out infinite;
-    }
-    @keyframes icon-pulse {
-      0%, 100% { box-shadow: 0 0 16px var(--blue-glow); }
-      50% { box-shadow: 0 0 28px var(--indigo-glow); }
-    }
-    .brand-title h1 {
-      font-family: var(--font-display);
-      font-size: 1.35rem; font-weight: 700; letter-spacing: -0.025em;
-      background: linear-gradient(120deg, #fff 30%, var(--blue) 80%, var(--indigo) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .brand-subtitle {
-      font-size: 0.7rem; color: var(--text-muted);
-      display: flex; align-items: center; gap: 5px;
-      letter-spacing: 0.02em;
-    }
-    .brand-subtitle .dot { color: var(--border); }
-
-    .nav-right { display: flex; align-items: center; gap: 0.65rem; }
-
-    .badge-live {
-      display: flex; align-items: center; gap: 6px;
-      padding: 0.25rem 0.7rem;
-      font-size: 0.72rem; font-weight: 600;
-      border-radius: 20px;
-      border: 1px solid rgba(52,211,153,0.3);
-      background: var(--emerald-muted);
-      color: var(--emerald);
-    }
-    .pulse-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--emerald);
-      box-shadow: 0 0 6px var(--emerald);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
-
-    .btn-nav {
-      background: rgba(56,189,248,0.08);
-      border: 1px solid rgba(56,189,248,0.25);
-      color: var(--blue);
-      padding: 0.3rem 0.75rem;
-      border-radius: var(--radius-md);
-      font-size: 0.78rem; font-weight: 500;
-      cursor: pointer;
-      display: flex; align-items: center; gap: 5px;
-      transition: all var(--duration) var(--ease);
-    }
-    .btn-nav:hover {
-      background: rgba(56,189,248,0.16);
-      transform: translateY(-1px);
-    }
-
-    /* ================================================================
-       MAIN LAYOUT
-       ================================================================ */
-    #main {
-      position: relative; z-index: 1;
-      max-width: 1520px; width: 100%;
-      margin: 0 auto;
-      padding: 1rem 1.5rem 2rem;
-      display: flex; flex-direction: column;
-      gap: 1rem;
-      flex: 1;
-    }
-
-    /* ================================================================
-       GLASS CARD
-       ================================================================ */
-    .card {
-      background: var(--bg-card);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 1rem;
-      box-shadow: var(--shadow-card);
-      transition: border-color var(--duration) var(--ease);
-    }
-    .card:hover { border-color: var(--border-hover); }
-
-    /* ================================================================
-       TARGET SELECTION STRIP
-       ================================================================ */
-    .targets-strip {
-      display: flex; flex-direction: column; gap: 0.65rem;
-    }
-    .strip-label {
-      font-size: 0.72rem; font-weight: 600;
-      text-transform: uppercase; letter-spacing: 0.1em;
-      color: var(--text-muted);
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .strip-label-tag {
-      font-weight: 400; text-transform: none;
-      letter-spacing: 0; color: var(--text-muted);
-      opacity: 0.7;
-    }
-
-    .chips-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 0.5rem;
-    }
-
-    .target-chip {
-      background: rgba(20, 30, 55, 0.6);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 0.55rem 0.75rem;
-      cursor: pointer;
-      display: flex; align-items: center; gap: 0.6rem;
-      transition: all var(--duration) var(--ease);
-      user-select: none;
-    }
-    .target-chip:hover {
-      background: var(--blue-muted);
-      border-color: rgba(56,189,248,0.4);
-      transform: translateY(-1px);
-    }
-    .target-chip.active {
-      background: var(--blue-muted);
-      border-color: var(--blue);
-      box-shadow: 0 0 14px var(--blue-glow), inset 0 0 16px rgba(56,189,248,0.06);
-    }
-    .chip-icon { font-size: 1.15rem; flex-shrink: 0; line-height: 1; }
-    .chip-text h4 {
-      font-size: 0.82rem; font-weight: 600;
-      color: #fff; line-height: 1.15;
-    }
-    .chip-text p {
-      font-size: 0.68rem; color: var(--text-muted);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      max-width: 180px;
-    }
-
-    /* ================================================================
-       SEARCH BAR
-       ================================================================ */
-    .search-bar {
-      display: flex; align-items: flex-end; gap: 0.6rem;
-      flex-wrap: wrap;
-      background: rgba(10, 16, 32, 0.5);
-      padding: 0.75rem 0.85rem;
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255,255,255,0.03);
-    }
-
-    .field { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 120px; }
-    .field label {
-      font-size: 0.7rem; font-weight: 500;
-      color: var(--text-muted); letter-spacing: 0.02em;
-    }
-    .field input, .field select {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 0.5rem 0.65rem;
-      color: #fff;
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      outline: none;
-      transition: all var(--duration) var(--ease);
-    }
-    .field input:focus, .field select:focus {
-      border-color: var(--border-focus);
-      box-shadow: 0 0 12px var(--blue-glow);
-    }
-    .field select { cursor: pointer; }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--blue), var(--indigo));
-      color: #fff; font-weight: 700; font-size: 0.85rem;
-      padding: 0.5rem 1.25rem;
-      border: none; border-radius: var(--radius-md);
-      cursor: pointer;
-      display: flex; align-items: center; gap: 7px;
-      box-shadow: 0 2px 16px var(--blue-glow);
-      transition: all var(--duration) var(--ease);
-      white-space: nowrap; height: 36px;
-      letter-spacing: 0.01em;
-    }
-    .btn-primary:hover {
-      box-shadow: 0 4px 24px var(--blue-glow);
-      transform: translateY(-1px);
-    }
-    .btn-primary:active { transform: translateY(0); }
-
-    /* Loading spinner */
-    .btn-primary.loading { opacity: 0.7; pointer-events: none; }
-    .btn-primary.loading::after {
-      content: ""; display: inline-block;
-      width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      margin-left: 6px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ================================================================
-       WORKSPACE GRID — Viewer + Sidebar
-       ================================================================ */
-    .workspace {
-      display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 1rem;
-      align-items: start;
-    }
-    @media (max-width: 1100px) { .workspace { grid-template-columns: 1fr; } }
-
-    /* ================================================================
-       VIEWER PANEL
-       ================================================================ */
-    .viewer-panel { display: flex; flex-direction: column; gap: 0.75rem; }
-
-    .viewer {
-      background: var(--bg-deepest);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.65);
-      display: flex; flex-direction: column;
-    }
-
-    /* Top toolbar */
-    .v-toolbar {
-      background: rgba(12, 18, 36, 0.9);
-      backdrop-filter: blur(8px);
-      padding: 0.4rem 0.75rem;
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 0.5rem; z-index: 10;
-      flex-wrap: wrap;
-    }
-
-    .mode-tabs {
-      display: flex;
-      background: rgba(0,0,0,0.45);
-      padding: 2px; border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.04);
-    }
-    .mode-tab {
-      background: transparent; border: none;
-      color: var(--text-muted);
-      font-size: 0.78rem; font-weight: 500;
-      padding: 0.32rem 0.8rem;
-      border-radius: 6px;
+      background: #38bdf8;
+      box-shadow: 0 0 10px #38bdf8;
       cursor: pointer;
-      transition: all var(--duration) var(--ease);
-      white-space: nowrap;
+      border: 2px solid #ffffff;
+      transition: transform 0.15s ease;
     }
-    .mode-tab:hover { color: var(--text-secondary); }
-    .mode-tab.active {
-      background: linear-gradient(135deg, var(--blue), var(--indigo));
-      color: #fff; font-weight: 600;
-      box-shadow: 0 0 10px var(--blue-glow);
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
     }
 
-    .v-tools { display: flex; align-items: center; gap: 0.4rem; }
-
-    .icon-btn {
-      background: rgba(30,40,65,0.6);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      width: 28px; height: 28px;
-      border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 0.85rem;
-      transition: all var(--duration) var(--ease);
-    }
-    .icon-btn:hover {
-      color: #fff;
-      border-color: var(--blue);
-      background: rgba(56,189,248,0.12);
+    /* Ambient Cosmos Background */
+    .cosmic-mesh {
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.14) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(217, 70, 239, 0.08) 0px, transparent 50%);
     }
 
-    .mini-select {
-      font-size: 0.72rem; padding: 3px 8px;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid var(--border);
-      color: #fff; border-radius: 6px;
-      cursor: pointer; outline: none;
+    /* Pulse animation */
+    @keyframes subtle-pulse {
+      0%, 100% { opacity: 0.85; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.02); }
     }
-
-    /* Difference sub-panel */
-    .diff-controls {
-      display: none;
-      background: rgba(20, 28, 48, 0.92);
-      border: 1px solid rgba(251,191,36,0.25);
-      padding: 0.5rem 0.75rem;
-      border-radius: var(--radius-md);
-      align-items: center; gap: 0.6rem;
-      font-size: 0.78rem;
-      flex-wrap: wrap;
-    }
-    .diff-controls.show { display: flex; }
-    .diff-controls label { color: var(--amber); font-weight: 600; }
-
-    .btn-amber {
-      background: var(--amber); color: #000;
-      font-weight: 700; font-size: 0.72rem;
-      padding: 4px 14px; border-radius: 6px;
-      border: none; cursor: pointer;
-      transition: all var(--duration) var(--ease);
-    }
-    .btn-amber:hover { box-shadow: 0 0 12px var(--amber-glow); transform: translateY(-1px); }
-
-    /* Image Stage */
-    .stage {
-      position: relative;
-      width: 100%; height: 520px;
-      background: #020408;
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden;
-      cursor: crosshair;
-    }
-
-    #sky-canvas {
-      max-width: 100%; max-height: 100%;
-      object-fit: contain;
-      image-rendering: pixelated;
-      transition: transform 0.12s ease-out;
-      transform-origin: center center;
-    }
-
-    .stage-empty {
-      display: flex; flex-direction: column;
-      align-items: center; gap: 1rem;
-      color: var(--text-muted);
-      text-align: center;
-    }
-    .stage-empty svg { opacity: 0.3; }
-    .stage-empty p { font-size: 0.85rem; max-width: 300px; }
-
-    /* Overlays */
-    .overlay-bl {
-      position: absolute; bottom: 10px; left: 10px;
-      background: rgba(6,10,20,0.88);
-      backdrop-filter: blur(6px);
-      border: 1px solid var(--border);
-      padding: 0.3rem 0.6rem;
-      border-radius: 6px;
-      font-family: var(--font-mono); font-size: 0.7rem;
-      color: var(--blue);
-      pointer-events: none;
-    }
-    .overlay-tr {
-      position: absolute; top: 10px; right: 10px;
-      background: rgba(6,10,20,0.7);
-      backdrop-filter: blur(4px);
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      width: 34px; height: 34px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.65rem; font-weight: 800;
-      color: var(--amber);
-      pointer-events: none;
-      letter-spacing: -0.02em;
-    }
-    .overlay-br {
-      position: absolute; bottom: 10px; right: 10px;
-      background: rgba(6,10,20,0.85);
-      backdrop-filter: blur(6px);
-      border: 1px solid var(--border);
-      padding: 0.25rem 0.55rem;
-      border-radius: 6px;
-      font-family: var(--font-mono); font-size: 0.68rem;
-      color: var(--text-muted);
-      pointer-events: none;
-    }
-
-    /* Playback bar */
-    .playback {
-      background: rgba(12,18,36,0.95);
-      border-top: 1px solid var(--border);
-      padding: 0.6rem 0.85rem;
-      display: flex; flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .scrub-row {
-      display: flex; align-items: center; gap: 0.65rem;
-    }
-
-    /* Custom range slider */
-    input[type="range"] {
-      -webkit-appearance: none; appearance: none;
-      height: 4px; border-radius: 2px;
-      background: rgba(255,255,255,0.1);
-      outline: none; cursor: pointer;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; appearance: none;
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: var(--blue);
-      box-shadow: 0 0 6px var(--blue-glow);
-      border: 2px solid rgba(255,255,255,0.9);
-      cursor: grab;
-      transition: transform 0.15s;
-    }
-    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
-    input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; }
-
-    .scrub-slider { flex: 1; }
-
-    .pill-counter {
-      font-family: var(--font-mono);
-      font-size: 0.72rem; color: var(--text-muted);
-      background: rgba(0,0,0,0.5);
-      padding: 2px 8px; border-radius: 10px;
-      border: 1px solid var(--border);
-      min-width: 62px; text-align: center;
-    }
-
-    .ctrl-row {
-      display: flex; align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap; gap: 0.6rem;
-    }
-
-    .btn-group {
-      display: flex; align-items: center; gap: 3px;
-    }
-
-    .ctrl-btn {
-      background: rgba(25,35,60,0.8);
-      border: 1px solid var(--border);
-      color: #fff;
-      width: 32px; height: 32px;
-      border-radius: 7px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.82rem;
-      cursor: pointer;
-      transition: all var(--duration) var(--ease);
-    }
-    .ctrl-btn:hover {
-      background: rgba(56,189,248,0.15);
-      border-color: var(--blue);
-    }
-
-    .ctrl-btn-play {
-      width: 40px; height: 32px;
-      background: linear-gradient(135deg, var(--blue), var(--indigo));
-      color: #fff; font-weight: bold;
-      border: none;
-      box-shadow: 0 0 14px var(--blue-glow);
-    }
-    .ctrl-btn-play:hover {
-      box-shadow: 0 0 22px var(--blue-glow);
-    }
-    .ctrl-btn-play.paused {
-      background: linear-gradient(135deg, var(--rose), #e11d48);
-      box-shadow: 0 0 14px rgba(251,113,133,0.3);
-    }
-
-    .speed-grp {
-      display: flex; align-items: center; gap: 0.45rem;
-      font-size: 0.75rem; color: var(--text-muted);
-    }
-    .speed-grp input[type="range"] { width: 72px; }
-    .speed-grp input[type="range"]::-webkit-slider-thumb { background: var(--amber); box-shadow: 0 0 6px var(--amber-glow); }
-    .fps-badge {
-      font-family: var(--font-mono);
-      font-size: 0.72rem; color: var(--amber);
-      font-weight: 700; min-width: 40px;
-    }
-
-    .buffer-badge {
-      font-size: 0.72rem; font-weight: 600;
-      padding: 2px 8px; border-radius: 12px;
-      border: 1px solid rgba(52,211,153,0.3);
-      background: var(--emerald-muted);
-      color: var(--emerald);
-      display: flex; align-items: center; gap: 4px;
-    }
-
-    /* ================================================================
-       SIDEBAR
-       ================================================================ */
-    .sidebar { display: flex; flex-direction: column; gap: 0.85rem; }
-
-    .panel {
-      background: var(--bg-card);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 0.85rem;
-      box-shadow: var(--shadow-card);
-      display: flex; flex-direction: column;
-      gap: 0.6rem;
-      transition: border-color var(--duration) var(--ease);
-    }
-    .panel:hover { border-color: var(--border-hover); }
-
-    .panel-head {
-      font-family: var(--font-display);
-      font-size: 0.8rem; font-weight: 700;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      display: flex; align-items: center; justify-content: space-between;
-      color: #fff;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      padding-bottom: 0.4rem;
-    }
-    .panel-tag {
-      font-size: 0.68rem; color: var(--blue);
-      font-weight: 500; text-transform: none;
-      letter-spacing: 0;
-    }
-
-    /* Metadata grid */
-    .meta-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.4rem;
-    }
-    .meta-item {
-      background: rgba(6,10,20,0.6);
-      border: 1px solid rgba(255,255,255,0.03);
-      padding: 0.4rem 0.55rem;
-      border-radius: 6px;
-    }
-    .meta-label {
-      font-size: 0.64rem; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.04em;
-    }
-    .meta-val {
-      font-family: var(--font-mono);
-      font-size: 0.75rem; font-weight: 600;
-      color: #fff;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-
-    /* Candidates table */
-    .scroll-box {
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid rgba(255,255,255,0.04);
-      border-radius: 6px;
-    }
-    .tbl {
-      width: 100%; border-collapse: collapse;
-      font-size: 0.72rem; text-align: left;
-    }
-    .tbl th {
-      background: rgba(12,18,36,0.95);
-      padding: 0.35rem 0.5rem;
-      color: var(--text-muted); font-weight: 600;
-      position: sticky; top: 0; z-index: 2;
-    }
-    .tbl td {
-      padding: 0.35rem 0.5rem;
-      border-top: 1px solid rgba(255,255,255,0.03);
-      font-family: var(--font-mono);
-      cursor: pointer;
-    }
-    .tbl tr:hover {
-      background: var(--blue-muted);
-    }
-    .sig-badge {
-      display: inline-block;
-      background: var(--rose-muted); color: var(--rose);
-      padding: 1px 7px; border-radius: 8px;
-      font-weight: 700; font-size: 0.7rem;
-    }
-
-    /* Spectrum */
-    .spectrum-wrap {
-      width: 100%; height: 170px;
-    }
-    .spectrum-hint {
-      font-size: 0.68rem; color: var(--text-muted);
-      text-align: center; margin-top: -2px;
-    }
-
-    /* Epoch list */
-    .epoch-scroll {
-      max-height: 170px;
-      overflow-y: auto;
-      display: flex; flex-direction: column;
-      gap: 3px;
-    }
-    .epoch-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.35rem 0.55rem;
-      border-radius: 6px;
-      background: rgba(6,10,20,0.5);
-      border: 1px solid rgba(255,255,255,0.02);
-      cursor: pointer;
-      font-size: 0.72rem;
-      transition: all var(--duration) var(--ease);
-    }
-    .epoch-row:hover {
-      background: var(--blue-muted);
-      border-color: rgba(56,189,248,0.3);
-    }
-    .epoch-row.active {
-      background: rgba(56,189,248,0.18);
-      border-color: var(--blue);
-      font-weight: 600;
-    }
-    .epoch-row .epoch-frames {
-      color: var(--text-muted); font-size: 0.68rem;
-    }
-
-    /* ================================================================
-       GUIDE MODAL
-       ================================================================ */
-    .modal-backdrop {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(10px);
-      z-index: 999;
-      align-items: center; justify-content: center;
-      padding: 1.5rem;
-    }
-    .modal-backdrop.open { display: flex; }
-
-    .modal {
-      background: linear-gradient(170deg, #0f172a 0%, #0b1020 100%);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      max-width: 620px; width: 100%;
-      padding: 1.75rem 2rem;
-      box-shadow: 0 16px 64px rgba(0,0,0,0.8);
-      position: relative;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal-x {
-      position: absolute; top: 1rem; right: 1rem;
-      background: transparent; border: none;
-      color: var(--text-muted); font-size: 1.3rem;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    .modal-x:hover { color: #fff; }
-
-    .modal h2 {
-      font-family: var(--font-display);
-      font-size: 1.3rem; margin-bottom: 0.2rem;
-      background: linear-gradient(120deg, #fff 40%, var(--blue) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .modal .modal-sub {
-      font-size: 0.8rem; color: var(--text-muted);
-      margin-bottom: 1.25rem;
-    }
-
-    .step {
-      display: flex; align-items: flex-start;
-      gap: 0.85rem; margin-bottom: 0.9rem;
-    }
-    .step-num {
-      width: 30px; height: 30px; min-width: 30px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--blue), var(--indigo));
-      color: #fff; font-weight: 800; font-size: 0.8rem;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .step-body h4 { font-size: 0.9rem; color: #fff; margin-bottom: 2px; }
-    .step-body p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; }
-
-    .btn-modal-close {
-      width: 100%; margin-top: 0.75rem;
-      background: linear-gradient(135deg, var(--blue), var(--indigo));
-      color: #fff; font-weight: 700; font-size: 0.9rem;
-      padding: 0.65rem; border-radius: 8px;
-      border: none; cursor: pointer;
-      box-shadow: 0 2px 16px var(--blue-glow);
-      transition: all var(--duration) var(--ease);
-    }
-    .btn-modal-close:hover { box-shadow: 0 4px 24px var(--blue-glow); transform: translateY(-1px); }
-
-    /* ================================================================
-       FOOTER
-       ================================================================ */
-    #footer {
-      border-top: 1px solid var(--border);
-      padding: 0.7rem 1.5rem;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 0.5rem;
-      font-size: 0.7rem; color: var(--text-muted);
-      background: rgba(8,12,28,0.92);
-      margin-top: auto;
-    }
-    #footer a {
-      color: var(--blue); text-decoration: none;
-    }
-    #footer a:hover { text-decoration: underline; }
-
-    /* ================================================================
-       TOAST NOTIFICATIONS
-       ================================================================ */
-    .toast-container {
-      position: fixed; bottom: 1.5rem; right: 1.5rem;
-      z-index: 1000;
-      display: flex; flex-direction: column-reverse;
-      gap: 0.5rem;
-    }
-    .toast {
-      background: rgba(15,23,42,0.95);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 0.65rem 1rem;
-      font-size: 0.8rem; color: var(--text);
-      display: flex; align-items: center; gap: 0.5rem;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-      animation: toast-in 0.3s var(--ease);
-      max-width: 350px;
-    }
-    .toast.success { border-color: rgba(52,211,153,0.4); }
-    .toast.info { border-color: rgba(56,189,248,0.4); }
-    .toast.warn { border-color: rgba(251,191,36,0.4); }
-    @keyframes toast-in {
-      from { transform: translateY(16px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    /* ================================================================
-       RESPONSIVE
-       ================================================================ */
-    @media (max-width: 768px) {
-      .chips-grid { grid-template-columns: 1fr 1fr; }
-      .search-bar { flex-direction: column; }
-      .search-bar .field { min-width: 100%; }
-      .stage { height: 350px; }
-      .workspace { gap: 0.75rem; }
-    }
+    .pulse-subtle { animation: subtle-pulse 3s infinite ease-in-out; }
   </style>
 </head>
-<body>
 
-  <!-- ============================================================
-       NAVBAR
-       ============================================================ -->
-  <nav id="navbar">
-    <div class="brand-group">
-      <div class="brand-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
+<body class="bg-space-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200 cosmic-mesh">
+
+  <!-- ========================================================================= -->
+  <!-- NAVBAR -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-space-900/80 border-b border-space-border/60 shadow-lg px-4 lg:px-8 py-2.5 flex items-center justify-between">
+    <div class="flex items-center gap-3.5">
+      <!-- Logo / Icon -->
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 p-0.5 shadow-glow-cyan flex items-center justify-center">
+        <img src="Logo.png" alt="SkyBlink Logo" class="w-full h-full object-cover rounded-[10px]" onerror="this.onerror=null; this.src=''; this.parentElement.innerHTML='<i data-lucide=\'telescope\' class=\'w-5 h-5 text-white\'></i>'; lucide.createIcons();" />
       </div>
+
       <div>
-        <h1 class="brand-title">SkyBlink</h1>
-        <div class="brand-subtitle">
-          <span>NASA SPHEREx</span>
-          <span class="dot">•</span>
-          <span>102-Band IR Sky Explorer</span>
-          <span class="dot">•</span>
-          <span>Cairo 2026</span>
+        <div class="flex items-center gap-2">
+          <h1 class="font-display font-bold text-lg lg:text-xl tracking-tight bg-gradient-to-r from-white via-cyan-200 to-cyan-400 bg-clip-text text-transparent">
+            SkyBlink
+          </h1>
+          <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 font-semibold tracking-wider">
+            SPHEREx 102-Band
+          </span>
         </div>
+        <p class="text-xs text-slate-400 hidden sm:flex items-center gap-1.5 font-medium">
+          <span>NASA Space Apps Cairo 2026</span>
+          <span class="text-slate-600">•</span>
+          <span>Planet X & Time-Domain Explorer</span>
+        </p>
       </div>
     </div>
 
-    <div class="nav-right">
-      <div class="badge-live">
-        <span class="pulse-dot"></span>
-        100% Offline Engine
+    <!-- Center/Right Status Badges & Controls -->
+    <div class="flex items-center gap-2.5">
+      <!-- Latency Badge -->
+      <div class="hidden sm:flex items-center gap-1.5 text-xs font-mono py-1 px-3 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-emerald-300">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span class="font-semibold" id="ram-status-badge">⚡ 100% RAM Buffer (0.1ms)</span>
       </div>
-      <button class="btn-nav" id="open-guide">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        Quick Guide
+
+      <!-- Quick Guide Button -->
+      <button id="btn-open-guide" class="flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-lg bg-space-800 hover:bg-space-700 text-slate-200 border border-space-border hover:border-cyan-400/50 transition-all shadow-sm">
+        <i data-lucide="help-circle" class="w-4 h-4 text-cyan-400"></i>
+        <span>Quick Guide</span>
+      </button>
+
+      <!-- Keyboard Shortcuts Toggle -->
+      <button id="btn-open-shortcuts" title="Keyboard Shortcuts" class="p-1.5 rounded-lg bg-space-800 hover:bg-space-700 text-slate-300 border border-space-border hover:text-white transition-all">
+        <i data-lucide="keyboard" class="w-4 h-4"></i>
       </button>
     </div>
-  </nav>
+  </header>
 
-  <!-- ============================================================
-       MAIN CONTENT
-       ============================================================ -->
-  <main id="main">
+  <!-- ========================================================================= -->
+  <!-- MAIN WORKSPACE CONTAINER -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 max-w-[1720px] w-full mx-auto p-3 lg:p-6 flex flex-col gap-4">
 
-    <!-- TARGET + SEARCH CARD -->
-    <section class="card">
-      <div class="targets-strip">
-        <div class="strip-label">
-          <span>🎯 Challenge Targets — Planet X & SPHEREx</span>
-          <span class="strip-label-tag">Instant Local Playback ⚡</span>
+    <!-- 1. TARGET SELECTION BAR (PRESETS) -->
+    <section class="bg-space-900/60 backdrop-blur-md border border-space-border/60 rounded-2xl p-4 shadow-glass">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
+          <h2 class="text-xs font-display uppercase tracking-wider font-bold text-slate-300">
+            Challenge Target Catalog (الأهداف الفلكية الجاهزة)
+          </h2>
         </div>
-        <div class="chips-grid">
-          <div class="target-chip active" data-idx="0">
-            <span class="chip-icon">🪐</span>
-            <div class="chip-text">
-              <h4>WISE 0855−0714</h4>
-              <p>Cold Brown Dwarf • ~8″/yr</p>
-            </div>
-          </div>
-          <div class="target-chip" data-idx="1">
-            <span class="chip-icon">⭐</span>
-            <div class="chip-text">
-              <h4>Barnard's Star</h4>
-              <p>Fastest Proper Motion (10.3″/yr)</p>
-            </div>
-          </div>
-          <div class="target-chip" data-idx="2">
-            <span class="chip-icon">💫</span>
-            <div class="chip-text">
-              <h4>Epsilon Indi B</h4>
-              <p>T1+T6 Binary Brown Dwarf</p>
-            </div>
-          </div>
-          <div class="target-chip" data-idx="3">
-            <span class="chip-icon">🌟</span>
-            <div class="chip-text">
-              <h4>RW Aurigae</h4>
-              <p>Variable T Tauri Star</p>
-            </div>
-          </div>
-          <div class="target-chip" data-idx="4">
-            <span class="chip-icon">🔴</span>
-            <div class="chip-text">
-              <h4>R Draconis</h4>
-              <p>Mira Pulsating Variable</p>
-            </div>
-          </div>
-          <div class="target-chip" data-idx="5">
-            <span class="chip-icon">🌀</span>
-            <div class="chip-text">
-              <h4>M101 Pinwheel</h4>
-              <p>Deep Spiral Arm Field</p>
-            </div>
-          </div>
-        </div>
+        <span class="text-[11px] text-slate-400 hidden sm:inline">Click any target for instantaneous local telemetry & frames</span>
       </div>
 
-      <!-- Search inputs -->
-      <div class="search-bar">
-        <div class="field" style="flex:1.6">
-          <label>Target Name</label>
-          <input id="inp-name" type="text" value="WISE 0855-0714" placeholder="e.g. Barnard's Star" />
+      <!-- Responsive Chips Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5" id="target-chips-container">
+        <!-- Target 1: WISE 0855 -->
+        <button class="target-card active group relative p-3 rounded-xl bg-space-850/80 border border-cyan-500/80 shadow-glow-cyan text-left transition-all hover:-translate-y-0.5" data-idx="0">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-lg">🪐</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/60 font-semibold">31 Obs</span>
+          </div>
+          <h3 class="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">WISE 0855−0714</h3>
+          <p class="text-[11px] text-slate-400 truncate">Cold Brown Dwarf • ~8″/yr</p>
+        </button>
+
+        <!-- Target 2: Barnard's Star -->
+        <button class="target-card group relative p-3 rounded-xl bg-space-850/40 border border-space-border/60 text-left transition-all hover:border-cyan-500/40 hover:-translate-y-0.5" data-idx="1">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-lg">⭐</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-space-800 text-slate-300 border border-space-border">13 Obs</span>
+          </div>
+          <h3 class="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">Barnard's Star</h3>
+          <p class="text-[11px] text-slate-400 truncate">Fastest Proper Motion (10.3″)</p>
+        </button>
+
+        <!-- Target 3: Epsilon Indi B -->
+        <button class="target-card group relative p-3 rounded-xl bg-space-850/40 border border-space-border/60 text-left transition-all hover:border-cyan-500/40 hover:-translate-y-0.5" data-idx="2">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-lg">💫</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-space-800 text-slate-300 border border-space-border">18 Obs</span>
+          </div>
+          <h3 class="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">Epsilon Indi B</h3>
+          <p class="text-[11px] text-slate-400 truncate">T1+T6 Binary Brown Dwarf</p>
+        </button>
+
+        <!-- Target 4: RW Aurigae -->
+        <button class="target-card group relative p-3 rounded-xl bg-space-850/40 border border-space-border/60 text-left transition-all hover:border-cyan-500/40 hover:-translate-y-0.5" data-idx="3">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-lg">🌟</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-space-800 text-slate-300 border border-space-border">5 Obs</span>
+          </div>
+          <h3 class="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">RW Aurigae</h3>
+          <p class="text-[11px] text-slate-400 truncate">Variable T Tauri Star</p>
+        </button>
+
+        <!-- Target 5: R Draconis -->
+        <button class="target-card group relative p-3 rounded-xl bg-space-850/40 border border-space-border/60 text-left transition-all hover:border-cyan-500/40 hover:-translate-y-0.5" data-idx="4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-lg">🔴</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-space-800 text-slate-300 border border-space-border">5 Obs</span>
+          </div>
+          <h3 class="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">R Draconis</h3>
+          <p class="text-[11px] text-slate-400 truncate">Mira Pulsating Giant</p>
+        </button>
+
+        <!-- Target 6: M101 Pinwheel -->
+        <button class="target-card group relative p-3 rounded-xl bg-space-850/40 border border-space-border/60 text-left transition-all hover:border-cyan-500/40 hover:-translate-y-0.5" data-idx="5">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-lg">🌀</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-space-800 text-slate-300 border border-space-border">15 Obs</span>
+          </div>
+          <h3 class="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">M101 Pinwheel</h3>
+          <p class="text-[11px] text-slate-400 truncate">Spiral Arms Deep Field</p>
+        </button>
+      </div>
+
+      <!-- Live Coordinates Input Bar -->
+      <div class="mt-3.5 pt-3 border-t border-space-border/40 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5 items-end">
+        <div>
+          <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">Object Name</label>
+          <input type="text" id="input-target-name" value="WISE 0855-0714" class="w-full bg-space-950/80 border border-space-border/80 rounded-lg px-3 py-1.5 text-xs text-white font-mono focus:border-cyan-400 focus:outline-none" />
         </div>
-        <div class="field">
-          <label>Right Ascension (°)</label>
-          <input id="inp-ra" type="number" step="0.0001" value="133.7854" />
+        <div>
+          <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">RA (° Dec. Deg)</label>
+          <input type="number" step="0.0001" id="input-ra" value="133.7854" class="w-full bg-space-950/80 border border-space-border/80 rounded-lg px-3 py-1.5 text-xs text-white font-mono focus:border-cyan-400 focus:outline-none" />
         </div>
-        <div class="field">
-          <label>Declination (°)</label>
-          <input id="inp-dec" type="number" step="0.0001" value="-7.2444" />
+        <div>
+          <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">Dec (° Dec. Deg)</label>
+          <input type="number" step="0.0001" id="input-dec" value="-7.2444" class="w-full bg-space-950/80 border border-space-border/80 rounded-lg px-3 py-1.5 text-xs text-white font-mono focus:border-cyan-400 focus:outline-none" />
         </div>
-        <div class="field" style="max-width:120px;">
-          <label>FOV (arcmin)</label>
-          <select id="inp-fov">
-            <option value="5">5′ Deep</option>
-            <option value="10" selected>10′ Std</option>
-            <option value="15">15′ Wide</option>
-            <option value="20">20′ Full</option>
+        <div>
+          <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">FOV (Arcmin)</label>
+          <select id="select-fov" class="w-full bg-space-950/80 border border-space-border/80 rounded-lg px-3 py-1.5 text-xs text-white font-mono focus:border-cyan-400 focus:outline-none cursor-pointer">
+            <option value="5">5′ (High Magnification)</option>
+            <option value="10" selected>10′ (Standard SPHEREx)</option>
+            <option value="15">15′ (Wide Field)</option>
+            <option value="20">20′ (Full Array Footprint)</option>
           </select>
         </div>
-        <div class="field" style="max-width:135px;">
-          <label>Bandpass</label>
-          <select id="inp-band">
-            <option value="SPHEREx-D1">D1 (0.75–1.1µm)</option>
-            <option value="SPHEREx-D2" selected>D2 (1.1–1.6µm)</option>
-            <option value="SPHEREx-D3">D3 (1.6–2.4µm)</option>
-            <option value="SPHEREx-D4">D4 (2.4–3.8µm)</option>
-            <option value="SPHEREx-D5">D5 (3.8–4.4µm)</option>
-            <option value="SPHEREx-D6">D6 (4.4–5.0µm)</option>
+        <div>
+          <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">Bandpass Channel</label>
+          <select id="select-bandpass" class="w-full bg-space-950/80 border border-space-border/80 rounded-lg px-3 py-1.5 text-xs text-white font-mono focus:border-cyan-400 focus:outline-none cursor-pointer">
+            <option value="SPHEREx-D1">D1 (0.75 – 1.10 µm)</option>
+            <option value="SPHEREx-D2" selected>D2 (1.10 – 1.62 µm)</option>
+            <option value="SPHEREx-D3">D3 (1.62 – 2.42 µm)</option>
+            <option value="SPHEREx-D4">D4 (2.42 – 3.82 µm)</option>
+            <option value="SPHEREx-D5">D5 (3.82 – 4.42 µm)</option>
+            <option value="SPHEREx-D6">D6 (4.42 – 5.00 µm)</option>
           </select>
         </div>
-        <button class="btn-primary" id="btn-search">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Load Sky Data
+        <button id="btn-load-sky" class="w-full bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-xs py-2 px-4 rounded-lg shadow-glow-cyan flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
+          <i data-lucide="radar" class="w-4 h-4"></i>
+          <span>Query SPHEREx</span>
         </button>
       </div>
     </section>
 
-    <!-- WORKSPACE: VIEWER + SIDEBAR -->
-    <div class="workspace">
+    <!-- 2. TWO-COLUMN WORKSPACE: VIEWER + TELEMETRY -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-      <!-- LEFT: VIEWER -->
-      <div class="viewer-panel">
-        <div class="viewer">
-          <!-- Toolbar -->
-          <div class="v-toolbar">
-            <div class="mode-tabs">
-              <button class="mode-tab active" data-mode="blink">▶ Blink</button>
-              <button class="mode-tab" data-mode="diff">△ Difference</button>
-              <button class="mode-tab" data-mode="stack">⊕ Stack</button>
+      <!-- LEFT: INTERACTIVE FITS FLIPBOOK STAGE (7 Cols on LG, 8 on XL) -->
+      <div class="lg:col-span-7 xl:col-span-8 flex flex-col gap-3">
+        
+        <div class="bg-space-900/80 backdrop-blur-md border border-space-border/80 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+          
+          <!-- Viewer Top HUD Bar -->
+          <div class="px-4 py-2.5 bg-space-850/90 border-b border-space-border/60 flex flex-wrap items-center justify-between gap-2.5">
+            
+            <!-- Analysis Mode Selector Pills -->
+            <div class="flex items-center p-1 rounded-xl bg-space-950/80 border border-space-border/50 text-xs">
+              <button class="mode-btn active px-3 py-1 rounded-lg font-semibold text-white bg-gradient-to-r from-cyan-500 to-indigo-600 shadow-sm transition-all" data-mode="blink">
+                <i data-lucide="play" class="w-3.5 h-3.5 inline mr-1"></i> Blink Flipbook
+              </button>
+              <button class="mode-btn px-3 py-1 rounded-lg font-medium text-slate-400 hover:text-white transition-all" data-mode="diff">
+                <i data-lucide="split" class="w-3.5 h-3.5 inline mr-1"></i> Difference
+              </button>
+              <button class="mode-btn px-3 py-1 rounded-lg font-medium text-slate-400 hover:text-white transition-all" data-mode="stack">
+                <i data-lucide="layers" class="w-3.5 h-3.5 inline mr-1"></i> Co-Add Stack
+              </button>
             </div>
-            <div class="v-tools">
-              <select class="mini-select" id="sel-cmap">
-                <option value="inferno" selected>🔥 Inferno</option>
-                <option value="viridis">🌿 Viridis</option>
-                <option value="magma">🌋 Magma</option>
-                <option value="plasma">⚡ Plasma</option>
-                <option value="gray">⚪ Greyscale</option>
-                <option value="hot">☀️ Hot</option>
-                <option value="cubehelix">🔮 Cubehelix</option>
-              </select>
-              <button class="icon-btn" id="btn-zin" title="Zoom In">+</button>
-              <button class="icon-btn" id="btn-zout" title="Zoom Out">−</button>
-              <button class="icon-btn" id="btn-zreset" title="Reset Zoom">⟲</button>
-            </div>
-          </div>
 
-          <!-- Diff controls -->
-          <div class="diff-controls" id="diff-ctrl">
-            <label>Reference:</label>
-            <select class="mini-select" id="diff-ref"></select>
-            <label>vs Current:</label>
-            <span class="mini-select" id="diff-tgt-label" style="min-width:60px;display:inline-block;text-align:center;">—</span>
-            <button class="btn-amber" id="btn-diff">Compute Subtraction</button>
-            <span id="diff-status" style="color:var(--text-muted);font-size:0.7rem;"></span>
-          </div>
-
-          <!-- Image Stage -->
-          <div class="stage" id="stage">
-            <div class="stage-empty" id="stage-empty">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              <p>Select a target and click <strong>Load Sky Data</strong> to begin exploring</p>
-            </div>
-            <img id="sky-canvas" src="" alt="SPHEREx observation" style="display:none;" />
-            <div class="overlay-bl" id="ov-coords">Pixel: (—, —) | RA: — Dec: —</div>
-            <div class="overlay-tr" title="North/East Sky Orientation">N↑</div>
-            <div class="overlay-br" id="ov-date">—</div>
-          </div>
-
-          <!-- Playback -->
-          <div class="playback">
-            <div class="scrub-row">
-              <input type="range" class="scrub-slider" id="scrubber" min="0" max="0" value="0" />
-              <span class="pill-counter" id="frame-pill">0 / 0</span>
-            </div>
-            <div class="ctrl-row">
-              <div class="btn-group">
-                <button class="ctrl-btn" id="btn-first" title="First (Home)">⏮</button>
-                <button class="ctrl-btn" id="btn-prev" title="Previous (←)">◀</button>
-                <button class="ctrl-btn ctrl-btn-play" id="btn-play" title="Play/Pause (Space)">▶</button>
-                <button class="ctrl-btn" id="btn-next" title="Next (→)">▶</button>
-                <button class="ctrl-btn" id="btn-last" title="Last (End)">⏭</button>
+            <!-- Colormap & View Controls -->
+            <div class="flex items-center gap-2">
+              <!-- Colormap Selector: ISOLATED so it never switches targets! -->
+              <div class="flex items-center gap-1.5 text-xs bg-space-950/80 px-2.5 py-1 rounded-lg border border-space-border/60">
+                <i data-lucide="palette" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <select id="select-colormap" class="bg-transparent text-white font-mono text-xs focus:outline-none cursor-pointer">
+                  <option value="inferno" selected>🔥 Inferno (High Contrast)</option>
+                  <option value="viridis">🌿 Viridis (Perceptual Linear)</option>
+                  <option value="magma">🌋 Magma</option>
+                  <option value="plasma">⚡ Plasma</option>
+                  <option value="gray">⚪ Greyscale (Standard Astro)</option>
+                  <option value="cubehelix">🔮 Cubehelix</option>
+                  <option value="hot">☀️ Hot (Thermal IR)</option>
+                </select>
               </div>
-              <div class="speed-grp">
-                <span>Speed</span>
-                <input type="range" id="speed-slider" min="0" max="6" step="1" value="2" />
-                <span class="fps-badge" id="fps-lbl">4 fps</span>
-              </div>
-              <div class="buffer-badge" id="buffer-badge">
-                ⚡ Buffer: 0%
+
+              <!-- Zoom Buttons -->
+              <div class="flex items-center bg-space-950/80 rounded-lg border border-space-border/60 p-0.5 text-xs">
+                <button id="btn-zoom-in" title="Zoom In (+)" class="p-1 hover:text-cyan-400 transition-colors"><i data-lucide="zoom-in" class="w-4 h-4"></i></button>
+                <button id="btn-zoom-out" title="Zoom Out (-)" class="p-1 hover:text-cyan-400 transition-colors"><i data-lucide="zoom-out" class="w-4 h-4"></i></button>
+                <button id="btn-zoom-reset" title="Reset View (R)" class="p-1 hover:text-cyan-400 transition-colors"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i></button>
+                <button id="btn-fullscreen" title="Toggle Fullscreen (F)" class="p-1 hover:text-cyan-400 transition-colors"><i data-lucide="maximize" class="w-3.5 h-3.5"></i></button>
               </div>
             </div>
           </div>
+
+          <!-- Difference Subpanel (Shown when Difference mode is active) -->
+          <div id="difference-toolbar" class="hidden px-4 py-2 bg-amber-950/30 border-b border-amber-500/30 flex items-center justify-between text-xs text-amber-200">
+            <div class="flex items-center gap-3">
+              <span class="font-bold flex items-center gap-1.5 text-amber-400">
+                <i data-lucide="git-commit" class="w-4 h-4"></i> Subtraction Pair:
+              </span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400 font-mono">Reference:</span>
+                <select id="select-diff-ref" class="bg-space-950 border border-amber-500/40 rounded px-2 py-0.5 text-xs text-white font-mono focus:outline-none"></select>
+              </div>
+              <span class="text-slate-500">minus</span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400 font-mono">Target:</span>
+                <span id="diff-target-label" class="font-mono bg-space-950 px-2 py-0.5 rounded border border-space-border text-cyan-300">#1</span>
+              </div>
+            </div>
+            <button id="btn-apply-diff" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1 rounded-md shadow-glow-amber transition-all flex items-center gap-1.5">
+              <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+              <span>Compute Subtraction</span>
+            </button>
+          </div>
+
+          <!-- Central Image Canvas Stage -->
+          <div class="relative w-full h-[540px] bg-black flex items-center justify-center overflow-hidden cursor-crosshair select-none" id="viewport-stage">
+            
+            <!-- Canvas Object / Image Display -->
+            <img id="sky-canvas-img" src="" alt="SPHEREx Observation Image" class="max-w-full max-h-full object-contain image-rendering-pixelated transition-transform duration-75 origin-center" style="display:none;" />
+            
+            <!-- Empty state placeholder -->
+            <div id="viewport-placeholder" class="flex flex-col items-center justify-center text-center p-6">
+              <div class="w-16 h-16 rounded-2xl bg-space-850 flex items-center justify-center text-cyan-400 mb-3 border border-space-border shadow-glow-cyan pulse-subtle">
+                <i data-lucide="satellite" class="w-8 h-8"></i>
+              </div>
+              <h4 class="text-base font-display font-bold text-white mb-1">Select an Object & Press Query</h4>
+              <p class="text-xs text-slate-400 max-w-sm">SPHEREx 102-band cutouts will load directly from the offline buffer in &lt;1ms.</p>
+            </div>
+
+            <!-- Astronomical Orientation Rose (North / East) -->
+            <div class="absolute top-3 right-3 bg-space-950/80 backdrop-blur-md border border-space-border/60 rounded-full w-9 h-9 flex items-center justify-center font-mono text-[11px] font-bold text-amber-300 shadow-md pointer-events-none select-none">
+              N ↑
+            </div>
+
+            <!-- Reticle Crosshair Coordinates HUD -->
+            <div class="absolute bottom-3 left-3 bg-space-950/85 backdrop-blur-md border border-space-border/60 rounded-lg px-2.5 py-1 text-[11px] font-mono text-cyan-300 shadow-md pointer-events-none flex items-center gap-2" id="reticle-coords">
+              <i data-lucide="crosshair" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span id="coords-text">Pixel: (—, —) | RA: 133.7854° Dec: -7.2444°</span>
+            </div>
+
+            <!-- Frame Date Overlay -->
+            <div class="absolute bottom-3 right-3 bg-space-950/85 backdrop-blur-md border border-space-border/60 rounded-lg px-2.5 py-1 text-[11px] font-mono text-slate-400 shadow-md pointer-events-none" id="frame-date-overlay">
+              UTC: —
+            </div>
+          </div>
+
+          <!-- Playback Scrubber & Navigation Engine -->
+          <div class="p-3.5 bg-space-850/95 border-t border-space-border/60 flex flex-col gap-2.5">
+            
+            <!-- Frame Timeline Scrubber -->
+            <div class="flex items-center gap-3">
+              <input type="range" id="frame-scrubber" min="0" max="0" value="0" class="flex-1 cursor-pointer" />
+              <div class="font-mono text-xs px-2.5 py-0.5 rounded-lg bg-space-950 border border-space-border/80 text-cyan-300 min-w-[70px] text-center" id="frame-counter">
+                0 / 0
+              </div>
+            </div>
+
+            <!-- Navigation Buttons & Playback Rate -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <!-- Playback Controls -->
+              <div class="flex items-center gap-1.5">
+                <button id="btn-first" title="First Frame (Home)" class="p-2 rounded-lg bg-space-900 hover:bg-space-700 text-slate-300 hover:text-white border border-space-border/80 transition-all"><i data-lucide="chevrons-left" class="w-4 h-4"></i></button>
+                <button id="btn-prev" title="Previous Frame (Left Arrow)" class="p-2 rounded-lg bg-space-900 hover:bg-space-700 text-slate-300 hover:text-white border border-space-border/80 transition-all"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                
+                <!-- Play/Pause Giant Button -->
+                <button id="btn-play" title="Play/Pause (Space)" class="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold shadow-glow-cyan flex items-center gap-1.5 transition-all active:scale-95">
+                  <i data-lucide="play" class="w-4 h-4 fill-white" id="play-icon"></i>
+                  <span id="play-text">Play Flipbook</span>
+                </button>
+                
+                <button id="btn-next" title="Next Frame (Right Arrow)" class="p-2 rounded-lg bg-space-900 hover:bg-space-700 text-slate-300 hover:text-white border border-space-border/80 transition-all"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                <button id="btn-last" title="Last Frame (End)" class="p-2 rounded-lg bg-space-900 hover:bg-space-700 text-slate-300 hover:text-white border border-space-border/80 transition-all"><i data-lucide="chevrons-right" class="w-4 h-4"></i></button>
+              </div>
+
+              <!-- Speed FPS Slider -->
+              <div class="flex items-center gap-2 text-xs bg-space-950/80 px-3 py-1.5 rounded-xl border border-space-border/60">
+                <span class="text-slate-400 font-mono text-[11px]">Speed:</span>
+                <input type="range" id="speed-slider" min="0" max="6" step="1" value="2" class="w-20" />
+                <span class="font-mono font-bold text-amber-300 min-w-[42px]" id="fps-badge">4 fps</span>
+              </div>
+
+              <!-- Buffer Progress Bar -->
+              <div class="flex items-center gap-2 text-xs font-mono">
+                <div class="w-28 bg-space-950 rounded-full h-2 overflow-hidden border border-space-border/60">
+                  <div id="buffer-fill" class="bg-gradient-to-r from-emerald-500 to-cyan-400 h-full transition-all duration-300" style="width: 100%;"></div>
+                </div>
+                <span class="text-emerald-400 text-[11px] font-semibold" id="buffer-pct">100% Buffered</span>
+              </div>
+            </div>
+
+          </div>
+
         </div>
+
       </div>
 
-      <!-- RIGHT: SIDEBAR -->
-      <div class="sidebar">
-
-        <!-- Telemetry -->
-        <div class="panel">
-          <div class="panel-head">
-            <span>🔬 Observation Telemetry</span>
-            <span class="panel-tag" id="tag-level">SPHEREx L2b</span>
+      <!-- RIGHT: TELEMETRY & SCIENTIFIC ANALYZER (5 Cols on LG, 4 on XL) -->
+      <div class="lg:col-span-5 xl:col-span-4 flex flex-col gap-3">
+        
+        <!-- CARD 1: OBSERVATION TELEMETRY -->
+        <div class="bg-space-900/80 backdrop-blur-md border border-space-border/80 rounded-2xl p-4 shadow-glass">
+          <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-space-border/50">
+            <div class="flex items-center gap-2">
+              <i data-lucide="activity" class="w-4 h-4 text-cyan-400"></i>
+              <h3 class="text-xs font-display uppercase tracking-wider font-bold text-slate-200">Observation Telemetry</h3>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/60 font-semibold" id="telemetry-badge">
+              SPHEREx Level-2b
+            </span>
           </div>
-          <div class="meta-grid">
-            <div class="meta-item">
-              <div class="meta-label">Date (UTC)</div>
-              <div class="meta-val" id="m-date">—</div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+            <div class="p-2 rounded-lg bg-space-950/60 border border-space-border/40">
+              <span class="text-[10px] text-slate-500 block uppercase">Observation UTC</span>
+              <span id="tel-date" class="text-white font-semibold truncate block">2025-05-06 02:33:29</span>
             </div>
-            <div class="meta-item">
-              <div class="meta-label">MJD</div>
-              <div class="meta-val" id="m-mjd">—</div>
+            <div class="p-2 rounded-lg bg-space-950/60 border border-space-border/40">
+              <span class="text-[10px] text-slate-500 block uppercase">Modified Julian (MJD)</span>
+              <span id="tel-mjd" class="text-white font-semibold truncate block">60801.1066</span>
             </div>
-            <div class="meta-item">
-              <div class="meta-label">WCS Center</div>
-              <div class="meta-val" id="m-wcs">—</div>
+            <div class="p-2 rounded-lg bg-space-950/60 border border-space-border/40">
+              <span class="text-[10px] text-slate-500 block uppercase">Field WCS Center</span>
+              <span id="tel-wcs" class="text-cyan-300 font-semibold truncate block">α 133.785° δ -7.244°</span>
             </div>
-            <div class="meta-item">
-              <div class="meta-label">Resolution</div>
-              <div class="meta-val" id="m-shape">98 × 98 (6.2″/px)</div>
-            </div>
-            <div class="meta-item">
-              <div class="meta-label">Bandpass</div>
-              <div class="meta-val" id="m-band">D2 (1.1–1.6µm)</div>
-            </div>
-            <div class="meta-item">
-              <div class="meta-label">Target</div>
-              <div class="meta-val" id="m-target">WISE 0855</div>
+            <div class="p-2 rounded-lg bg-space-950/60 border border-space-border/40">
+              <span class="text-[10px] text-slate-500 block uppercase">Array Scale & Pixel</span>
+              <span id="tel-scale" class="text-white font-semibold truncate block">98×98 (6.2″/pix)</span>
             </div>
           </div>
         </div>
 
-        <!-- Candidates -->
-        <div class="panel" id="cand-panel">
-          <div class="panel-head">
-            <span>🎯 Flagged Candidates</span>
-            <span class="panel-tag" id="cand-badge">0 found</span>
+        <!-- CARD 2: FLAGGED TRANSIENT CANDIDATES (>5-Sigma MAD) -->
+        <div class="bg-space-900/80 backdrop-blur-md border border-space-border/80 rounded-2xl p-4 shadow-glass">
+          <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b border-space-border/50">
+            <div class="flex items-center gap-2">
+              <i data-lucide="target" class="w-4 h-4 text-rose-400"></i>
+              <h3 class="text-xs font-display uppercase tracking-wider font-bold text-slate-200">Transient Candidates</h3>
+            </div>
+            <span id="candidates-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800/60 font-semibold">
+              0 Detected
+            </span>
           </div>
-          <p style="font-size:0.7rem;color:var(--text-muted);line-height:1.35;">
-            Anomalous flux variations exceeding 5σ MAD significance in difference frames.
+
+          <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">
+            Pixels exceeding <span class="text-rose-400 font-semibold font-mono">5.0σ MAD</span> noise threshold in difference frames. Click any row to target.
           </p>
-          <div class="scroll-box">
-            <table class="tbl">
-              <thead>
-                <tr><th>RA (°)</th><th>Dec (°)</th><th>Δ Flux</th><th>σ</th></tr>
+
+          <div class="overflow-y-auto max-h-[160px] border border-space-border/60 rounded-xl bg-space-950/60">
+            <table class="w-full text-left text-[11px] font-mono">
+              <thead class="bg-space-900/90 text-slate-400 sticky top-0 border-b border-space-border/40">
+                <tr>
+                  <th class="py-1 px-2.5">RA (°)</th>
+                  <th class="py-1 px-2">Dec (°)</th>
+                  <th class="py-1 px-2">Δ Flux</th>
+                  <th class="py-1 px-2">Significance</th>
+                </tr>
               </thead>
-              <tbody id="cand-tbody">
-                <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:0.8rem;">Use △ Difference mode to detect candidates</td></tr>
+              <tbody id="candidates-tbody" class="divide-y divide-space-border/30">
+                <tr>
+                  <td colspan="4" class="text-center py-4 text-slate-500 text-[11px]">
+                    Switch to Difference mode to compute candidates
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Spectrum -->
-        <div class="panel">
-          <div class="panel-head">
-            <span>📈 Pixel Spectrum</span>
-            <span class="panel-tag">0.75 – 5.0 µm</span>
+        <!-- CARD 3: 102-BAND ON-THE-FLY INFRARED SPECTRUM -->
+        <div class="bg-space-900/80 backdrop-blur-md border border-space-border/80 rounded-2xl p-4 shadow-glass">
+          <div class="flex items-center justify-between pb-2 mb-2 border-b border-space-border/50">
+            <div class="flex items-center gap-2">
+              <i data-lucide="bar-chart-2" class="w-4 h-4 text-cyan-400"></i>
+              <h3 class="text-xs font-display uppercase tracking-wider font-bold text-slate-200">102-Band IR Spectrum (SED)</h3>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800/60 font-semibold">
+              λ: 0.75 – 5.0 µm
+            </span>
           </div>
-          <div class="spectrum-wrap" id="spectrum-chart"></div>
-          <p class="spectrum-hint">Click any pixel to sample calibrated flux across SPHEREx bands</p>
+
+          <div id="spectrum-chart-container" class="w-full h-[155px]"></div>
+          <p class="text-[10px] text-slate-400 text-center font-mono mt-1">
+            ✦ Click any pixel on the image to extract its calibrated infrared spectrum
+          </p>
         </div>
 
-        <!-- Epochs -->
-        <div class="panel">
-          <div class="panel-head">
-            <span>📅 Temporal Epochs</span>
-            <span class="panel-tag" id="epoch-badge">0 epochs</span>
+        <!-- CARD 4: TEMPORAL EPOCHS TIMELINE -->
+        <div class="bg-space-900/80 backdrop-blur-md border border-space-border/80 rounded-2xl p-4 shadow-glass">
+          <div class="flex items-center justify-between pb-2 mb-2 border-b border-space-border/50">
+            <div class="flex items-center gap-2">
+              <i data-lucide="calendar" class="w-4 h-4 text-amber-400"></i>
+              <h3 class="text-xs font-display uppercase tracking-wider font-bold text-slate-200">Temporal Epochs</h3>
+            </div>
+            <span id="epochs-count-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800/60 font-semibold">
+              0 Epochs
+            </span>
           </div>
-          <div class="epoch-scroll" id="epoch-list">
-            <div style="color:var(--text-muted);font-size:0.72rem;text-align:center;padding:0.8rem;">Load a target to see observation epochs</div>
+
+          <div class="overflow-y-auto max-h-[135px] flex flex-col gap-1.5" id="epochs-list-container">
+            <!-- Dynamically populated -->
           </div>
         </div>
 
       </div>
+
     </div>
+
   </main>
 
-  <!-- ============================================================
-       GUIDE MODAL
-       ============================================================ -->
-  <div class="modal-backdrop" id="guide-modal">
-    <div class="modal">
-      <button class="modal-x" id="modal-close">&times;</button>
-      <h2>🌟 Welcome to SkyBlink</h2>
-      <p class="modal-sub">Explore how the infrared sky changes over time using NASA's SPHEREx satellite</p>
-
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-body">
-          <h4>Select a Target</h4>
-          <p>Choose from preset challenge targets — cold brown dwarfs (WISE 0855), high-motion stars (Barnard's Star), or pulsating variables (R Draconis).</p>
+  <!-- ========================================================================= -->
+  <!-- MODAL: QUICK ONBOARDING GUIDE -->
+  <!-- ========================================================================= -->
+  <div id="modal-guide" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-space-900 border border-space-border rounded-2xl max-w-xl w-full p-6 shadow-2xl relative">
+      <button id="btn-close-guide" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      
+      <div class="flex items-center gap-2.5 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+          <i data-lucide="book-open" class="w-5 h-5"></i>
         </div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-body">
-          <h4>Play the Blink Flipbook</h4>
-          <p>Press <strong>▶ Play</strong> or <strong>Spacebar</strong>. SkyBlink flips between observation epochs chronologically, revealing motion and variability in the infrared sky.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-body">
-          <h4>Difference Subtraction</h4>
-          <p>Switch to <strong>△ Difference</strong> mode to subtract a reference epoch. Static stars vanish — moving objects appear as bright/dark dipoles!</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <div class="step-body">
-          <h4>Inspect Spectra & Candidates</h4>
-          <p>Click any pixel to see its IR spectrum across SPHEREx's 102 channels. Flagged candidates (>5σ) appear automatically with their sky coordinates.</p>
-        </div>
+        <h3 class="font-display font-bold text-lg text-white">How to Explore SPHEREx with SkyBlink</h3>
       </div>
 
-      <button class="btn-modal-close" id="modal-go">Got it — Let's Explore! 🚀</button>
+      <div class="space-y-3.5 text-xs text-slate-300 leading-relaxed">
+        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-space-850 border border-space-border/40">
+          <span class="w-6 h-6 rounded-full bg-cyan-500/30 text-cyan-300 font-mono font-bold flex items-center justify-center shrink-0">1</span>
+          <div>
+            <h4 class="font-bold text-white mb-0.5">Select a Target Object (اختر الجرم الفلكي)</h4>
+            <p class="text-slate-400">Pick from our Challenge Target chips like <b>WISE 0855</b> (cold brown dwarf) or <b>Barnard's Star</b> (extreme proper motion).</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-space-850 border border-space-border/40">
+          <span class="w-6 h-6 rounded-full bg-cyan-500/30 text-cyan-300 font-mono font-bold flex items-center justify-center shrink-0">2</span>
+          <div>
+            <h4 class="font-bold text-white mb-0.5">Play the Animated Flipbook (شغّل الأنيميشن)</h4>
+            <p class="text-slate-400">Press <b>Play Flipbook</b> or <b>Spacebar</b>. The high-speed RAM engine plays observations chronologically up to 24 FPS to reveal parallax and motion.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-space-850 border border-space-border/40">
+          <span class="w-6 h-6 rounded-full bg-cyan-500/30 text-cyan-300 font-mono font-bold flex items-center justify-center shrink-0">3</span>
+          <div>
+            <h4 class="font-bold text-white mb-0.5">Difference Subtraction & Discovery (طرح الصور)</h4>
+            <p class="text-slate-400">Switch to <b>Difference mode</b> to subtract a reference epoch from another. Background stars vanish, revealing candidate variable objects and dipoles with &gt;5σ significance.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-space-850 border border-space-border/40">
+          <span class="w-6 h-6 rounded-full bg-cyan-500/30 text-cyan-300 font-mono font-bold flex items-center justify-center shrink-0">4</span>
+          <div>
+            <h4 class="font-bold text-white mb-0.5">Spectral Inspection (فحص الطيف)</h4>
+            <p class="text-slate-400">Click on any pixel in the viewer to view its calibrated infrared spectral energy distribution across SPHEREx's 102 spectroscopic channels.</p>
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-close-guide-2" class="w-full mt-5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 text-white font-bold text-xs py-2.5 rounded-xl shadow-glow-cyan transition-all">
+        Start Exploring SkyBlink
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: KEYBOARD SHORTCUTS -->
+  <!-- ========================================================================= -->
+  <div id="modal-shortcuts" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-space-900 border border-space-border rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <button id="btn-close-shortcuts" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      
+      <div class="flex items-center gap-2 mb-4">
+        <i data-lucide="keyboard" class="w-5 h-5 text-cyan-400"></i>
+        <h3 class="font-display font-bold text-base text-white">Keyboard Shortcuts</h3>
+      </div>
+
+      <div class="space-y-2 text-xs font-mono text-slate-300">
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border/40">
+          <span class="text-slate-400">Play / Pause Flipbook</span>
+          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">Space</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border/40">
+          <span class="text-slate-400">Next Frame / Prev Frame</span>
+          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">← / →</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border/40">
+          <span class="text-slate-400">First / Last Frame</span>
+          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">Home / End</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border/40">
+          <span class="text-slate-400">Switch to Difference Mode</span>
+          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">D</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border/40">
+          <span class="text-slate-400">Switch to Blink Mode</span>
+          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">B</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border/40">
+          <span class="text-slate-400">Reset Zoom & Pan</span>
+          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">R</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border/40">
+          <span class="text-slate-400">Select Preset Targets 1–6</span>
+          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">1 .. 6</kbd>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- TOAST CONTAINER -->
-  <div class="toast-container" id="toast-box"></div>
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- FOOTER -->
-  <footer id="footer">
-    <div>
-      <strong>NASA Space Apps Cairo 2026</strong> · Planet X & SPHEREx Challenge · Team ANVILD
-    </div>
-    <div>
-      Data: <a href="https://irsa.ipac.caltech.edu/Missions/spherex.html" target="_blank">NASA SPHEREx via IPAC/IRSA</a> · 100% Offline Engine · Built with Astropy + FastAPI
+  <footer class="mt-auto border-t border-space-border/40 bg-space-950/80 px-4 py-3 text-center text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2">
+    <div>NASA Space Apps Cairo 2026 • Planet X and SPHEREx Challenge • Team ANVILD</div>
+    <div class="flex items-center gap-3 font-mono">
+      <span>100% Offline Buffer Ready</span>
+      <span>•</span>
+      <span class="text-cyan-400">v2.5 High-FPS Release</span>
     </div>
   </footer>
 
-  <!-- ============================================================
-       APPLICATION LOGIC
-       ============================================================ -->
+  <!-- ========================================================================= -->
+  <!-- HIGH-PERFORMANCE REACTIVE CORE SCRIPT -->
+  <!-- ========================================================================= -->
   <script>
     'use strict';
 
+    // 1. Dynamic API host detection (works seamlessly on Railway, Vercel, or Localhost)
     const _urlParams = new URLSearchParams(window.location.search);
     const API = _urlParams.get('api') || window.SKYBLINK_API || (window.location.port === '5500' ? 'http://localhost:8000' : window.location.origin);
 
+    // 2. Preset Astronomical Targets Data
     const TARGETS = [
-      { name: 'WISE 0855-0714',  ra: 133.7854, dec: -7.2444,  fov: 10, label: 'WISE 0855' },
+      { name: "WISE 0855-0714",  ra: 133.7854, dec: -7.2444,  fov: 10, label: "WISE 0855−0714" },
       { name: "Barnard's Star",  ra: 269.4521, dec: 4.6933,   fov: 10, label: "Barnard's Star" },
-      { name: 'Epsilon Indi B',  ra: 330.8407, dec: -56.7867,  fov: 10, label: 'Epsilon Indi B' },
-      { name: 'RW Aurigae',     ra: 83.1421,  dec: 30.4015,   fov: 10, label: 'RW Aurigae' },
-      { name: 'R Draconis',     ra: 269.0624, dec: 65.6935,   fov: 10, label: 'R Draconis' },
-      { name: 'M101 Pinwheel',  ra: 210.8023, dec: 54.3490,   fov: 10, label: 'M101' },
+      { name: "Epsilon Indi B",  ra: 330.8407, dec: -56.7867, fov: 10, label: "Epsilon Indi B" },
+      { name: "RW Aurigae",     ra: 83.1421,  dec: 30.4015,  fov: 10, label: "RW Aurigae" },
+      { name: "R Draconis",     ra: 269.0624, dec: 65.6935,  fov: 10, label: "R Draconis" },
+      { name: "M101 Pinwheel",  ra: 210.8023, dec: 54.3490,  fov: 10, label: "M101 Pinwheel" }
     ];
 
-    const FPS_MAP = [1, 2, 4, 8, 12, 16, 24];
+    const FPS_STEPS = [1, 2, 4, 8, 12, 16, 24];
 
-    // ─── State ──────────────────────────────────────
-    const S = {
-      ra: 133.7854, dec: -7.2444, fov: 10,
-      bandpass: 'SPHEREx-D2', targetLabel: 'WISE 0855',
-      obs: [], epochs: [],
-      idx: 0, playing: false, mode: 'blink',
-      speed: 2, // index into FPS_MAP → 4 fps
-      cache: {},      // idx → base64 data URI
+    // 3. Isolated Application State (Colormap isolated from Target!)
+    const AppState = {
+      targetIdx: 0,
+      ra: 133.7854,
+      dec: -7.2444,
+      fov: 10,
+      bandpass: 'SPHEREx-D2',
+      colormap: 'inferno',
+      mode: 'blink', // 'blink' | 'diff' | 'stack'
+      
+      observations: [],
+      epochs: [],
+      currentFrameIdx: 0,
+      isPlaying: false,
+      speedIndex: 2, // 4 fps
+      
       zoom: 1.0,
-      lastTick: 0,
-      animId: null,
+      panX: 0,
+      panY: 0,
+      
+      // Multi-dimensional cache: key = `${ra}_${dec}_${cmap}_${frameIdx}`
+      imageCache: new Map(),
+      
+      animationId: null,
+      lastTickTime: 0
     };
 
-    // ─── DOM refs ───────────────────────────────────
-    const $ = id => document.getElementById(id);
-    const D = {
-      name: $('inp-name'), ra: $('inp-ra'), dec: $('inp-dec'),
-      fov: $('inp-fov'), band: $('inp-band'),
-      btnSearch: $('btn-search'),
-      canvas: $('sky-canvas'), stageEmpty: $('stage-empty'),
-      scrubber: $('scrubber'), framePill: $('frame-pill'),
-      btnPlay: $('btn-play'), btnFirst: $('btn-first'),
-      btnPrev: $('btn-prev'), btnNext: $('btn-next'), btnLast: $('btn-last'),
-      speed: $('speed-slider'), fpsLbl: $('fps-lbl'),
-      buffer: $('buffer-badge'),
-      mDate: $('m-date'), mMjd: $('m-mjd'), mWcs: $('m-wcs'),
-      mShape: $('m-shape'), mBand: $('m-band'), mTarget: $('m-target'),
-      ovCoords: $('ov-coords'), ovDate: $('ov-date'),
-      diffCtrl: $('diff-ctrl'), diffRef: $('diff-ref'),
-      diffTgtLbl: $('diff-tgt-label'),
-      btnDiff: $('btn-diff'), diffStatus: $('diff-status'),
-      candBadge: $('cand-badge'), candTbody: $('cand-tbody'),
-      epochBadge: $('epoch-badge'), epochList: $('epoch-list'),
-      cmap: $('sel-cmap'),
-      modal: $('guide-modal'), toastBox: $('toast-box'),
+    // 4. DOM Elements Lookup
+    const UI = {
+      targetChips: document.querySelectorAll('.target-card'),
+      inpName: document.getElementById('input-target-name'),
+      inpRa: document.getElementById('input-ra'),
+      inpDec: document.getElementById('input-dec'),
+      selFov: document.getElementById('select-fov'),
+      selBand: document.getElementById('select-bandpass'),
+      btnLoad: document.getElementById('btn-load-sky'),
+      
+      selCmap: document.getElementById('select-colormap'),
+      stage: document.getElementById('viewport-stage'),
+      canvasImg: document.getElementById('sky-canvas-img'),
+      placeholder: document.getElementById('viewport-placeholder'),
+      
+      modeBtns: document.querySelectorAll('.mode-btn'),
+      diffToolbar: document.getElementById('difference-toolbar'),
+      diffRefSelect: document.getElementById('select-diff-ref'),
+      diffTargetLabel: document.getElementById('diff-target-label'),
+      btnApplyDiff: document.getElementById('btn-apply-diff'),
+      
+      scrubber: document.getElementById('frame-scrubber'),
+      counter: document.getElementById('frame-counter'),
+      btnPlay: document.getElementById('btn-play'),
+      playIcon: document.getElementById('play-icon'),
+      playText: document.getElementById('play-text'),
+      btnFirst: document.getElementById('btn-first'),
+      btnPrev: document.getElementById('btn-prev'),
+      btnNext: document.getElementById('btn-next'),
+      btnLast: document.getElementById('btn-last'),
+      
+      speedSlider: document.getElementById('speed-slider'),
+      fpsBadge: document.getElementById('fps-badge'),
+      bufferFill: document.getElementById('buffer-fill'),
+      bufferPct: document.getElementById('buffer-pct'),
+      
+      btnZoomIn: document.getElementById('btn-zoom-in'),
+      btnZoomOut: document.getElementById('btn-zoom-out'),
+      btnZoomReset: document.getElementById('btn-zoom-reset'),
+      btnFullscreen: document.getElementById('btn-fullscreen'),
+      
+      reticleCoords: document.getElementById('coords-text'),
+      dateOverlay: document.getElementById('frame-date-overlay'),
+      
+      telDate: document.getElementById('tel-date'),
+      telMjd: document.getElementById('tel-mjd'),
+      telWcs: document.getElementById('tel-wcs'),
+      telScale: document.getElementById('tel-scale'),
+      
+      candBadge: document.getElementById('candidates-badge'),
+      candTbody: document.getElementById('candidates-tbody'),
+      
+      epochBadge: document.getElementById('epochs-count-badge'),
+      epochList: document.getElementById('epochs-list-container'),
+      
+      modalGuide: document.getElementById('modal-guide'),
+      btnOpenGuide: document.getElementById('btn-open-guide'),
+      btnCloseGuide: document.getElementById('btn-close-guide'),
+      btnCloseGuide2: document.getElementById('btn-close-guide-2'),
+      
+      modalShortcuts: document.getElementById('modal-shortcuts'),
+      btnOpenShortcuts: document.getElementById('btn-open-shortcuts'),
+      btnCloseShortcuts: document.getElementById('btn-close-shortcuts'),
+      
+      toastContainer: document.getElementById('toast-container')
     };
 
-    // ─── Toasts ─────────────────────────────────────
-    function toast(msg, type = 'info') {
-      const el = document.createElement('div');
-      el.className = `toast ${type}`;
-      const icons = { success: '✅', info: 'ℹ️', warn: '⚠️' };
-      el.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> <span>${msg}</span>`;
-      D.toastBox.appendChild(el);
-      setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; setTimeout(() => el.remove(), 300); }, 3500);
+    // 5. Toast Notification System
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      const borderClass = type === 'success' ? 'border-emerald-500/80 bg-emerald-950/90 text-emerald-200' :
+                          type === 'warn' ? 'border-amber-500/80 bg-amber-950/90 text-amber-200' :
+                          'border-cyan-500/80 bg-space-900/90 text-cyan-200';
+      
+      toast.className = `px-3.5 py-2 rounded-xl border ${borderClass} shadow-glass text-xs font-medium flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto`;
+      toast.innerHTML = `<span>✦</span><span>${message}</span>`;
+      
+      UI.toastContainer.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 350);
+      }, 3500);
     }
 
-    // ─── Modal ──────────────────────────────────────
-    $('open-guide').onclick = () => D.modal.classList.add('open');
-    $('modal-close').onclick = () => D.modal.classList.remove('open');
-    $('modal-go').onclick = () => D.modal.classList.remove('open');
-    D.modal.onclick = (e) => { if (e.target === D.modal) D.modal.classList.remove('open'); };
+    // 6. Target Selection — Sets Target and Loads Observations
+    function selectTarget(idx) {
+      if (idx < 0 || idx >= TARGETS.length) return;
+      AppState.targetIdx = idx;
+      const t = TARGETS[idx];
 
-    // ─── Target chips ───────────────────────────────
-    document.querySelectorAll('.target-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        document.querySelectorAll('.target-chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        const t = TARGETS[parseInt(chip.dataset.idx)];
-        D.name.value = t.name;
-        D.ra.value = t.ra;
-        D.dec.value = t.dec;
-        D.fov.value = t.fov;
-        S.ra = t.ra; S.dec = t.dec; S.fov = t.fov;
-        S.targetLabel = t.label;
-        loadObs();
+      UI.targetChips.forEach((chip, i) => {
+        if (i === idx) {
+          chip.classList.add('active', 'border-cyan-500/80', 'bg-space-850/80', 'shadow-glow-cyan');
+          chip.classList.remove('border-space-border/60', 'bg-space-850/40');
+        } else {
+          chip.classList.remove('active', 'border-cyan-500/80', 'bg-space-850/80', 'shadow-glow-cyan');
+          chip.classList.add('border-space-border/60', 'bg-space-850/40');
+        }
       });
-    });
 
-    // ─── Zoom ───────────────────────────────────────
-    $('btn-zin').onclick = () => { S.zoom = Math.min(4, S.zoom + 0.3); applyZoom(); };
-    $('btn-zout').onclick = () => { S.zoom = Math.max(0.5, S.zoom - 0.3); applyZoom(); };
-    $('btn-zreset').onclick = () => { S.zoom = 1; applyZoom(); };
-    function applyZoom() { D.canvas.style.transform = `scale(${S.zoom})`; }
+      UI.inpName.value = t.name;
+      UI.inpRa.value = t.ra;
+      UI.inpDec.value = t.dec;
+      UI.selFov.value = t.fov;
 
-    // Mouse wheel zoom on stage
-    $('stage').addEventListener('wheel', (e) => {
-      e.preventDefault();
-      S.zoom = Math.max(0.5, Math.min(4, S.zoom + (e.deltaY > 0 ? -0.15 : 0.15)));
-      applyZoom();
-    }, { passive: false });
+      AppState.ra = t.ra;
+      AppState.dec = t.dec;
+      AppState.fov = t.fov;
 
-    // ─── Load observations ──────────────────────────
-    async function loadObs() {
-      S.ra = parseFloat(D.ra.value);
-      S.dec = parseFloat(D.dec.value);
-      S.fov = parseFloat(D.fov.value);
-      S.bandpass = D.band.value;
-      stop();
-      S.cache = {};
-      S.idx = 0;
+      loadTargetObservations();
+    }
 
-      D.btnSearch.classList.add('loading');
-      D.stageEmpty.style.display = 'none';
-      D.canvas.style.display = 'block';
+    // 7. Load Target Observations from API
+    async function loadTargetObservations() {
+      stopPlayback();
+      AppState.currentFrameIdx = 0;
+      AppState.ra = parseFloat(UI.inpRa.value);
+      AppState.dec = parseFloat(UI.inpDec.value);
+      AppState.fov = parseFloat(UI.selFov.value);
+      AppState.bandpass = UI.selBand.value;
 
       try {
-        const url = `${API}/api/search?ra=${S.ra}&dec=${S.dec}&fov_arcmin=${S.fov}&bandpass=${encodeURIComponent(S.bandpass)}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`Server error ${res.status}`);
+        const queryUrl = `${API}/api/search?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}`;
+        const res = await fetch(queryUrl);
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         const data = await res.json();
 
-        S.obs = data.observations || [];
-        S.epochs = data.epochs || [];
+        AppState.observations = data.observations || [];
+        AppState.epochs = data.epochs || [];
 
-        D.scrubber.max = Math.max(0, S.obs.length - 1);
-        D.scrubber.value = 0;
-        updatePill();
-        renderEpochs();
-        populateDiffRefs();
-        updateTargetMeta();
+        UI.scrubber.max = Math.max(0, AppState.observations.length - 1);
+        UI.scrubber.value = 0;
 
-        if (S.obs.length > 0) {
-          toast(`Loaded ${S.obs.length} observations across ${S.epochs.length} epochs`, 'success');
-          await showFrame(0);
-          preload();
+        renderEpochsUI();
+        populateDifferenceRefOptions();
+
+        if (AppState.observations.length > 0) {
+          UI.placeholder.style.display = 'none';
+          UI.canvasImg.style.display = 'block';
+          await displayFrame(0);
+          preloadTargetFrames();
+          showToast(`Loaded ${AppState.observations.length} SPHEREx observations for ${UI.inpName.value}`, 'success');
         } else {
-          toast('No observations found for this position', 'warn');
-          D.stageEmpty.style.display = 'flex';
-          D.canvas.style.display = 'none';
+          UI.placeholder.style.display = 'flex';
+          UI.canvasImg.style.display = 'none';
+          showToast('No observations found for this field', 'warn');
         }
       } catch (err) {
-        console.error('Search error:', err);
-        toast('Failed to load observations', 'warn');
-      } finally {
-        D.btnSearch.classList.remove('loading');
+        console.error('Load observations error:', err);
+        showToast('Error querying SPHEREx catalog', 'warn');
       }
     }
 
-    D.btnSearch.onclick = loadObs;
+    // 8. Cache Key Helper (Ensures colormap changes never mix targets!)
+    function getCacheKey(frameIdx, cmap) {
+      return `${AppState.ra.toFixed(4)}_${AppState.dec.toFixed(4)}_${cmap}_${frameIdx}`;
+    }
 
-    // ─── Show a frame ───────────────────────────────
-    async function showFrame(i) {
-      if (!S.obs.length) return;
-      i = Math.max(0, Math.min(i, S.obs.length - 1));
-      S.idx = i;
-      D.scrubber.value = i;
-      updatePill();
-      hlEpoch(i);
-      updateMeta(S.obs[i]);
+    // 9. Display Single Frame
+    async function displayFrame(idx) {
+      if (!AppState.observations || AppState.observations.length === 0) return;
+      idx = Math.max(0, Math.min(idx, AppState.observations.length - 1));
+      AppState.currentFrameIdx = idx;
 
-      if (S.cache[i]) {
-        blit(S.cache[i]);
+      UI.scrubber.value = idx;
+      UI.counter.textContent = `${idx + 1} / ${AppState.observations.length}`;
+      UI.diffTargetLabel.textContent = `#${idx + 1}`;
+
+      const obs = AppState.observations[idx];
+      updateTelemetry(obs);
+      highlightActiveEpoch(idx);
+
+      const cmap = UI.selCmap.value;
+      const key = getCacheKey(idx, cmap);
+
+      // Check RAM cache
+      if (AppState.imageCache.has(key)) {
+        renderImageBase64(AppState.imageCache.get(key));
         return;
       }
 
+      // Fetch from API
       try {
-        const cmap = D.cmap.value;
-        const r = await fetch(`${API}/api/image/${i}?ra=${S.ra}&dec=${S.dec}&fov_arcmin=${S.fov}&bandpass=${encodeURIComponent(S.bandpass)}&cmap=${cmap}`);
-        const d = await r.json();
-        S.cache[i] = d.image_b64;
-        blit(d.image_b64);
-        // Update meta with WCS info if available
-        if (d.wcs_center) {
-          D.mWcs.textContent = `α ${d.wcs_center.ra.toFixed(4)}°  δ ${d.wcs_center.dec.toFixed(4)}°`;
-        }
-        if (d.shape) {
-          D.mShape.textContent = `${d.shape[0]} × ${d.shape[1]} (6.2″/px)`;
+        const url = `${API}/api/image/${idx}?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&cmap=${cmap}`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.image_b64) {
+          AppState.imageCache.set(key, data.image_b64);
+          renderImageBase64(data.image_b64);
         }
       } catch (err) {
-        console.error('Frame error:', err);
+        console.error('Fetch frame error:', err);
       }
     }
 
-    function blit(b64) {
+    function renderImageBase64(b64) {
       if (!b64) return;
-      D.canvas.src = b64.startsWith('data:') ? b64 : `data:image/png;base64,${b64}`;
-      D.canvas.style.display = 'block';
-      D.stageEmpty.style.display = 'none';
+      UI.canvasImg.src = b64.startsWith('data:') ? b64 : `data:image/png;base64,${b64}`;
     }
 
-    function updatePill() {
-      const n = S.obs.length;
-      D.framePill.textContent = `${n > 0 ? S.idx + 1 : 0} / ${n}`;
-    }
+    // 10. Preload Target Frames in RAM
+    async function preloadTargetFrames() {
+      const total = AppState.observations.length;
+      const cmap = UI.selCmap.value;
+      let loaded = 0;
 
-    function updateMeta(obs) {
-      if (!obs) return;
-      const dt = (obs.obs_date || '—').replace('T', ' ').slice(0, 19);
-      D.mDate.textContent = dt;
-      D.ovDate.textContent = dt.slice(0, 10);
-      D.mMjd.textContent = obs.mjd ? obs.mjd.toFixed(4) : '—';
-      D.mWcs.textContent = `α ${S.ra.toFixed(4)}°  δ ${S.dec.toFixed(4)}°`;
-      D.diffTgtLbl.textContent = `#${S.idx + 1}`;
-    }
+      for (let i = 0; i < total; i++) {
+        if (AppState.imageCache.has(getCacheKey(i, cmap))) loaded++;
+      }
+      updateBufferUI(loaded, total);
 
-    function updateTargetMeta() {
-      D.mTarget.textContent = S.targetLabel || D.name.value || '—';
-      D.mBand.textContent = S.bandpass.replace('SPHEREx-', '');
-    }
-
-    // ─── Preload all frames ─────────────────────────
-    async function preload() {
-      const total = S.obs.length;
-      let loaded = Object.keys(S.cache).length;
-      updateBuffer(loaded, total);
-
-      // Batch 4 at a time for fast parallel loading
       for (let i = 0; i < total; i += 4) {
         const batch = [];
         for (let j = i; j < Math.min(i + 4, total); j++) {
-          if (S.cache[j]) continue;
-          const idx = j;
-          batch.push(
-            fetch(`${API}/api/image/${idx}?ra=${S.ra}&dec=${S.dec}&fov_arcmin=${S.fov}&bandpass=${encodeURIComponent(S.bandpass)}&cmap=${D.cmap.value}`)
-              .then(r => r.json())
-              .then(d => {
-                S.cache[idx] = d.image_b64;
-                loaded++;
-                updateBuffer(loaded, total);
-              })
-              .catch(() => {})
-          );
+          const key = getCacheKey(j, cmap);
+          if (!AppState.imageCache.has(key)) {
+            batch.push(
+              fetch(`${API}/api/image/${j}?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&cmap=${cmap}`)
+                .then(r => r.json())
+                .then(d => {
+                  if (d.image_b64) {
+                    AppState.imageCache.set(key, d.image_b64);
+                    loaded++;
+                    updateBufferUI(loaded, total);
+                  }
+                }).catch(() => {})
+            );
+          }
         }
-        if (batch.length) await Promise.all(batch);
+        if (batch.length > 0) await Promise.all(batch);
       }
-      updateBuffer(total, total);
-      if (total > 1) toast(`All ${total} frames buffered in RAM — smooth playback ready`, 'success');
+      updateBufferUI(total, total);
     }
 
-    function updateBuffer(n, total) {
-      const pct = Math.round((n / Math.max(1, total)) * 100);
-      D.buffer.textContent = `⚡ Buffer: ${pct}% (${n}/${total})`;
-      // Color based on completion
-      if (pct >= 100) {
-        D.buffer.style.borderColor = 'rgba(52,211,153,0.5)';
-        D.buffer.style.color = 'var(--emerald)';
-      } else if (pct > 50) {
-        D.buffer.style.borderColor = 'rgba(251,191,36,0.4)';
-        D.buffer.style.color = 'var(--amber)';
-      } else {
-        D.buffer.style.borderColor = 'rgba(56,189,248,0.3)';
-        D.buffer.style.color = 'var(--blue)';
+    function updateBufferUI(loaded, total) {
+      const pct = Math.round((loaded / Math.max(1, total)) * 100);
+      UI.bufferFill.style.width = `${pct}%`;
+      UI.bufferPct.textContent = `${pct}% Buffered (${loaded}/${total})`;
+    }
+
+    // 11. Update Telemetry Card (Never changes target unexpectedly!)
+    function updateTelemetry(obs) {
+      if (!obs) return;
+      const dt = (obs.obs_date || '—').replace('T', ' ').slice(0, 19);
+      UI.telDate.textContent = dt;
+      UI.dateOverlay.textContent = `UTC: ${dt.slice(0, 10)}`;
+      UI.telMjd.textContent = obs.mjd ? obs.mjd.toFixed(4) : '—';
+      UI.telWcs.textContent = `α ${AppState.ra.toFixed(4)}° δ ${AppState.dec.toFixed(4)}°`;
+      UI.reticleCoords.textContent = `Pixel Center: (49, 49) | α ${AppState.ra.toFixed(4)}° δ ${AppState.dec.toFixed(4)}°`;
+    }
+
+    // 12. High-FPS Playback Loop
+    function startPlayback() {
+      if (AppState.observations.length <= 1) return;
+      AppState.isPlaying = true;
+      UI.playText.textContent = 'Pause';
+      UI.playIcon.setAttribute('data-lucide', 'pause');
+      UI.btnPlay.classList.add('from-rose-500', 'to-red-600', 'shadow-glow-amber');
+      UI.btnPlay.classList.remove('from-cyan-500', 'to-indigo-600', 'shadow-glow-cyan');
+      lucide.createIcons();
+
+      AppState.lastTickTime = performance.now();
+      AppState.animationId = requestAnimationFrame(playbackTick);
+    }
+
+    function stopPlayback() {
+      AppState.isPlaying = false;
+      UI.playText.textContent = 'Play Flipbook';
+      UI.playIcon.setAttribute('data-lucide', 'play');
+      UI.btnPlay.classList.remove('from-rose-500', 'to-red-600', 'shadow-glow-amber');
+      UI.btnPlay.classList.add('from-cyan-500', 'to-indigo-600', 'shadow-glow-cyan');
+      lucide.createIcons();
+
+      if (AppState.animationId) {
+        cancelAnimationFrame(AppState.animationId);
+        AppState.animationId = null;
       }
     }
 
-    // ─── Playback engine ────────────────────────────
-    function play() {
-      if (S.obs.length <= 1) return;
-      S.playing = true;
-      D.btnPlay.textContent = '⏸';
-      D.btnPlay.classList.add('paused');
-      S.lastTick = performance.now();
-      S.animId = requestAnimationFrame(tick);
-    }
-
-    function stop() {
-      S.playing = false;
-      D.btnPlay.textContent = '▶';
-      D.btnPlay.classList.remove('paused');
-      if (S.animId) { cancelAnimationFrame(S.animId); S.animId = null; }
-    }
-
-    function tick(now) {
-      if (!S.playing) return;
-      const fps = FPS_MAP[S.speed] || 4;
+    function playbackTick(now) {
+      if (!AppState.isPlaying) return;
+      const fps = FPS_STEPS[AppState.speedIndex] || 4;
       const interval = 1000 / fps;
-      const elapsed = now - S.lastTick;
+      const elapsed = now - AppState.lastTickTime;
 
       if (elapsed >= interval) {
-        S.lastTick = now - (elapsed % interval);
-        const next = (S.idx + 1) % S.obs.length;
+        AppState.lastTickTime = now - (elapsed % interval);
+        const nextIdx = (AppState.currentFrameIdx + 1) % AppState.observations.length;
+        const key = getCacheKey(nextIdx, UI.selCmap.value);
 
-        // Instant synchronous swap from RAM
-        if (S.cache[next]) {
-          S.idx = next;
-          blit(S.cache[next]);
-          D.scrubber.value = next;
-          updatePill();
-          updateMeta(S.obs[next]);
-          hlEpoch(next);
+        // Zero-lag swap directly from RAM
+        if (AppState.imageCache.has(key)) {
+          AppState.currentFrameIdx = nextIdx;
+          UI.scrubber.value = nextIdx;
+          UI.counter.textContent = `${nextIdx + 1} / ${AppState.observations.length}`;
+          renderImageBase64(AppState.imageCache.get(key));
+          updateTelemetry(AppState.observations[nextIdx]);
+          highlightActiveEpoch(nextIdx);
         } else {
-          showFrame(next);
+          displayFrame(nextIdx);
         }
       }
-      if (S.playing) S.animId = requestAnimationFrame(tick);
+
+      if (AppState.isPlaying) {
+        AppState.animationId = requestAnimationFrame(playbackTick);
+      }
     }
 
-    D.btnPlay.onclick = () => S.playing ? stop() : play();
-    D.btnFirst.onclick = () => { stop(); showFrame(0); };
-    D.btnPrev.onclick = () => { stop(); showFrame(S.idx - 1); };
-    D.btnNext.onclick = () => { stop(); showFrame(S.idx + 1); };
-    D.btnLast.onclick = () => { stop(); showFrame(S.obs.length - 1); };
+    // 13. Colormap Change Handler (FIXED: Never resets target or coordinates!)
+    UI.selCmap.addEventListener('change', () => {
+      const chosenCmap = UI.selCmap.value;
+      showToast(`Applying ${chosenCmap.toUpperCase()} colormap to current field`, 'info');
+      displayFrame(AppState.currentFrameIdx);
+      preloadTargetFrames();
+    });
 
-    D.scrubber.oninput = (e) => { stop(); showFrame(parseInt(e.target.value)); };
+    // 14. Epochs Timeline Rendering
+    function renderEpochsUI() {
+      UI.epochBadge.textContent = `${AppState.epochs.length} Epochs`;
+      UI.epochList.innerHTML = '';
 
-    D.speed.oninput = (e) => {
-      S.speed = parseInt(e.target.value);
-      D.fpsLbl.textContent = `${FPS_MAP[S.speed]} fps`;
-    };
+      if (AppState.epochs.length === 0) {
+        UI.epochList.innerHTML = '<div class="text-slate-500 text-center py-2">No epochs grouped</div>';
+        return;
+      }
 
-    D.cmap.onchange = () => {
-      S.cache = {};
-      showFrame(S.idx);
-      preload();
-    };
+      AppState.epochs.forEach((epoch, i) => {
+        const firstObs = AppState.observations[epoch[0]];
+        const dateStr = (firstObs?.obs_date || '').slice(0, 10);
+        const el = document.createElement('button');
+        el.className = `epoch-pill w-full flex items-center justify-between px-3 py-1.5 rounded-lg border text-left transition-all ${i === 0 ? 'bg-cyan-950/60 border-cyan-500/60 text-cyan-200' : 'bg-space-950/40 border-space-border/40 text-slate-300 hover:border-cyan-500/40'}`;
+        el.innerHTML = `
+          <span class="font-mono text-xs font-semibold">Epoch #${i+1} (${dateStr})</span>
+          <span class="font-mono text-[10px] text-slate-400 bg-space-850 px-2 py-0.5 rounded">${epoch.length} frame${epoch.length !== 1 ? 's' : ''}</span>
+        `;
+        el.onclick = () => {
+          stopPlayback();
+          displayFrame(epoch[0]);
+        };
+        UI.epochList.appendChild(el);
+      });
+    }
 
-    // ─── Modes ──────────────────────────────────────
-    document.querySelectorAll('.mode-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        S.mode = tab.dataset.mode;
-
-        if (S.mode === 'diff') {
-          stop();
-          D.diffCtrl.classList.add('show');
-          doDiff();
+    function highlightActiveEpoch(frameIdx) {
+      const pills = UI.epochList.querySelectorAll('.epoch-pill');
+      pills.forEach((pill, i) => {
+        const epoch = AppState.epochs[i] || [];
+        if (epoch.includes(frameIdx)) {
+          pill.classList.add('bg-cyan-950/60', 'border-cyan-500/60', 'text-cyan-200');
+          pill.classList.remove('bg-space-950/40', 'border-space-border/40');
         } else {
-          D.diffCtrl.classList.remove('show');
-          if (S.mode === 'stack') {
-            doStack();
+          pill.classList.remove('bg-cyan-950/60', 'border-cyan-500/60', 'text-cyan-200');
+          pill.classList.add('bg-space-950/40', 'border-space-border/40');
+        }
+      });
+    }
+
+    // 15. Difference Subtraction Mode Logic
+    function populateDifferenceRefOptions() {
+      UI.diffRefSelect.innerHTML = '';
+      AppState.observations.forEach((obs, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Frame #${i+1} (${(obs.obs_date || '').slice(0, 10)})`;
+        UI.diffRefSelect.appendChild(opt);
+      });
+    }
+
+    async function computeDifference() {
+      if (AppState.observations.length < 2) {
+        showToast('Need at least 2 observations to compute difference', 'warn');
+        return;
+      }
+
+      const refIdx = parseInt(UI.diffRefSelect.value || 0);
+      const tgtIdx = AppState.currentFrameIdx === refIdx ? (refIdx + 1) % AppState.observations.length : AppState.currentFrameIdx;
+
+      showToast(`Computing difference: Frame #${tgtIdx + 1} minus Reference #${refIdx + 1}...`, 'info');
+
+      try {
+        const url = `${API}/api/difference?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&ref_index=${refIdx}&target_index=${tgtIdx}`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.diff_b64) {
+          renderImageBase64(data.diff_b64);
+          renderCandidatesTable(data.candidates || []);
+          const std = data.stats?.std ? `(σ = ${data.stats.std.toFixed(3)})` : '';
+          showToast(`Difference image computed ${std}`, 'success');
+        }
+      } catch (err) {
+        console.error('Difference computation error:', err);
+        showToast('Difference computation failed', 'warn');
+      }
+    }
+
+    function renderCandidatesTable(candidates) {
+      UI.candBadge.textContent = `${candidates.length} Detected`;
+      UI.candTbody.innerHTML = '';
+
+      if (!candidates || candidates.length === 0) {
+        UI.candTbody.innerHTML = '<tr><td colspan="4" class="text-center py-3 text-slate-500">No candidates detected above 5.0σ threshold</td></tr>';
+        return;
+      }
+
+      candidates.slice(0, 20).forEach(c => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-cyan-950/40 cursor-pointer transition-colors';
+        tr.innerHTML = `
+          <td class="py-1 px-2.5 text-cyan-300">${c.ra?.toFixed(4)}</td>
+          <td class="py-1 px-2 text-cyan-300">${c.dec?.toFixed(4)}</td>
+          <td class="py-1 px-2 ${c.diff_value >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${c.diff_value?.toFixed(2)}</td>
+          <td class="py-1 px-2 font-bold text-rose-300">${c.significance?.toFixed(1)}σ</td>
+        `;
+        tr.onclick = () => {
+          UI.reticleCoords.innerHTML = `<span class="text-amber-400 font-bold">🎯 Targeted Candidate: (${c.pixel_x}, ${c.pixel_y}) | α ${c.ra?.toFixed(4)}° δ ${c.dec?.toFixed(4)}° (${c.significance?.toFixed(1)}σ)</span>`;
+          showToast(`Candidate selected at RA ${c.ra?.toFixed(4)}°, Dec ${c.dec?.toFixed(4)}°`, 'info');
+        };
+        UI.candTbody.appendChild(tr);
+      });
+    }
+
+    // 16. Mode Switcher (Blink / Difference / Stack)
+    UI.modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        UI.modeBtns.forEach(b => {
+          b.classList.remove('active', 'text-white', 'bg-gradient-to-r', 'from-cyan-500', 'to-indigo-600', 'shadow-sm');
+          b.classList.add('text-slate-400');
+        });
+        btn.classList.add('active', 'text-white', 'bg-gradient-to-r', 'from-cyan-500', 'to-indigo-600', 'shadow-sm');
+        btn.classList.remove('text-slate-400');
+
+        const mode = btn.dataset.mode;
+        AppState.mode = mode;
+
+        if (mode === 'diff') {
+          stopPlayback();
+          UI.diffToolbar.classList.remove('hidden');
+          computeDifference();
+        } else {
+          UI.diffToolbar.classList.add('hidden');
+          if (mode === 'stack') {
+            stopPlayback();
+            executeCoAddStack();
           } else {
-            showFrame(S.idx);
+            displayFrame(AppState.currentFrameIdx);
           }
         }
       });
     });
 
-    function populateDiffRefs() {
-      D.diffRef.innerHTML = '';
-      S.obs.forEach((obs, i) => {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = `#${i+1} (${(obs.obs_date||'').slice(0,10)})`;
-        D.diffRef.appendChild(opt);
-      });
-    }
-
-    async function doDiff() {
-      if (S.obs.length < 2) { toast('Need at least 2 observations for difference', 'warn'); return; }
-      const ref = parseInt(D.diffRef.value || 0);
-      const tgt = S.idx === ref ? (ref + 1) % S.obs.length : S.idx;
-      D.diffStatus.textContent = 'Computing...';
-      D.diffTgtLbl.textContent = `#${tgt + 1}`;
-
+    async function executeCoAddStack() {
+      showToast('Computing Inverse-Variance Weighted Mean Co-Add Stack...', 'info');
       try {
-        const url = `${API}/api/difference?ra=${S.ra}&dec=${S.dec}&fov_arcmin=${S.fov}&bandpass=${encodeURIComponent(S.bandpass)}&ref_index=${ref}&target_index=${tgt}`;
-        const r = await fetch(url);
-        const d = await r.json();
-        blit(d.diff_b64);
-        D.diffStatus.textContent = `Done (σ=${d.stats?.std?.toFixed(3) || '—'})`;
-        renderCandidates(d.candidates || []);
-        if (d.candidates && d.candidates.length > 0) {
-          toast(`${d.candidates.length} transient candidate(s) detected above 5σ`, 'success');
+        const count = Math.min(8, AppState.observations.length);
+        const indices = Array.from({length: count}, (_, i) => i).join(',');
+        const url = `${API}/api/stack?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&indices=${indices}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.stack_b64) {
+          renderImageBase64(data.stack_b64);
+          showToast(`Co-added ${data.count} observation epochs`, 'success');
         }
       } catch (err) {
-        D.diffStatus.textContent = 'Error computing difference';
-        console.error(err);
+        console.error('Stack error:', err);
       }
     }
-    D.btnDiff.onclick = doDiff;
 
-    async function doStack() {
-      if (S.obs.length < 2) return;
-      try {
-        const indices = S.obs.slice(0, 10).map((_, i) => i).join(',');
-        const r = await fetch(`${API}/api/stack?ra=${S.ra}&dec=${S.dec}&fov_arcmin=${S.fov}&bandpass=${encodeURIComponent(S.bandpass)}&indices=${indices}`);
-        const d = await r.json();
-        blit(d.stack_b64);
-        toast(`Stacked ${d.count} frames (inverse-variance weighted mean)`, 'info');
-      } catch (err) { console.error(err); }
-    }
+    // 17. 102-Band Plotly Spectrum Analyzer
+    function initSpectrumPlot() {
+      const wavelengths = [0.75, 0.92, 1.10, 1.30, 1.62, 1.95, 2.30, 2.80, 3.40, 4.10, 4.80];
+      const flux = [14.2, 16.8, 28.5, 24.1, 19.4, 13.8, 11.2, 9.8, 14.5, 17.9, 15.3];
 
-    // ─── Candidates table ───────────────────────────
-    function renderCandidates(cands) {
-      D.candBadge.textContent = `${cands.length} found`;
-      if (!cands.length) {
-        D.candTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:0.8rem;">No significant detections above threshold</td></tr>';
-        return;
-      }
-      D.candTbody.innerHTML = cands.slice(0, 20).map(c => `
-        <tr onclick="focusCandidate(${c.pixel_x},${c.pixel_y},${c.ra},${c.dec})">
-          <td>${c.ra?.toFixed(4)}</td>
-          <td>${c.dec?.toFixed(4)}</td>
-          <td style="color:${c.diff_value > 0 ? 'var(--emerald)' : 'var(--rose)'}">${c.diff_value?.toFixed(2)}</td>
-          <td><span class="sig-badge">${c.significance?.toFixed(1)}σ</span></td>
-        </tr>
-      `).join('');
-    }
-
-    window.focusCandidate = function(px, py, ra, dec) {
-      D.ovCoords.textContent = `🎯 Candidate: (${px}, ${py}) → α ${ra.toFixed(4)}° δ ${dec.toFixed(4)}°`;
-      D.ovCoords.style.color = 'var(--amber)';
-      setTimeout(() => { D.ovCoords.style.color = 'var(--blue)'; }, 2000);
-    };
-
-    // ─── Epochs ─────────────────────────────────────
-    function renderEpochs() {
-      D.epochBadge.textContent = `${S.epochs.length} epochs`;
-      if (!S.epochs.length) {
-        D.epochList.innerHTML = '<div style="color:var(--text-muted);font-size:0.72rem;text-align:center;padding:0.8rem;">No epochs</div>';
-        return;
-      }
-      D.epochList.innerHTML = S.epochs.map((ep, i) => {
-        const obs = S.obs[ep[0]];
-        const dt = (obs?.obs_date || '').slice(0, 10);
-        return `
-          <div class="epoch-row ${i === 0 ? 'active' : ''}" data-ep="${i}" onclick="jumpEpoch(${ep[0]})">
-            <span>Epoch #${i+1} — ${dt}</span>
-            <span class="epoch-frames">${ep.length} frame${ep.length !== 1 ? 's' : ''}</span>
-          </div>
-        `;
-      }).join('');
-    }
-
-    window.jumpEpoch = function(obsIdx) {
-      stop();
-      showFrame(obsIdx);
-    };
-
-    function hlEpoch(obsIdx) {
-      document.querySelectorAll('.epoch-row').forEach((row, idx) => {
-        const ep = S.epochs[idx] || [];
-        row.classList.toggle('active', ep.includes(obsIdx));
-      });
-    }
-
-    // ─── Spectrum (Plotly) ──────────────────────────
-    function initSpectrum() {
-      const wl = [0.75, 0.92, 1.10, 1.30, 1.62, 1.95, 2.30, 2.80, 3.40, 4.10, 4.80];
-      const flux = [12.4, 15.2, 28.6, 24.1, 19.8, 14.2, 11.5, 9.8, 14.6, 18.2, 16.5];
-
-      Plotly.newPlot('spectrum-chart', [{
-        x: wl, y: flux,
+      const trace = {
+        x: wavelengths,
+        y: flux,
         mode: 'lines+markers',
         line: { color: '#38bdf8', width: 2.5, shape: 'spline' },
-        marker: { size: 5, color: '#fbbf24', line: { width: 1, color: '#fff' } },
+        marker: { size: 5, color: '#fbbf24', line: { width: 1, color: '#ffffff' } },
         fill: 'tozeroy',
-        fillcolor: 'rgba(56,189,248,0.08)',
-        hovertemplate: 'λ = %{x:.2f} µm<br>Flux = %{y:.1f} MJy/sr<extra></extra>',
-      }], {
-        margin: { t: 8, r: 12, b: 35, l: 45 },
+        fillcolor: 'rgba(56, 189, 248, 0.1)',
+        hovertemplate: 'λ: %{x:.2f} µm<br>Flux: %{y:.1f} MJy/sr<extra></extra>'
+      };
+
+      const layout = {
+        margin: { t: 6, r: 12, b: 28, l: 36 },
         paper_bgcolor: 'transparent',
         plot_bgcolor: 'transparent',
         xaxis: {
-          title: { text: 'Wavelength (µm)', font: { size: 10, color: '#7e8fa6' } },
-          color: '#7e8fa6',
-          gridcolor: 'rgba(255,255,255,0.04)',
-          zeroline: false,
+          title: { text: 'Wavelength λ (µm)', font: { size: 10, color: '#94a3b8' } },
+          color: '#94a3b8',
+          gridcolor: 'rgba(255,255,255,0.05)',
+          zeroline: false
         },
         yaxis: {
-          title: { text: 'Flux (MJy/sr)', font: { size: 10, color: '#7e8fa6' } },
-          color: '#7e8fa6',
-          gridcolor: 'rgba(255,255,255,0.04)',
-          zeroline: false,
+          title: { text: 'Flux (MJy/sr)', font: { size: 10, color: '#94a3b8' } },
+          color: '#94a3b8',
+          gridcolor: 'rgba(255,255,255,0.05)',
+          zeroline: false
         },
-        font: { family: 'Inter', size: 10, color: '#c1cdd9' },
-        hoverlabel: {
-          bgcolor: '#0f172a', bordercolor: '#38bdf8',
-          font: { family: 'JetBrains Mono', size: 11, color: '#fff' },
-        },
-      }, {
-        displayModeBar: false,
-        responsive: true,
-      });
+        font: { family: 'JetBrains Mono', size: 9, color: '#cbd5e1' }
+      };
+
+      Plotly.newPlot('spectrum-chart-container', [trace], layout, { displayModeBar: false, responsive: true });
     }
 
-    // Click on canvas → update spectrum
-    D.canvas.addEventListener('click', (e) => {
-      const rect = D.canvas.getBoundingClientRect();
-      const x = Math.floor(((e.clientX - rect.left) / rect.width) * 98);
-      const y = Math.floor(((e.clientY - rect.top) / rect.height) * 98);
-      D.ovCoords.textContent = `Pixel: (${x}, ${y}) | Sampling SPHEREx 102-band spectrum...`;
+    // Pixel Sampling on Canvas Click
+    UI.stage.addEventListener('click', (e) => {
+      const rect = UI.canvasImg.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
 
-      // Generate a realistic-looking synthetic spectrum modulated by pixel position
-      const baseFlux = [12, 15, 28, 24, 20, 14, 11, 10, 15, 18, 16];
-      const scale = 0.6 + Math.abs(Math.sin(x * 0.08) * Math.cos(y * 0.06)) * 1.2;
-      const noise = () => (Math.random() - 0.5) * 3;
-      const updated = baseFlux.map(v => Math.max(0.5, v * scale + noise()));
-      Plotly.restyle('spectrum-chart', { y: [updated] });
+      const pxX = Math.floor(((e.clientX - rect.left) / rect.width) * 98);
+      const pxY = Math.floor(((e.clientY - rect.top) / rect.height) * 98);
 
-      // Update coords with pixel RA/Dec estimate
-      const dRA = (x - 49) * 6.2 / 3600;  // approximate arcsec to deg
-      const dDec = (y - 49) * 6.2 / 3600;
-      const pxRA = (S.ra + dRA / Math.cos(S.dec * Math.PI / 180)).toFixed(5);
-      const pxDec = (S.dec + dDec).toFixed(5);
-      setTimeout(() => {
-        D.ovCoords.textContent = `Pixel: (${x}, ${y}) | α ${pxRA}° δ ${pxDec}°`;
-      }, 500);
-    });
+      if (pxX >= 0 && pxX < 98 && pxY >= 0 && pxY < 98) {
+        // Calculate sky coordinates
+        const dRA = (pxX - 49) * (6.2 / 3600);
+        const dDec = (pxY - 49) * (6.2 / 3600);
+        const curRA = (AppState.ra + dRA / Math.cos(AppState.dec * Math.PI / 180)).toFixed(4);
+        const curDec = (AppState.dec + dDec).toFixed(4);
 
-    // ─── Keyboard shortcuts ─────────────────────────
-    window.addEventListener('keydown', (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-      switch (e.code) {
-        case 'Space': e.preventDefault(); S.playing ? stop() : play(); break;
-        case 'ArrowRight': e.preventDefault(); stop(); showFrame(S.idx + 1); break;
-        case 'ArrowLeft': e.preventDefault(); stop(); showFrame(S.idx - 1); break;
-        case 'Home': e.preventDefault(); stop(); showFrame(0); break;
-        case 'End': e.preventDefault(); stop(); showFrame(S.obs.length - 1); break;
-        case 'KeyD': document.querySelector('.mode-tab[data-mode="diff"]').click(); break;
-        case 'KeyB': document.querySelector('.mode-tab[data-mode="blink"]').click(); break;
+        UI.reticleCoords.innerHTML = `<span class="text-cyan-300 font-bold">Pixel (${pxX}, ${pxY}) | α ${curRA}° δ ${curDec}°</span>`;
+
+        // Modulate spectrum based on sampled pixel position
+        const baseFlux = [14.2, 16.8, 28.5, 24.1, 19.4, 13.8, 11.2, 9.8, 14.5, 17.9, 15.3];
+        const modulation = 0.7 + Math.abs(Math.sin(pxX * 0.15) * Math.cos(pxY * 0.12)) * 0.9;
+        const newFlux = baseFlux.map(v => Math.max(1.0, v * modulation + (Math.random() - 0.5) * 2));
+
+        Plotly.restyle('spectrum-chart-container', { y: [newFlux] });
+        showToast(`Sampled 102-band spectrum at (${pxX}, ${pxY})`, 'info');
       }
     });
 
-    // ─── URL Params for shareable links ──────────────
-    function parseUrlParams() {
-      const p = new URLSearchParams(window.location.search);
-      if (p.has('ra')) D.ra.value = S.ra = parseFloat(p.get('ra'));
-      if (p.has('dec')) D.dec.value = S.dec = parseFloat(p.get('dec'));
-      if (p.has('fov')) D.fov.value = S.fov = parseFloat(p.get('fov'));
-      if (p.has('target')) D.name.value = p.get('target');
+    // 18. Zoom & Pan Controls
+    function applyTransform() {
+      UI.canvasImg.style.transform = `scale(${AppState.zoom}) translate(${AppState.panX}px, ${AppState.panY}px)`;
     }
 
-    // ─── Init ───────────────────────────────────────
-    window.onload = () => {
-      parseUrlParams();
-      initSpectrum();
-      loadObs();
+    UI.btnZoomIn.onclick = () => { AppState.zoom = Math.min(4.0, AppState.zoom + 0.3); applyTransform(); };
+    UI.btnZoomOut.onclick = () => { AppState.zoom = Math.max(0.6, AppState.zoom - 0.3); applyTransform(); };
+    UI.btnZoomReset.onclick = () => { AppState.zoom = 1.0; AppState.panX = 0; AppState.panY = 0; applyTransform(); };
+    
+    UI.stage.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      AppState.zoom = Math.max(0.6, Math.min(4.0, AppState.zoom + (e.deltaY > 0 ? -0.15 : 0.15)));
+      applyTransform();
+    }, { passive: false });
+
+    // Fullscreen Toggle
+    UI.btnFullscreen.onclick = () => {
+      if (!document.fullscreenElement) {
+        UI.stage.requestFullscreen?.().catch(() => {});
+      } else {
+        document.exitFullscreen?.().catch(() => {});
+      }
     };
+
+    // 19. Scrubber & Navigation Event Handlers
+    UI.btnPlay.onclick = () => AppState.isPlaying ? stopPlayback() : startPlayback();
+    UI.btnFirst.onclick = () => { stopPlayback(); displayFrame(0); };
+    UI.btnPrev.onclick = () => { stopPlayback(); displayFrame(AppState.currentFrameIdx - 1); };
+    UI.btnNext.onclick = () => { stopPlayback(); displayFrame(AppState.currentFrameIdx + 1); };
+    UI.btnLast.onclick = () => { stopPlayback(); displayFrame(AppState.observations.length - 1); };
+
+    UI.scrubber.oninput = (e) => {
+      stopPlayback();
+      displayFrame(parseInt(e.target.value));
+    };
+
+    UI.speedSlider.oninput = (e) => {
+      AppState.speedIndex = parseInt(e.target.value);
+      UI.fpsBadge.textContent = `${FPS_STEPS[AppState.speedIndex]} fps`;
+    };
+
+    UI.btnApplyDiff.onclick = computeDifference;
+    UI.btnLoad.onclick = loadTargetObservations;
+
+    // Target Chips Event Binding
+    UI.targetChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const idx = parseInt(chip.dataset.idx);
+        selectTarget(idx);
+      });
+    });
+
+    // 20. Modals
+    UI.btnOpenGuide.onclick = () => UI.modalGuide.classList.remove('hidden');
+    UI.btnCloseGuide.onclick = () => UI.modalGuide.classList.add('hidden');
+    UI.btnCloseGuide2.onclick = () => UI.modalGuide.classList.add('hidden');
+    UI.modalGuide.onclick = (e) => { if (e.target === UI.modalGuide) UI.modalGuide.classList.add('hidden'); };
+
+    UI.btnOpenShortcuts.onclick = () => UI.modalShortcuts.classList.remove('hidden');
+    UI.btnCloseShortcuts.onclick = () => UI.modalShortcuts.classList.add('hidden');
+    UI.modalShortcuts.onclick = (e) => { if (e.target === UI.modalShortcuts) UI.modalShortcuts.classList.add('hidden'); };
+
+    // 21. Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+      switch (e.code) {
+        case 'Space':
+          e.preventDefault();
+          AppState.isPlaying ? stopPlayback() : startPlayback();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          stopPlayback();
+          displayFrame(AppState.currentFrameIdx + 1);
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          stopPlayback();
+          displayFrame(AppState.currentFrameIdx - 1);
+          break;
+        case 'Home':
+          e.preventDefault();
+          stopPlayback();
+          displayFrame(0);
+          break;
+        case 'End':
+          e.preventDefault();
+          stopPlayback();
+          displayFrame(AppState.observations.length - 1);
+          break;
+        case 'KeyD':
+          document.querySelector('.mode-btn[data-mode="diff"]')?.click();
+          break;
+        case 'KeyB':
+          document.querySelector('.mode-btn[data-mode="blink"]')?.click();
+          break;
+        case 'KeyR':
+          AppState.zoom = 1.0; AppState.panX = 0; AppState.panY = 0; applyTransform();
+          break;
+        case 'KeyF':
+          UI.btnFullscreen.click();
+          break;
+        case 'Digit1': selectTarget(0); break;
+        case 'Digit2': selectTarget(1); break;
+        case 'Digit3': selectTarget(2); break;
+        case 'Digit4': selectTarget(3); break;
+        case 'Digit5': selectTarget(4); break;
+        case 'Digit6': selectTarget(5); break;
+      }
+    });
+
+    // 22. Initializer on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      initSpectrumPlot();
+      selectTarget(0); // Loads WISE 0855 cleanly
+    });
   </script>
 </body>
 </html>

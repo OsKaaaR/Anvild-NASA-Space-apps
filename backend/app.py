@@ -261,14 +261,17 @@ def get_image(
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Image processing failed: {exc}")
 
-    # WCS center pixel → sky
+    # WCS center pixel → sky (safely anchored to requested target position)
     try:
         h, w = img["shape"]
         center_sky = img["wcs"].pixel_to_world(w / 2, h / 2)
-        wcs_center = {
-            "ra": float(center_sky.ra.deg),
-            "dec": float(center_sky.dec.deg),
-        }
+        sky_ra = float(center_sky.ra.deg)
+        sky_dec = float(center_sky.dec.deg)
+        # Verify it matches requested field (within 0.5 deg)
+        if ((sky_ra - ra)**2 + (sky_dec - dec)**2)**0.5 < 0.5:
+            wcs_center = {"ra": sky_ra, "dec": sky_dec}
+        else:
+            wcs_center = {"ra": ra, "dec": dec}
     except Exception:
         wcs_center = {"ra": ra, "dec": dec}
 
