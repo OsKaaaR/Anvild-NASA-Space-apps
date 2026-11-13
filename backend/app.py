@@ -16,10 +16,20 @@ PROJECT_ROOT = os.path.dirname(BACKEND_DIR)
 sys.path.insert(0, BACKEND_DIR)
 sys.path.insert(0, PROJECT_ROOT)
 
-CACHE_DIR = os.path.join(PROJECT_ROOT, "cache")
 FRONTEND_DIR = os.path.join(PROJECT_ROOT, "frontend")
-os.makedirs(CACHE_DIR, exist_ok=True)
-os.makedirs(FRONTEND_DIR, exist_ok=True)
+
+# Vercel / serverless: filesystem is read-only except /tmp
+_local_cache = os.path.join(PROJECT_ROOT, "cache")
+if os.path.isdir(_local_cache):
+    CACHE_DIR = _local_cache  # local dev — use existing cache with FITS
+else:
+    CACHE_DIR = os.path.join("/tmp", "skyblink_cache")
+
+try:
+    os.makedirs(CACHE_DIR, exist_ok=True)
+except OSError:
+    CACHE_DIR = os.path.join("/tmp", "skyblink_cache")
+    os.makedirs(CACHE_DIR, exist_ok=True)
 
 try:
     import pipeline  # noqa: E402  (populated by pipeline worker)

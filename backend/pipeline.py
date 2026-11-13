@@ -50,14 +50,19 @@ except ImportError:
 # Constants
 # ---------------------------------------------------------------------------
 
-DEFAULT_CACHE_DIR = Path(r"c:\Users\b2sl\OneDrive\Desktop\Skyblink1\cache")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+BUNDLED_CACHE = PROJECT_ROOT / "cache"
+DEFAULT_CACHE_DIR = BUNDLED_CACHE if BUNDLED_CACHE.exists() else Path("/tmp/skyblink_cache")
 DEFAULT_TIMEOUT = 30  # seconds
 
 
 def _ensure_cache(cache_dir: str | Path | None = None) -> Path:
     """Return a Path to cache_dir, creating it if needed."""
     p = Path(cache_dir) if cache_dir else DEFAULT_CACHE_DIR
-    p.mkdir(parents=True, exist_ok=True)
+    try:
+        p.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
     return p
 
 
@@ -175,26 +180,31 @@ def download_fits(url: str, cache_dir: str | Path | None = None) -> str:
     NEVER sends any HTTP request over the internet!
     """
     cache = _ensure_cache(cache_dir)
+    search_dirs = [cache]
+    if BUNDLED_CACHE.exists() and BUNDLED_CACHE not in search_dirs:
+        search_dirs.append(BUNDLED_CACHE)
 
     # 1. Handle local:// URIs
     if url.startswith("local://"):
         fname = url.replace("local://", "")
-        local_f = cache / fname
-        if local_f.exists() and local_f.stat().st_size > 0:
-            return str(local_f)
+        for sdir in search_dirs:
+            local_f = sdir / fname
+            if local_f.exists() and local_f.stat().st_size > 0:
+                return str(local_f)
 
     # 2. Check hashed filename
     url_hash = hashlib.sha256(url.encode()).hexdigest()[:16]
-    local_path = cache / f"spherex_{url_hash}.fits"
-    if local_path.exists() and local_path.stat().st_size > 0:
-        return str(local_path)
+    for sdir in search_dirs:
+        local_path = sdir / f"spherex_{url_hash}.fits"
+        if local_path.exists() and local_path.stat().st_size > 0:
+            return str(local_path)
 
     # 3. Check for any matches by base URL
-    all_fits = sorted(list(cache.glob("*.fits")))
-    if all_fits:
-        idx = abs(hash(url)) % len(all_fits)
-        fallback = all_fits[idx]
-        return str(fallback)
+    for sdir in search_dirs:
+        all_fits = sorted(list(sdir.glob("*.fits")))
+        if all_fits:
+            idx = abs(hash(url)) % len(all_fits)
+            return str(all_fits[idx])
 
     raise RuntimeError("No local FITS files found in cache directory.")
 
