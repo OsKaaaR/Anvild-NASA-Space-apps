@@ -1,0 +1,740 @@
+{
+  "wise_0855": {
+    "name": "WISE 0855-0714",
+    "ra": 133.7854,
+    "dec": -7.2444,
+    "observations": [
+      {
+        "uri": "local://spherex_d71e2824c8003b46.fits",
+        "filename": "spherex_d71e2824c8003b46.fits",
+        "mjd": 60801.106596412035,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_26",
+        "obs_date": "2025-05-06T02:33:29.930"
+      },
+      {
+        "uri": "local://spherex_5ef54c9cab031451.fits",
+        "filename": "spherex_5ef54c9cab031451.fits",
+        "mjd": 60801.108088657405,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_9",
+        "obs_date": "2025-05-06T02:35:38.860"
+      },
+      {
+        "uri": "local://spherex_e41342f71a5aecc3.fits",
+        "filename": "spherex_e41342f71a5aecc3.fits",
+        "mjd": 60801.10958091435,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_28",
+        "obs_date": "2025-05-06T02:37:47.791"
+      },
+      {
+        "uri": "local://spherex_832d3fc8ddac9552.fits",
+        "filename": "spherex_832d3fc8ddac9552.fits",
+        "mjd": 60801.11107315972,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_14",
+        "obs_date": "2025-05-06T02:39:56.721"
+      },
+      {
+        "uri": "local://spherex_929e0821c3f2a21c.fits",
+        "filename": "spherex_929e0821c3f2a21c.fits",
+        "mjd": 60801.445639895835,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_16",
+        "obs_date": "2025-05-06T10:41:43.287"
+      },
+      {
+        "uri": "local://spherex_cca5f17ecca12dcd.fits",
+        "filename": "spherex_cca5f17ecca12dcd.fits",
+        "mjd": 60801.447132141206,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_23",
+        "obs_date": "2025-05-06T10:43:52.217"
+      },
+      {
+        "uri": "local://spherex_e2f826812a31deed.fits",
+        "filename": "spherex_e2f826812a31deed.fits",
+        "mjd": 60801.448624398145,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_27",
+        "obs_date": "2025-05-06T10:46:01.148"
+      },
+      {
+        "uri": "local://spherex_0b08c8d7d3f170ac.fits",
+        "filename": "spherex_0b08c8d7d3f170ac.fits",
+        "mjd": 60801.45011664352,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_0",
+        "obs_date": "2025-05-06T10:48:10.078"
+      },
+      {
+        "uri": "local://spherex_2babe68814e7d583.fits",
+        "filename": "spherex_2babe68814e7d583.fits",
+        "mjd": 60986.24098913195,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_3",
+        "obs_date": "2025-11-07T05:47:01.461"
+      },
+      {
+        "uri": "local://spherex_9a838ce65dd77f20.fits",
+        "filename": "spherex_9a838ce65dd77f20.fits",
+        "mjd": 60986.24248138889,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_17",
+        "obs_date": "2025-11-07T05:49:10.392"
+      },
+      {
+        "uri": "local://spherex_d268098dc4e1f460.fits",
+        "filename": "spherex_d268098dc4e1f460.fits",
+        "mjd": 60986.24397364583,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_24",
+        "obs_date": "2025-11-07T05:51:19.323"
+      },
+      {
+        "uri": "local://spherex_6e6a0d9e0087e9fe.fits",
+        "filename": "spherex_6e6a0d9e0087e9fe.fits",
+        "mjd": 60986.2454658912,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_11",
+        "obs_date": "2025-11-07T05:53:28.253"
+      },
+      {
+        "uri": "local://spherex_d394f8c77c99ee94.fits",
+        "filename": "spherex_d394f8c77c99ee94.fits",
+        "mjd": 60986.376748807874,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_25",
+        "obs_date": "2025-11-07T09:02:31.097"
+      },
+      {
+        "uri": "local://spherex_cbe5937640c4e1b4.fits",
+        "filename": "spherex_cbe5937640c4e1b4.fits",
+        "mjd": 60986.37824107639,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_22",
+        "obs_date": "2025-11-07T09:04:40.029"
+      },
+      {
+        "uri": "local://spherex_13445b67d754f2d1.fits",
+        "filename": "spherex_13445b67d754f2d1.fits",
+        "mjd": 60986.78280202546,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_2",
+        "obs_date": "2025-11-07T18:47:14.095"
+      },
+      {
+        "uri": "local://spherex_75d4f5c78ea99d3e.fits",
+        "filename": "spherex_75d4f5c78ea99d3e.fits",
+        "mjd": 60986.78429429398,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_12",
+        "obs_date": "2025-11-07T18:49:23.027"
+      },
+      {
+        "uri": "local://spherex_8b31529f6f5595e0.fits",
+        "filename": "spherex_8b31529f6f5595e0.fits",
+        "mjd": 60986.78578655093,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_15",
+        "obs_date": "2025-11-07T18:51:31.958"
+      },
+      {
+        "uri": "local://spherex_68da01f91f35e63f.fits",
+        "filename": "spherex_68da01f91f35e63f.fits",
+        "mjd": 60986.7872787963,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_10",
+        "obs_date": "2025-11-07T18:53:40.888"
+      },
+      {
+        "uri": "local://spherex_2c29d141efb053cc.fits",
+        "filename": "spherex_2c29d141efb053cc.fits",
+        "mjd": 60986.85368414352,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_4",
+        "obs_date": "2025-11-07T20:29:18.310"
+      },
+      {
+        "uri": "local://spherex_e76cd7f643bfbf59.fits",
+        "filename": "spherex_e76cd7f643bfbf59.fits",
+        "mjd": 60986.855176400466,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_30",
+        "obs_date": "2025-11-07T20:31:27.241"
+      },
+      {
+        "uri": "local://spherex_c5044d23213a0d44.fits",
+        "filename": "spherex_c5044d23213a0d44.fits",
+        "mjd": 60986.856668657405,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_21",
+        "obs_date": "2025-11-07T20:33:36.172"
+      },
+      {
+        "uri": "local://spherex_48b4efe2ac7101b6.fits",
+        "filename": "spherex_48b4efe2ac7101b6.fits",
+        "mjd": 60986.921244212965,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_7",
+        "obs_date": "2025-11-07T22:06:35.500"
+      },
+      {
+        "uri": "local://spherex_5e64f330354a2710.fits",
+        "filename": "spherex_5e64f330354a2710.fits",
+        "mjd": 60986.922736458335,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_8",
+        "obs_date": "2025-11-07T22:08:44.430"
+      },
+      {
+        "uri": "local://spherex_c49df903c9150e84.fits",
+        "filename": "spherex_c49df903c9150e84.fits",
+        "mjd": 60986.92422871528,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_20",
+        "obs_date": "2025-11-07T22:10:53.361"
+      },
+      {
+        "uri": "local://spherex_766cfee4f680bde8.fits",
+        "filename": "spherex_766cfee4f680bde8.fits",
+        "mjd": 60986.92572097222,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_13",
+        "obs_date": "2025-11-07T22:13:02.292"
+      },
+      {
+        "uri": "local://spherex_3ae7c9e042b7ac87.fits",
+        "filename": "spherex_3ae7c9e042b7ac87.fits",
+        "mjd": 60987.18880195602,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_6",
+        "obs_date": "2025-11-08T04:31:52.489"
+      },
+      {
+        "uri": "local://spherex_9c7e35f540593d13.fits",
+        "filename": "spherex_9c7e35f540593d13.fits",
+        "mjd": 60989.43798542824,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_18",
+        "obs_date": "2025-11-10T10:30:41.941"
+      },
+      {
+        "uri": "local://spherex_e44e01a7785d3e17.fits",
+        "filename": "spherex_e44e01a7785d3e17.fits",
+        "mjd": 61020.80368927083,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_29",
+        "obs_date": "2025-12-11T19:17:18.753"
+      },
+      {
+        "uri": "local://spherex_2c534f43dc3c78d5.fits",
+        "filename": "spherex_2c534f43dc3c78d5.fits",
+        "mjd": 61021.07543956018,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_5",
+        "obs_date": "2025-12-12T01:48:37.978"
+      },
+      {
+        "uri": "local://spherex_a14579b902619515.fits",
+        "filename": "spherex_a14579b902619515.fits",
+        "mjd": 61021.823521238424,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_19",
+        "obs_date": "2025-12-12T19:45:52.235"
+      },
+      {
+        "uri": "local://spherex_10ab739135542d04.fits",
+        "filename": "spherex_10ab739135542d04.fits",
+        "mjd": 61174.28721775463,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "wise_0855_1",
+        "obs_date": "2026-05-14T06:53:35.614"
+      }
+    ]
+  },
+  "barnard": {
+    "name": "Barnard's Star",
+    "ra": 269.4521,
+    "dec": 4.6933,
+    "observations": [
+      {
+        "uri": "local://spherex_0966b173a3d2a253.fits",
+        "filename": "spherex_0966b173a3d2a253.fits",
+        "mjd": 60908.981928622685,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_1",
+        "obs_date": "2025-08-21T23:33:58.633"
+      },
+      {
+        "uri": "local://spherex_5209235cb828379c.fits",
+        "filename": "spherex_5209235cb828379c.fits",
+        "mjd": 60911.49060434028,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_5",
+        "obs_date": "2025-08-24T11:46:28.215"
+      },
+      {
+        "uri": "local://spherex_be0fdc3367abd592.fits",
+        "filename": "spherex_be0fdc3367abd592.fits",
+        "mjd": 60911.492096608796,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_11",
+        "obs_date": "2025-08-24T11:48:37.147"
+      },
+      {
+        "uri": "local://spherex_c26905d9d7153a16.fits",
+        "filename": "spherex_c26905d9d7153a16.fits",
+        "mjd": 60911.493588854166,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_12",
+        "obs_date": "2025-08-24T11:50:46.077"
+      },
+      {
+        "uri": "local://spherex_02bfc72d7714e4c7.fits",
+        "filename": "spherex_02bfc72d7714e4c7.fits",
+        "mjd": 60911.49508112269,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_0",
+        "obs_date": "2025-08-24T11:52:55.009"
+      },
+      {
+        "uri": "local://spherex_1c418deaabef0ab6.fits",
+        "filename": "spherex_1c418deaabef0ab6.fits",
+        "mjd": 60912.7141466088,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_2",
+        "obs_date": "2025-08-25T17:08:22.267"
+      },
+      {
+        "uri": "local://spherex_90f411e9196a7712.fits",
+        "filename": "spherex_90f411e9196a7712.fits",
+        "mjd": 60912.71563886574,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_10",
+        "obs_date": "2025-08-25T17:10:31.198"
+      },
+      {
+        "uri": "local://spherex_505e20eedacf60f8.fits",
+        "filename": "spherex_505e20eedacf60f8.fits",
+        "mjd": 60912.71713111111,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_4",
+        "obs_date": "2025-08-25T17:12:40.128"
+      },
+      {
+        "uri": "local://spherex_6f7a76eb24931cab.fits",
+        "filename": "spherex_6f7a76eb24931cab.fits",
+        "mjd": 60912.718623368055,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_9",
+        "obs_date": "2025-08-25T17:14:49.059"
+      },
+      {
+        "uri": "local://spherex_6e7f3ebdb83f6b8f.fits",
+        "filename": "spherex_6e7f3ebdb83f6b8f.fits",
+        "mjd": 60914.27627087963,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_8",
+        "obs_date": "2025-08-27T06:37:49.804"
+      },
+      {
+        "uri": "local://spherex_68765496780a49b1.fits",
+        "filename": "spherex_68765496780a49b1.fits",
+        "mjd": 60914.277763136575,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_7",
+        "obs_date": "2025-08-27T06:39:58.735"
+      },
+      {
+        "uri": "local://spherex_3f78234e9212ad66.fits",
+        "filename": "spherex_3f78234e9212ad66.fits",
+        "mjd": 60914.279255381945,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_3",
+        "obs_date": "2025-08-27T06:42:07.665"
+      },
+      {
+        "uri": "local://spherex_54d5700de4644c6a.fits",
+        "filename": "spherex_54d5700de4644c6a.fits",
+        "mjd": 60916.66055642361,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "barnard_6",
+        "obs_date": "2025-08-29T15:51:12.075"
+      }
+    ]
+  },
+  "eps_indi": {
+    "name": "Epsilon Indi B",
+    "ra": 330.8407,
+    "dec": -56.7867,
+    "observations": [
+      {
+        "uri": "local://spherex_5741eae58a29cfc7.fits",
+        "filename": "spherex_5741eae58a29cfc7.fits",
+        "mjd": 60789.855521770834,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_7",
+        "obs_date": "2025-04-24T20:31:57.081"
+      },
+      {
+        "uri": "local://spherex_6194b2d9f7014b86.fits",
+        "filename": "spherex_6194b2d9f7014b86.fits",
+        "mjd": 60789.85701402778,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_9",
+        "obs_date": "2025-04-24T20:34:06.012"
+      },
+      {
+        "uri": "local://spherex_26d51d22ddc426ac.fits",
+        "filename": "spherex_26d51d22ddc426ac.fits",
+        "mjd": 60789.92359694444,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_3",
+        "obs_date": "2025-04-24T22:09:58.776"
+      },
+      {
+        "uri": "local://spherex_a31e79e1e02e9c45.fits",
+        "filename": "spherex_a31e79e1e02e9c45.fits",
+        "mjd": 60791.07604287037,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_12",
+        "obs_date": "2025-04-26T01:49:30.104"
+      },
+      {
+        "uri": "local://spherex_270a960eb26c9c16.fits",
+        "filename": "spherex_270a960eb26c9c16.fits",
+        "mjd": 60791.21061214121,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_4",
+        "obs_date": "2025-04-26T05:03:16.889"
+      },
+      {
+        "uri": "local://spherex_c9b71abb24c576b2.fits",
+        "filename": "spherex_c9b71abb24c576b2.fits",
+        "mjd": 60791.212104398146,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_15",
+        "obs_date": "2025-04-26T05:05:25.820"
+      },
+      {
+        "uri": "local://spherex_3d0099f782daa765.fits",
+        "filename": "spherex_3d0099f782daa765.fits",
+        "mjd": 60791.82193861111,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_5",
+        "obs_date": "2025-04-26T19:43:35.496"
+      },
+      {
+        "uri": "local://spherex_5c9f890fdcb4f99b.fits",
+        "filename": "spherex_5c9f890fdcb4f99b.fits",
+        "mjd": 60791.82343084491,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_8",
+        "obs_date": "2025-04-26T19:45:44.425"
+      },
+      {
+        "uri": "local://spherex_2033bf69be371518.fits",
+        "filename": "spherex_2033bf69be371518.fits",
+        "mjd": 60791.824923125,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_2",
+        "obs_date": "2025-04-26T19:47:53.358"
+      },
+      {
+        "uri": "local://spherex_949d8eac73f67e91.fits",
+        "filename": "spherex_949d8eac73f67e91.fits",
+        "mjd": 60792.70451766204,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_11",
+        "obs_date": "2025-04-27T16:54:30.326"
+      },
+      {
+        "uri": "local://spherex_ca6e21bba1aacb45.fits",
+        "filename": "spherex_ca6e21bba1aacb45.fits",
+        "mjd": 60792.70600990741,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_16",
+        "obs_date": "2025-04-27T16:56:39.256"
+      },
+      {
+        "uri": "local://spherex_c059c862dbda02f1.fits",
+        "filename": "spherex_c059c862dbda02f1.fits",
+        "mjd": 60792.70750217592,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_14",
+        "obs_date": "2025-04-27T16:58:48.188"
+      },
+      {
+        "uri": "local://spherex_754e1ecd331b1b70.fits",
+        "filename": "spherex_754e1ecd331b1b70.fits",
+        "mjd": 60799.70270584491,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_10",
+        "obs_date": "2025-05-04T16:51:53.785"
+      },
+      {
+        "uri": "local://spherex_a963fd84e8e5fb81.fits",
+        "filename": "spherex_a963fd84e8e5fb81.fits",
+        "mjd": 60832.65439679398,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_13",
+        "obs_date": "2025-06-06T15:42:19.883"
+      },
+      {
+        "uri": "local://spherex_077e56af5e1843b6.fits",
+        "filename": "spherex_077e56af5e1843b6.fits",
+        "mjd": 60832.720873125,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_0",
+        "obs_date": "2025-06-06T17:18:03.438"
+      },
+      {
+        "uri": "local://spherex_0a6dfe12bbb9343c.fits",
+        "filename": "spherex_0a6dfe12bbb9343c.fits",
+        "mjd": 60832.722365381946,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_1",
+        "obs_date": "2025-06-06T17:20:12.369"
+      },
+      {
+        "uri": "local://spherex_e6e8dacd648fdc5f.fits",
+        "filename": "spherex_e6e8dacd648fdc5f.fits",
+        "mjd": 60832.723857627316,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_17",
+        "obs_date": "2025-06-06T17:22:21.299"
+      },
+      {
+        "uri": "local://spherex_3fd86502bffce74d.fits",
+        "filename": "spherex_3fd86502bffce74d.fits",
+        "mjd": 60832.72534986111,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "eps_indi_6",
+        "obs_date": "2025-06-06T17:24:30.228"
+      }
+    ]
+  },
+  "rw_aur": {
+    "name": "RW Aurigae",
+    "ra": 83.1421,
+    "dec": 30.4015,
+    "observations": [
+      {
+        "uri": "local://spherex_02bfc72d7714e4c7.fits",
+        "filename": "spherex_02bfc72d7714e4c7.fits",
+        "mjd": 60805.0,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "rw_aur_0",
+        "obs_date": "2025-005-15T12:00:00"
+      },
+      {
+        "uri": "local://spherex_077e56af5e1843b6.fits",
+        "filename": "spherex_077e56af5e1843b6.fits",
+        "mjd": 60820.5,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "rw_aur_1",
+        "obs_date": "2025-006-15T12:00:00"
+      },
+      {
+        "uri": "local://spherex_0966b173a3d2a253.fits",
+        "filename": "spherex_0966b173a3d2a253.fits",
+        "mjd": 60836.0,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "rw_aur_2",
+        "obs_date": "2025-007-15T12:00:00"
+      },
+      {
+        "uri": "local://spherex_0a6dfe12bbb9343c.fits",
+        "filename": "spherex_0a6dfe12bbb9343c.fits",
+        "mjd": 60851.5,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "rw_aur_3",
+        "obs_date": "2025-008-15T12:00:00"
+      },
+      {
+        "uri": "local://spherex_0b08c8d7d3f170ac.fits",
+        "filename": "spherex_0b08c8d7d3f170ac.fits",
+        "mjd": 60867.0,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "rw_aur_4",
+        "obs_date": "2025-009-15T12:00:00"
+      }
+    ]
+  },
+  "r_dra": {
+    "name": "R Draconis",
+    "ra": 269.0624,
+    "dec": 65.6935,
+    "observations": [
+      {
+        "uri": "local://spherex_02bfc72d7714e4c7.fits",
+        "filename": "spherex_02bfc72d7714e4c7.fits",
+        "mjd": 60805.0,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "r_dra_0",
+        "obs_date": "2025-005-15T12:00:00"
+      },
+      {
+        "uri": "local://spherex_077e56af5e1843b6.fits",
+        "filename": "spherex_077e56af5e1843b6.fits",
+        "mjd": 60820.5,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "r_dra_1",
+        "obs_date": "2025-006-15T12:00:00"
+      },
+      {
+        "uri": "local://spherex_0966b173a3d2a253.fits",
+        "filename": "spherex_0966b173a3d2a253.fits",
+        "mjd": 60836.0,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "r_dra_2",
+        "obs_date": "2025-007-15T12:00:00"
+      },
+      {
+        "uri": "local://spherex_0a6dfe12bbb9343c.fits",
+        "filename": "spherex_0a6dfe12bbb9343c.fits",
+        "mjd": 60851.5,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "r_dra_3",
+        "obs_date": "2025-008-15T12:00:00"
+      },
+      {
+        "uri": "local://spherex_0b08c8d7d3f170ac.fits",
+        "filename": "spherex_0b08c8d7d3f170ac.fits",
+        "mjd": 60867.0,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "r_dra_4",
+        "obs_date": "2025-009-15T12:00:00"
+      }
+    ]
+  },
+  "m101": {
+    "name": "M101",
+    "ra": 210.80227,
+    "dec": 54.34895,
+    "observations": [
+      {
+        "uri": "local://spherex_c270925faf7c233c.fits",
+        "filename": "spherex_c270925faf7c233c.fits",
+        "mjd": 60805.711547928244,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_9",
+        "obs_date": "2025-05-10T17:04:37.741"
+      },
+      {
+        "uri": "local://spherex_df318f833ff57570.fits",
+        "filename": "spherex_df318f833ff57570.fits",
+        "mjd": 60805.711547928244,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_11",
+        "obs_date": "2025-05-10T17:04:37.741"
+      },
+      {
+        "uri": "local://spherex_fcbb635c8e0c4a9e.fits",
+        "filename": "spherex_fcbb635c8e0c4a9e.fits",
+        "mjd": 60805.711547928244,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_13",
+        "obs_date": "2025-05-10T17:04:37.741"
+      },
+      {
+        "uri": "local://spherex_2bae412fa0debd66.fits",
+        "filename": "spherex_2bae412fa0debd66.fits",
+        "mjd": 60805.71304018518,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_2",
+        "obs_date": "2025-05-10T17:06:46.672"
+      },
+      {
+        "uri": "local://spherex_9e88e38856ab0b00.fits",
+        "filename": "spherex_9e88e38856ab0b00.fits",
+        "mjd": 60805.71453243055,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_8",
+        "obs_date": "2025-05-10T17:08:55.602"
+      },
+      {
+        "uri": "local://spherex_2f9de67dddabb653.fits",
+        "filename": "spherex_2f9de67dddabb653.fits",
+        "mjd": 60805.7160246875,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_3",
+        "obs_date": "2025-05-10T17:11:04.533"
+      },
+      {
+        "uri": "local://spherex_8ea3d5811025f3f7.fits",
+        "filename": "spherex_8ea3d5811025f3f7.fits",
+        "mjd": 60805.91538265046,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_4",
+        "obs_date": "2025-05-10T21:58:09.061"
+      },
+      {
+        "uri": "local://spherex_d780bd8c43b85bfb.fits",
+        "filename": "spherex_d780bd8c43b85bfb.fits",
+        "mjd": 60809.38163866898,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_10",
+        "obs_date": "2025-05-14T09:09:33.581"
+      },
+      {
+        "uri": "local://spherex_992323067c10bb5c.fits",
+        "filename": "spherex_992323067c10bb5c.fits",
+        "mjd": 60809.3831309375,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_7",
+        "obs_date": "2025-05-14T09:11:42.513"
+      },
+      {
+        "uri": "local://spherex_fcf94ba41d6a23a1.fits",
+        "filename": "spherex_fcf94ba41d6a23a1.fits",
+        "mjd": 60809.38462318287,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_14",
+        "obs_date": "2025-05-14T09:13:51.443"
+      },
+      {
+        "uri": "local://spherex_e2d50ad773272fea.fits",
+        "filename": "spherex_e2d50ad773272fea.fits",
+        "mjd": 60811.55539003472,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_12",
+        "obs_date": "2025-05-16T13:19:45.699"
+      },
+      {
+        "uri": "local://spherex_0ffc2a33476f1aa6.fits",
+        "filename": "spherex_0ffc2a33476f1aa6.fits",
+        "mjd": 60811.55688228009,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_0",
+        "obs_date": "2025-05-16T13:21:54.629"
+      },
+      {
+        "uri": "local://spherex_93dfb68f546331a2.fits",
+        "filename": "spherex_93dfb68f546331a2.fits",
+        "mjd": 61182.00366834491,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_5",
+        "obs_date": "2026-05-22T00:05:16.945"
+      },
+      {
+        "uri": "local://spherex_10243ec562824974.fits",
+        "filename": "spherex_10243ec562824974.fits",
+        "mjd": 61215.13819517361,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_1",
+        "obs_date": "2026-06-24T03:19:00.063"
+      },
+      {
+        "uri": "local://spherex_97a6b891a0736088.fits",
+        "filename": "spherex_97a6b891a0736088.fits",
+        "mjd": 61215.13819517361,
+        "bandpass": "SPHEREx-D2",
+        "planeid": "m101_6",
+        "obs_date": "2026-06-24T03:19:00.063"
+      }
+    ]
+  }
+}

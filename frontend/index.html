@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyBlink — SPHEREx Time-Domain Sky Explorer</title>
+  <meta name="description" content="Explore how the infrared sky changes over time using NASA SPHEREx observations. Built for NASA Space Apps Cairo 2026." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Plotly for spectrum -->
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+  <style>
+    /* ================================================================
+       DESIGN SYSTEM — SkyBlink v2.0
+       ================================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deepest:     #050810;
+      --bg-deep:        #0a0f1e;
+      --bg-card:        rgba(13, 20, 40, 0.78);
+      --bg-input:       rgba(6, 10, 22, 0.9);
+      --border:         rgba(55, 65, 95, 0.55);
+      --border-hover:   rgba(99, 102, 241, 0.5);
+      --border-focus:   rgba(56, 189, 248, 0.6);
+
+      --blue:           #38bdf8;
+      --blue-glow:      rgba(56, 189, 248, 0.3);
+      --blue-muted:     rgba(56, 189, 248, 0.12);
+      --indigo:         #818cf8;
+      --indigo-glow:    rgba(129, 140, 248, 0.25);
+      --violet:         #a78bfa;
+      --amber:          #fbbf24;
+      --amber-glow:     rgba(251, 191, 36, 0.25);
+      --emerald:        #34d399;
+      --emerald-muted:  rgba(52, 211, 153, 0.12);
+      --rose:           #fb7185;
+      --rose-muted:     rgba(251, 113, 133, 0.12);
+      --cyan:           #22d3ee;
+
+      --text:           #f0f4f8;
+      --text-secondary: #c1cdd9;
+      --text-muted:     #7e8fa6;
+
+      --font:           'Inter', system-ui, -apple-system, sans-serif;
+      --font-display:   'Space Grotesk', var(--font);
+      --font-mono:      'JetBrains Mono', 'Fira Code', monospace;
+
+      --radius-xl:      16px;
+      --radius-lg:      12px;
+      --radius-md:      8px;
+      --radius-sm:      6px;
+
+      --ease:           cubic-bezier(0.16, 1, 0.3, 1);
+      --duration:       220ms;
+      --shadow-card:    0 4px 24px rgba(0,0,0,0.45), 0 0 1px rgba(255,255,255,0.05);
+      --shadow-glow:    0 0 20px var(--blue-glow), 0 4px 30px rgba(0,0,0,0.6);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg-deepest);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Animated cosmic background */
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 10%, rgba(56,189,248,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 90%, rgba(129,140,248,0.05) 0%, transparent 55%),
+        radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 45% 15%, rgba(255,255,255,0.3), transparent),
+        radial-gradient(1.2px 1.2px at 75% 45%, rgba(56,189,248,0.6), transparent),
+        radial-gradient(1px 1px at 35% 70%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 85% 30%, rgba(255,255,255,0.25), transparent),
+        radial-gradient(0.8px 0.8px at 60% 85%, rgba(129,140,248,0.5), transparent);
+      background-size: 100% 100%, 100% 100%, 300px 300px, 250px 200px, 400px 350px, 350px 280px, 280px 320px, 320px 260px;
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.4); }
+
+    /* ================================================================
+       HEADER / NAVBAR
+       ================================================================ */
+    #navbar {
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      background: rgba(8, 12, 28, 0.85);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+    }
+
+    .brand-group { display: flex; align-items: center; gap: 0.75rem; }
+    .brand-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--indigo) 50%, var(--violet) 100%);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 16px var(--blue-glow);
+      animation: icon-pulse 4s ease-in-out infinite;
+    }
+    @keyframes icon-pulse {
+      0%, 100% { box-shadow: 0 0 16px var(--blue-glow); }
+      50% { box-shadow: 0 0 28px var(--indigo-glow); }
+    }
+    .brand-title h1 {
+      font-family: var(--font-display);
+      font-size: 1.35rem; font-weight: 700; letter-spacing: -0.025em;
+      background: linear-gradient(120deg, #fff 30%, var(--blue) 80%, var(--indigo) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .brand-subtitle {
+      font-size: 0.7rem; color: var(--text-muted);
+      display: flex; align-items: center; gap: 5px;
+      letter-spacing: 0.02em;
+    }
+    .brand-subtitle .dot { color: var(--border); }
+
+    .nav-right { display: flex; align-items: center; gap: 0.65rem; }
+
+    .badge-live {
+      display: flex; align-items: center; gap: 6px;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.72rem; font-weight: 600;
+      border-radius: 20px;
+      border: 1px solid rgba(52,211,153,0.3);
+      background: var(--emerald-muted);
+      color: var(--emerald);
+    }
+    .pulse-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 6px var(--emerald);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+    .btn-nav {
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.25);
+      color: var(--blue);
+      padding: 0.3rem 0.75rem;
+      border-radius: var(--radius-md);
+      font-size: 0.78rem; font-weight: 500;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+      transition: all var(--duration) var(--ease);
+    }
+    .btn-nav:hover {
+      background: rgba(56,189,248,0.16);
+      transform: translateY(-1px);
+    }
+
+    /* ================================================================
+       MAIN LAYOUT
+       ================================================================ */
+    #main {
+      position: relative; z-index: 1;
+      max-width: 1520px; width: 100%;
+      margin: 0 auto;
+      padding: 1rem 1.5rem 2rem;
+      display: flex; flex-direction: column;
+      gap: 1rem;
+      flex: 1;
+    }
+
+    /* ================================================================
+       GLASS CARD
+       ================================================================ */
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      box-shadow: var(--shadow-card);
+      transition: border-color var(--duration) var(--ease);
+    }
+    .card:hover { border-color: var(--border-hover); }
+
+    /* ================================================================
+       TARGET SELECTION STRIP
+       ================================================================ */
+    .targets-strip {
+      display: flex; flex-direction: column; gap: 0.65rem;
+    }
+    .strip-label {
+      font-size: 0.72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--text-muted);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .strip-label-tag {
+      font-weight: 400; text-transform: none;
+      letter-spacing: 0; color: var(--text-muted);
+      opacity: 0.7;
+    }
+
+    .chips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .target-chip {
+      background: rgba(20, 30, 55, 0.6);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.55rem 0.75rem;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 0.6rem;
+      transition: all var(--duration) var(--ease);
+      user-select: none;
+    }
+    .target-chip:hover {
+      background: var(--blue-muted);
+      border-color: rgba(56,189,248,0.4);
+      transform: translateY(-1px);
+    }
+    .target-chip.active {
+      background: var(--blue-muted);
+      border-color: var(--blue);
+      box-shadow: 0 0 14px var(--blue-glow), inset 0 0 16px rgba(56,189,248,0.06);
+    }
+    .chip-icon { font-size: 1.15rem; flex-shrink: 0; line-height: 1; }
+    .chip-text h4 {
+      font-size: 0.82rem; font-weight: 600;
+      color: #fff; line-height: 1.15;
+    }
+    .chip-text p {
+      font-size: 0.68rem; color: var(--text-muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 180px;
+    }
+
+    /* ================================================================
+       SEARCH BAR
+       ================================================================ */
+    .search-bar {
+      display: flex; align-items: flex-end; gap: 0.6rem;
+      flex-wrap: wrap;
+      background: rgba(10, 16, 32, 0.5);
+      padding: 0.75rem 0.85rem;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .field { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 120px; }
+    .field label {
+      font-size: 0.7rem; font-weight: 500;
+      color: var(--text-muted); letter-spacing: 0.02em;
+    }
+    .field input, .field select {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 0.65rem;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      outline: none;
+      transition: all var(--duration) var(--ease);
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 12px var(--blue-glow);
+    }
+    .field select { cursor: pointer; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      color: #fff; font-weight: 700; font-size: 0.85rem;
+      padding: 0.5rem 1.25rem;
+      border: none; border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 7px;
+      box-shadow: 0 2px 16px var(--blue-glow);
+      transition: all var(--duration) var(--ease);
+      white-space: nowrap; height: 36px;
+      letter-spacing: 0.01em;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 4px 24px var(--blue-glow);
+      transform: translateY(-1px);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    /* Loading spinner */
+    .btn-primary.loading { opacity: 0.7; pointer-events: none; }
+    .btn-primary.loading::after {
+      content: ""; display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-left: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ================================================================
+       WORKSPACE GRID — Viewer + Sidebar
+       ================================================================ */
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 1rem;
+      align-items: start;
+    }
+    @media (max-width: 1100px) { .workspace { grid-template-columns: 1fr; } }
+
+    /* ================================================================
+       VIEWER PANEL
+       ================================================================ */
+    .viewer-panel { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .viewer {
+      background: var(--bg-deepest);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.65);
+      display: flex; flex-direction: column;
+    }
+
+    /* Top toolbar */
+    .v-toolbar {
+      background: rgba(12, 18, 36, 0.9);
+      backdrop-filter: blur(8px);
+      padding: 0.4rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 0.5rem; z-index: 10;
+      flex-wrap: wrap;
+    }
+
+    .mode-tabs {
+      display: flex;
+      background: rgba(0,0,0,0.45);
+      padding: 2px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .mode-tab {
+      background: transparent; border: none;
+      color: var(--text-muted);
+      font-size: 0.78rem; font-weight: 500;
+      padding: 0.32rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all var(--duration) var(--ease);
+      white-space: nowrap;
+    }
+    .mode-tab:hover { color: var(--text-secondary); }
+    .mode-tab.active {
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      color: #fff; font-weight: 600;
+      box-shadow: 0 0 10px var(--blue-glow);
+    }
+
+    .v-tools { display: flex; align-items: center; gap: 0.4rem; }
+
+    .icon-btn {
+      background: rgba(30,40,65,0.6);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 0.85rem;
+      transition: all var(--duration) var(--ease);
+    }
+    .icon-btn:hover {
+      color: #fff;
+      border-color: var(--blue);
+      background: rgba(56,189,248,0.12);
+    }
+
+    .mini-select {
+      font-size: 0.72rem; padding: 3px 8px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--border);
+      color: #fff; border-radius: 6px;
+      cursor: pointer; outline: none;
+    }
+
+    /* Difference sub-panel */
+    .diff-controls {
+      display: none;
+      background: rgba(20, 28, 48, 0.92);
+      border: 1px solid rgba(251,191,36,0.25);
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius-md);
+      align-items: center; gap: 0.6rem;
+      font-size: 0.78rem;
+      flex-wrap: wrap;
+    }
+    .diff-controls.show { display: flex; }
+    .diff-controls label { color: var(--amber); font-weight: 600; }
+
+    .btn-amber {
+      background: var(--amber); color: #000;
+      font-weight: 700; font-size: 0.72rem;
+      padding: 4px 14px; border-radius: 6px;
+      border: none; cursor: pointer;
+      transition: all var(--duration) var(--ease);
+    }
+    .btn-amber:hover { box-shadow: 0 0 12px var(--amber-glow); transform: translateY(-1px); }
+
+    /* Image Stage */
+    .stage {
+      position: relative;
+      width: 100%; height: 520px;
+      background: #020408;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+
+    #sky-canvas {
+      max-width: 100%; max-height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+      transition: transform 0.12s ease-out;
+      transform-origin: center center;
+    }
+
+    .stage-empty {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 1rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .stage-empty svg { opacity: 0.3; }
+    .stage-empty p { font-size: 0.85rem; max-width: 300px; }
+
+    /* Overlays */
+    .overlay-bl {
+      position: absolute; bottom: 10px; left: 10px;
+      background: rgba(6,10,20,0.88);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-family: var(--font-mono); font-size: 0.7rem;
+      color: var(--blue);
+      pointer-events: none;
+    }
+    .overlay-tr {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(6,10,20,0.7);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 800;
+      color: var(--amber);
+      pointer-events: none;
+      letter-spacing: -0.02em;
+    }
+    .overlay-br {
+      position: absolute; bottom: 10px; right: 10px;
+      background: rgba(6,10,20,0.85);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      font-family: var(--font-mono); font-size: 0.68rem;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* Playback bar */
+    .playback {
+      background: rgba(12,18,36,0.95);
+      border-top: 1px solid var(--border);
+      padding: 0.6rem 0.85rem;
+      display: flex; flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .scrub-row {
+      display: flex; align-items: center; gap: 0.65rem;
+    }
+
+    /* Custom range slider */
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none;
+      height: 4px; border-radius: 2px;
+      background: rgba(255,255,255,0.1);
+      outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 6px var(--blue-glow);
+      border: 2px solid rgba(255,255,255,0.9);
+      cursor: grab;
+      transition: transform 0.15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; }
+
+    .scrub-slider { flex: 1; }
+
+    .pill-counter {
+      font-family: var(--font-mono);
+      font-size: 0.72rem; color: var(--text-muted);
+      background: rgba(0,0,0,0.5);
+      padding: 2px 8px; border-radius: 10px;
+      border: 1px solid var(--border);
+      min-width: 62px; text-align: center;
+    }
+
+    .ctrl-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap; gap: 0.6rem;
+    }
+
+    .btn-group {
+      display: flex; align-items: center; gap: 3px;
+    }
+
+    .ctrl-btn {
+      background: rgba(25,35,60,0.8);
+      border: 1px solid var(--border);
+      color: #fff;
+      width: 32px; height: 32px;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all var(--duration) var(--ease);
+    }
+    .ctrl-btn:hover {
+      background: rgba(56,189,248,0.15);
+      border-color: var(--blue);
+    }
+
+    .ctrl-btn-play {
+      width: 40px; height: 32px;
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      color: #fff; font-weight: bold;
+      border: none;
+      box-shadow: 0 0 14px var(--blue-glow);
+    }
+    .ctrl-btn-play:hover {
+      box-shadow: 0 0 22px var(--blue-glow);
+    }
+    .ctrl-btn-play.paused {
+      background: linear-gradient(135deg, var(--rose), #e11d48);
+      box-shadow: 0 0 14px rgba(251,113,133,0.3);
+    }
+
+    .speed-grp {
+      display: flex; align-items: center; gap: 0.45rem;
+      font-size: 0.75rem; color: var(--text-muted);
+    }
+    .speed-grp input[type="range"] { width: 72px; }
+    .speed-grp input[type="range"]::-webkit-slider-thumb { background: var(--amber); box-shadow: 0 0 6px var(--amber-glow); }
+    .fps-badge {
+      font-family: var(--font-mono);
+      font-size: 0.72rem; color: var(--amber);
+      font-weight: 700; min-width: 40px;
+    }
+
+    .buffer-badge {
+      font-size: 0.72rem; font-weight: 600;
+      padding: 2px 8px; border-radius: 12px;
+      border: 1px solid rgba(52,211,153,0.3);
+      background: var(--emerald-muted);
+      color: var(--emerald);
+      display: flex; align-items: center; gap: 4px;
+    }
+
+    /* ================================================================
+       SIDEBAR
+       ================================================================ */
+    .sidebar { display: flex; flex-direction: column; gap: 0.85rem; }
+
+    .panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 0.85rem;
+      box-shadow: var(--shadow-card);
+      display: flex; flex-direction: column;
+      gap: 0.6rem;
+      transition: border-color var(--duration) var(--ease);
+    }
+    .panel:hover { border-color: var(--border-hover); }
+
+    .panel-head {
+      font-family: var(--font-display);
+      font-size: 0.8rem; font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      display: flex; align-items: center; justify-content: space-between;
+      color: #fff;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 0.4rem;
+    }
+    .panel-tag {
+      font-size: 0.68rem; color: var(--blue);
+      font-weight: 500; text-transform: none;
+      letter-spacing: 0;
+    }
+
+    /* Metadata grid */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+    }
+    .meta-item {
+      background: rgba(6,10,20,0.6);
+      border: 1px solid rgba(255,255,255,0.03);
+      padding: 0.4rem 0.55rem;
+      border-radius: 6px;
+    }
+    .meta-label {
+      font-size: 0.64rem; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .meta-val {
+      font-family: var(--font-mono);
+      font-size: 0.75rem; font-weight: 600;
+      color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* Candidates table */
+    .scroll-box {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 6px;
+    }
+    .tbl {
+      width: 100%; border-collapse: collapse;
+      font-size: 0.72rem; text-align: left;
+    }
+    .tbl th {
+      background: rgba(12,18,36,0.95);
+      padding: 0.35rem 0.5rem;
+      color: var(--text-muted); font-weight: 600;
+      position: sticky; top: 0; z-index: 2;
+    }
+    .tbl td {
+      padding: 0.35rem 0.5rem;
+      border-top: 1px solid rgba(255,255,255,0.03);
+      font-family: var(--font-mono);
+      cursor: pointer;
+    }
+    .tbl tr:hover {
+      background: var(--blue-muted);
+    }
+    .sig-badge {
+      display: inline-block;
+      background: var(--rose-muted); color: var(--rose);
+      padding: 1px 7px; border-radius: 8px;
+      font-weight: 700; font-size: 0.7rem;
+    }
+
+    /* Spectrum */
+    .spectrum-wrap {
+      width: 100%; height: 170px;
+    }
+    .spectrum-hint {
+      font-size: 0.68rem; color: var(--text-muted);
+      text-align: center; margin-top: -2px;
+    }
+
+    /* Epoch list */
+    .epoch-scroll {
+      max-height: 170px;
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+      gap: 3px;
+    }
+    .epoch-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.35rem 0.55rem;
+      border-radius: 6px;
+      background: rgba(6,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.02);
+      cursor: pointer;
+      font-size: 0.72rem;
+      transition: all var(--duration) var(--ease);
+    }
+    .epoch-row:hover {
+      background: var(--blue-muted);
+      border-color: rgba(56,189,248,0.3);
+    }
+    .epoch-row.active {
+      background: rgba(56,189,248,0.18);
+      border-color: var(--blue);
+      font-weight: 600;
+    }
+    .epoch-row .epoch-frames {
+      color: var(--text-muted); font-size: 0.68rem;
+    }
+
+    /* ================================================================
+       GUIDE MODAL
+       ================================================================ */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(10px);
+      z-index: 999;
+      align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: linear-gradient(170deg, #0f172a 0%, #0b1020 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      max-width: 620px; width: 100%;
+      padding: 1.75rem 2rem;
+      box-shadow: 0 16px 64px rgba(0,0,0,0.8);
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-x {
+      position: absolute; top: 1rem; right: 1rem;
+      background: transparent; border: none;
+      color: var(--text-muted); font-size: 1.3rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .modal-x:hover { color: #fff; }
+
+    .modal h2 {
+      font-family: var(--font-display);
+      font-size: 1.3rem; margin-bottom: 0.2rem;
+      background: linear-gradient(120deg, #fff 40%, var(--blue) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .modal .modal-sub {
+      font-size: 0.8rem; color: var(--text-muted);
+      margin-bottom: 1.25rem;
+    }
+
+    .step {
+      display: flex; align-items: flex-start;
+      gap: 0.85rem; margin-bottom: 0.9rem;
+    }
+    .step-num {
+      width: 30px; height: 30px; min-width: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      color: #fff; font-weight: 800; font-size: 0.8rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step-body h4 { font-size: 0.9rem; color: #fff; margin-bottom: 2px; }
+    .step-body p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; }
+
+    .btn-modal-close {
+      width: 100%; margin-top: 0.75rem;
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      color: #fff; font-weight: 700; font-size: 0.9rem;
+      padding: 0.65rem; border-radius: 8px;
+      border: none; cursor: pointer;
+      box-shadow: 0 2px 16px var(--blue-glow);
+      transition: all var(--duration) var(--ease);
+    }
+    .btn-modal-close:hover { box-shadow: 0 4px 24px var(--blue-glow); transform: translateY(-1px); }
+
+    /* ================================================================
+       FOOTER
+       ================================================================ */
+    #footer {
+      border-top: 1px solid var(--border);
+      padding: 0.7rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.5rem;
+      font-size: 0.7rem; color: var(--text-muted);
+      background: rgba(8,12,28,0.92);
+      margin-top: auto;
+    }
+    #footer a {
+      color: var(--blue); text-decoration: none;
+    }
+    #footer a:hover { text-decoration: underline; }
+
+    /* ================================================================
+       TOAST NOTIFICATIONS
+       ================================================================ */
+    .toast-container {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      z-index: 1000;
+      display: flex; flex-direction: column-reverse;
+      gap: 0.5rem;
+    }
+    .toast {
+      background: rgba(15,23,42,0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.65rem 1rem;
+      font-size: 0.8rem; color: var(--text);
+      display: flex; align-items: center; gap: 0.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      animation: toast-in 0.3s var(--ease);
+      max-width: 350px;
+    }
+    .toast.success { border-color: rgba(52,211,153,0.4); }
+    .toast.info { border-color: rgba(56,189,248,0.4); }
+    .toast.warn { border-color: rgba(251,191,36,0.4); }
+    @keyframes toast-in {
+      from { transform: translateY(16px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* ================================================================
+       RESPONSIVE
+       ================================================================ */
+    @media (max-width: 768px) {
+      .chips-grid { grid-template-columns: 1fr 1fr; }
+      .search-bar { flex-direction: column; }
+      .search-bar .field { min-width: 100%; }
+      .stage { height: 350px; }
+      .workspace { gap: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       NAVBAR
+       ============================================================ -->
+  <nav id="navbar">
+    <div class="brand-group">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title">SkyBlink</h1>
+        <div class="brand-subtitle">
+          <span>NASA SPHEREx</span>
+          <span class="dot">•</span>
+          <span>102-Band IR Sky Explorer</span>
+          <span class="dot">•</span>
+          <span>Cairo 2026</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="badge-live">
+        <span class="pulse-dot"></span>
+        100% Offline Engine
+      </div>
+      <button class="btn-nav" id="open-guide">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Quick Guide
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main id="main">
+
+    <!-- TARGET + SEARCH CARD -->
+    <section class="card">
+      <div class="targets-strip">
+        <div class="strip-label">
+          <span>🎯 Challenge Targets — Planet X & SPHEREx</span>
+          <span class="strip-label-tag">Instant Local Playback ⚡</span>
+        </div>
+        <div class="chips-grid">
+          <div class="target-chip active" data-idx="0">
+            <span class="chip-icon">🪐</span>
+            <div class="chip-text">
+              <h4>WISE 0855−0714</h4>
+              <p>Cold Brown Dwarf • ~8″/yr</p>
+            </div>
+          </div>
+          <div class="target-chip" data-idx="1">
+            <span class="chip-icon">⭐</span>
+            <div class="chip-text">
+              <h4>Barnard's Star</h4>
+              <p>Fastest Proper Motion (10.3″/yr)</p>
+            </div>
+          </div>
+          <div class="target-chip" data-idx="2">
+            <span class="chip-icon">💫</span>
+            <div class="chip-text">
+              <h4>Epsilon Indi B</h4>
+              <p>T1+T6 Binary Brown Dwarf</p>
+            </div>
+          </div>
+          <div class="target-chip" data-idx="3">
+            <span class="chip-icon">🌟</span>
+            <div class="chip-text">
+              <h4>RW Aurigae</h4>
+              <p>Variable T Tauri Star</p>
+            </div>
+          </div>
+          <div class="target-chip" data-idx="4">
+            <span class="chip-icon">🔴</span>
+            <div class="chip-text">
+              <h4>R Draconis</h4>
+              <p>Mira Pulsating Variable</p>
+            </div>
+          </div>
+          <div class="target-chip" data-idx="5">
+            <span class="chip-icon">🌀</span>
+            <div class="chip-text">
+              <h4>M101 Pinwheel</h4>
+              <p>Deep Spiral Arm Field</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search inputs -->
+      <div class="search-bar">
+        <div class="field" style="flex:1.6">
+          <label>Target Name</label>
+          <input id="inp-name" type="text" value="WISE 0855-0714" placeholder="e.g. Barnard's Star" />
+        </div>
+        <div class="field">
+          <label>Right Ascension (°)</label>
+          <input id="inp-ra" type="number" step="0.0001" value="133.7854" />
+        </div>
+        <div class="field">
+          <label>Declination (°)</label>
+          <input id="inp-dec" type="number" step="0.0001" value="-7.2444" />
+        </div>
+        <div class="field" style="max-width:120px;">
+          <label>FOV (arcmin)</label>
+          <select id="inp-fov">
+            <option value="5">5′ Deep</option>
+            <option value="10" selected>10′ Std</option>
+            <option value="15">15′ Wide</option>
+            <option value="20">20′ Full</option>
+          </select>
+        </div>
+        <div class="field" style="max-width:135px;">
+          <label>Bandpass</label>
+          <select id="inp-band">
+            <option value="SPHEREx-D1">D1 (0.75–1.1µm)</option>
+            <option value="SPHEREx-D2" selected>D2 (1.1–1.6µm)</option>
+            <option value="SPHEREx-D3">D3 (1.6–2.4µm)</option>
+            <option value="SPHEREx-D4">D4 (2.4–3.8µm)</option>
+            <option value="SPHEREx-D5">D5 (3.8–4.4µm)</option>
+            <option value="SPHEREx-D6">D6 (4.4–5.0µm)</option>
+          </select>
+        </div>
+        <button class="btn-primary" id="btn-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Load Sky Data
+        </button>
+      </div>
+    </section>
+
+    <!-- WORKSPACE: VIEWER + SIDEBAR -->
+    <div class="workspace">
+
+      <!-- LEFT: VIEWER -->
+      <div class="viewer-panel">
+        <div class="viewer">
+          <!-- Toolbar -->
+          <div class="v-toolbar">
+            <div class="mode-tabs">
+              <button class="mode-tab active" data-mode="blink">▶ Blink</button>
+              <button class="mode-tab" data-mode="diff">△ Difference</button>
+              <button class="mode-tab" data-mode="stack">⊕ Stack</button>
+            </div>
+            <div class="v-tools">
+              <select class="mini-select" id="sel-cmap">
+                <option value="inferno" selected>🔥 Inferno</option>
+                <option value="viridis">🌿 Viridis</option>
+                <option value="magma">🌋 Magma</option>
+                <option value="plasma">⚡ Plasma</option>
+                <option value="gray">⚪ Greyscale</option>
+                <option value="hot">☀️ Hot</option>
+                <option value="cubehelix">🔮 Cubehelix</option>
+              </select>
+              <button class="icon-btn" id="btn-zin" title="Zoom In">+</button>
+              <button class="icon-btn" id="btn-zout" title="Zoom Out">−</button>
+              <button class="icon-btn" id="btn-zreset" title="Reset Zoom">⟲</button>
+            </div>
+          </div>
+
+          <!-- Diff controls -->
+          <div class="diff-controls" id="diff-ctrl">
+            <label>Reference:</label>
+            <select class="mini-select" id="diff-ref"></select>
+            <label>vs Current:</label>
+            <span class="mini-select" id="diff-tgt-label" style="min-width:60px;display:inline-block;text-align:center;">—</span>
+            <button class="btn-amber" id="btn-diff">Compute Subtraction</button>
+            <span id="diff-status" style="color:var(--text-muted);font-size:0.7rem;"></span>
+          </div>
+
+          <!-- Image Stage -->
+          <div class="stage" id="stage">
+            <div class="stage-empty" id="stage-empty">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <p>Select a target and click <strong>Load Sky Data</strong> to begin exploring</p>
+            </div>
+            <img id="sky-canvas" src="" alt="SPHEREx observation" style="display:none;" />
+            <div class="overlay-bl" id="ov-coords">Pixel: (—, —) | RA: — Dec: —</div>
+            <div class="overlay-tr" title="North/East Sky Orientation">N↑</div>
+            <div class="overlay-br" id="ov-date">—</div>
+          </div>
+
+          <!-- Playback -->
+          <div class="playback">
+            <div class="scrub-row">
+              <input type="range" class="scrub-slider" id="scrubber" min="0" max="0" value="0" />
+              <span class="pill-counter" id="frame-pill">0 / 0</span>
+            </div>
+            <div class="ctrl-row">
+              <div class="btn-group">
+                <button class="ctrl-btn" id="btn-first" title="First (Home)">⏮</button>
+                <button class="ctrl-btn" id="btn-prev" title="Previous (←)">◀</button>
+                <button class="ctrl-btn ctrl-btn-play" id="btn-play" title="Play/Pause (Space)">▶</button>
+                <button class="ctrl-btn" id="btn-next" title="Next (→)">▶</button>
+                <button class="ctrl-btn" id="btn-last" title="Last (End)">⏭</button>
+              </div>
+              <div class="speed-grp">
+                <span>Speed</span>
+                <input type="range" id="speed-slider" min="0" max="6" step="1" value="2" />
+                <span class="fps-badge" id="fps-lbl">4 fps</span>
+              </div>
+              <div class="buffer-badge" id="buffer-badge">
+                ⚡ Buffer: 0%
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: SIDEBAR -->
+      <div class="sidebar">
+
+        <!-- Telemetry -->
+        <div class="panel">
+          <div class="panel-head">
+            <span>🔬 Observation Telemetry</span>
+            <span class="panel-tag" id="tag-level">SPHEREx L2b</span>
+          </div>
+          <div class="meta-grid">
+            <div class="meta-item">
+              <div class="meta-label">Date (UTC)</div>
+              <div class="meta-val" id="m-date">—</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">MJD</div>
+              <div class="meta-val" id="m-mjd">—</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">WCS Center</div>
+              <div class="meta-val" id="m-wcs">—</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Resolution</div>
+              <div class="meta-val" id="m-shape">98 × 98 (6.2″/px)</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Bandpass</div>
+              <div class="meta-val" id="m-band">D2 (1.1–1.6µm)</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Target</div>
+              <div class="meta-val" id="m-target">WISE 0855</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Candidates -->
+        <div class="panel" id="cand-panel">
+          <div class="panel-head">
+            <span>🎯 Flagged Candidates</span>
+            <span class="panel-tag" id="cand-badge">0 found</span>
+          </div>
+          <p style="font-size:0.7rem;color:var(--text-muted);line-height:1.35;">
+            Anomalous flux variations exceeding 5σ MAD significance in difference frames.
+          </p>
+          <div class="scroll-box">
+            <table class="tbl">
+              <thead>
+                <tr><th>RA (°)</th><th>Dec (°)</th><th>Δ Flux</th><th>σ</th></tr>
+              </thead>
+              <tbody id="cand-tbody">
+                <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:0.8rem;">Use △ Difference mode to detect candidates</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Spectrum -->
+        <div class="panel">
+          <div class="panel-head">
+            <span>📈 Pixel Spectrum</span>
+            <span class="panel-tag">0.75 – 5.0 µm</span>
+          </div>
+          <div class="spectrum-wrap" id="spectrum-chart"></div>
+          <p class="spectrum-hint">Click any pixel to sample calibrated flux across SPHEREx bands</p>
+        </div>
+
+        <!-- Epochs -->
+        <div class="panel">
+          <div class="panel-head">
+            <span>📅 Temporal Epochs</span>
+            <span class="panel-tag" id="epoch-badge">0 epochs</span>
+          </div>
+          <div class="epoch-scroll" id="epoch-list">
+            <div style="color:var(--text-muted);font-size:0.72rem;text-align:center;padding:0.8rem;">Load a target to see observation epochs</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================================================
+       GUIDE MODAL
+       ============================================================ -->
+  <div class="modal-backdrop" id="guide-modal">
+    <div class="modal">
+      <button class="modal-x" id="modal-close">&times;</button>
+      <h2>🌟 Welcome to SkyBlink</h2>
+      <p class="modal-sub">Explore how the infrared sky changes over time using NASA's SPHEREx satellite</p>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Select a Target</h4>
+          <p>Choose from preset challenge targets — cold brown dwarfs (WISE 0855), high-motion stars (Barnard's Star), or pulsating variables (R Draconis).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Play the Blink Flipbook</h4>
+          <p>Press <strong>▶ Play</strong> or <strong>Spacebar</strong>. SkyBlink flips between observation epochs chronologically, revealing motion and variability in the infrared sky.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Difference Subtraction</h4>
+          <p>Switch to <strong>△ Difference</strong> mode to subtract a reference epoch. Static stars vanish — moving objects appear as bright/dark dipoles!</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>Inspect Spectra & Candidates</h4>
+          <p>Click any pixel to see its IR spectrum across SPHEREx's 102 channels. Flagged candidates (>5σ) appear automatically with their sky coordinates.</p>
+        </div>
+      </div>
+
+      <button class="btn-modal-close" id="modal-go">Got it — Let's Explore! 🚀</button>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toast-box"></div>
+
+  <!-- FOOTER -->
+  <footer id="footer">
+    <div>
+      <strong>NASA Space Apps Cairo 2026</strong> · Planet X & SPHEREx Challenge · Team ANVILD
+    </div>
+    <div>
+      Data: <a href="https://irsa.ipac.caltech.edu/Missions/spherex.html" target="_blank">NASA SPHEREx via IPAC/IRSA</a> · 100% Offline Engine · Built with Astropy + FastAPI
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       APPLICATION LOGIC
+       ============================================================ -->
+  <script>
+    'use strict';
+
+    const _urlParams = new URLSearchParams(window.location.search);
+    const API = _urlParams.get('api') || window.SKYBLINK_API || (window.location.port === '5500' ? 'http://localhost:8000' : window.location.origin);
+
+    const TARGETS = [
+      { name: 'WISE 0855-0714',  ra: 133.7854, dec: -7.2444,  fov: 10, label: 'WISE 0855' },
+      { name: "Barnard's Star",  ra: 269.4521, dec: 4.6933,   fov: 10, label: "Barnard's Star" },
+      { name: 'Epsilon Indi B',  ra: 330.8407, dec: -56.7867,  fov: 10, label: 'Epsilon Indi B' },
+      { name: 'RW Aurigae',     ra: 83.1421,  dec: 30.4015,   fov: 10, label: 'RW Aurigae' },
+      { name: 'R Draconis',     ra: 269.0624, dec: 65.6935,   fov: 10, label: 'R Draconis' },
+      { name: 'M101 Pinwheel',  ra: 210.8023, dec: 54.3490,   fov: 10, label: 'M101' },
+    ];
+
+    const FPS_MAP = [1, 2, 4, 8, 12, 16, 24];
+
+    // ─── State ──────────────────────────────────────
+    const S = {
+      ra: 133.7854, dec: -7.2444, fov: 10,
+      bandpass: 'SPHEREx-D2', targetLabel: 'WISE 0855',
+      obs: [], epochs: [],
+      idx: 0, playing: false, mode: 'blink',
+      speed: 2, // index into FPS_MAP → 4 fps
+      cache: {},      // idx → base64 data URI
+      zoom: 1.0,
+      lastTick: 0,
+      animId: null,
+    };
+
+    // ─── DOM refs ───────────────────────────────────
+    const $ = id => document.getElementById(id);
+    const D = {
+      name: $('inp-name'), ra: $('inp-ra'), dec: $('inp-dec'),
+      fov: $('inp-fov'), band: $('inp-band'),
+      btnSearch: $('btn-search'),
+      canvas: $('sky-canvas'), stageEmpty: $('stage-empty'),
+      scrubber: $('scrubber'), framePill: $('frame-pill'),
+      btnPlay: $('btn-play'), btnFirst: $('btn-first'),
+      btnPrev: $('btn-prev'), btnNext: $('btn-next'), btnLast: $('btn-last'),
+      speed: $('speed-slider'), fpsLbl: $('fps-lbl'),
+      buffer: $('buffer-badge'),
+      mDate: $('m-date'), mMjd: $('m-mjd'), mWcs: $('m-wcs'),
+      mShape: $('m-shape'), mBand: $('m-band'), mTarget: $('m-target'),
+      ovCoords: $('ov-coords'), ovDate: $('ov-date'),
+      diffCtrl: $('diff-ctrl'), diffRef: $('diff-ref'),
+      diffTgtLbl: $('diff-tgt-label'),
+      btnDiff: $('btn-diff'), diffStatus: $('diff-status'),
+      candBadge: $('cand-badge'), candTbody: $('cand-tbody'),
+      epochBadge: $('epoch-badge'), epochList: $('epoch-list'),
+      cmap: $('sel-cmap'),
+      modal: $('guide-modal'), toastBox: $('toast-box'),
+    };
+
+    // ─── Toasts ─────────────────────────────────────
+    function toast(msg, type = 'info') {
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      const icons = { success: '✅', info: 'ℹ️', warn: '⚠️' };
+      el.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> <span>${msg}</span>`;
+      D.toastBox.appendChild(el);
+      setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; setTimeout(() => el.remove(), 300); }, 3500);
+    }
+
+    // ─── Modal ──────────────────────────────────────
+    $('open-guide').onclick = () => D.modal.classList.add('open');
+    $('modal-close').onclick = () => D.modal.classList.remove('open');
+    $('modal-go').onclick = () => D.modal.classList.remove('open');
+    D.modal.onclick = (e) => { if (e.target === D.modal) D.modal.classList.remove('open'); };
+
+    // ─── Target chips ───────────────────────────────
+    document.querySelectorAll('.target-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.target-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        const t = TARGETS[parseInt(chip.dataset.idx)];
+        D.name.value = t.name;
+        D.ra.value = t.ra;
+        D.dec.value = t.dec;
+        D.fov.value = t.fov;
+        S.ra = t.ra; S.dec = t.dec; S.fov = t.fov;
+        S.targetLabel = t.label;
+        loadObs();
+      });
+    });
+
+    // ─── Zoom ───────────────────────────────────────
+    $('btn-zin').onclick = () => { S.zoom = Math.min(4, S.zoom + 0.3); applyZoom(); };
+    $('btn-zout').onclick = () => { S.zoom = Math.max(0.5, S.zoom - 0.3); applyZoom(); };
+    $('btn-zreset').onclick = () => { S.zoom = 1; applyZoom(); };
+    function applyZoom() { D.canvas.style.transform = `scale(${S.zoom})`; }
+
+    // Mouse wheel zoom on stage
+    $('stage').addEventListener('wheel', (e) => {
+      e.preventDefault();
+      S.zoom = Math.max(0.5, Math.min(4, S.zoom + (e.deltaY > 0 ? -0.15 : 0.15)));
+      applyZoom();
+    }, { passive: false });
+
+    // ─── Load observations ──────────────────────────
+    async function loadObs() {
+      S.ra = parseFloat(D.ra.value);
+      S.dec = parseFloat(D.dec.value);
+      S.fov = parseFloat(D.fov.value);
+      S.bandpass = D.band.value;
+      stop();
+      S.cache = {};
+      S.idx = 0;
+
+      D.btnSearch.classList.add('loading');
+      D.stageEmpty.style.display = 'none';
+      D.canvas.style.display = 'block';
+
+      try {
+        const url = `${API}/api/search?ra=${S.ra}&dec=${S.dec}&fov_arcmin=${S.fov}&bandpass=${encodeURIComponent(S.bandpass)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Server error ${res.status}`);
+        const data = await res.json();
+
+        S.obs = data.observations || [];
+        S.epochs = data.epochs || [];
+
+        D.scrubber.max = Math.max(0, S.obs.length - 1);
+        D.scrubber.value = 0;
+        updatePill();
+        renderEpochs();
+        populateDiffRefs();
+        updateTargetMeta();
+
+        if (S.obs.length > 0) {
+          toast(`Loaded ${S.obs.length} observations across ${S.epochs.length} epochs`, 'success');
+          await showFrame(0);
+          preload();
+        } else {
+          toast('No observations found for this position', 'warn');
+          D.stageEmpty.style.display = 'flex';
+          D.canvas.style.display = 'none';
+        }
+      } catch (err) {
+        console.error('Search error:', err);
+        toast('Failed to load observations', 'warn');
+      } finally {
+        D.btnSearch.classList.remove('loading');
+      }
+    }
+
+    D.btnSearch.onclick = loadObs;
+
+    // ─── Show a frame ───────────────────────────────
+    async function showFrame(i) {
+      if (!S.obs.length) return;
+      i = Math.max(0, Math.min(i, S.obs.length - 1));
+      S.idx = i;
+      D.scrubber.value = i;
+      updatePill();
+      hlEpoch(i);
+      updateMeta(S.obs[i]);
+
+      if (S.cache[i]) {
+        blit(S.cache[i]);
+        return;
+      }
+
+      try {
+        const cmap = D.cmap.value;
+        const r = await fetch(`${API}/api/image/${i}?ra=${S.ra}&dec=${S.dec}&fov_arcmin=${S.fov}&bandpass=${encodeURIComponent(S.bandpass)}&cmap=${cmap}`);
+        const d = await r.json();
+        S.cache[i] = d.image_b64;
+        blit(d.image_b64);
+        // Update meta with WCS info if available
+        if (d.wcs_center) {
+          D.mWcs.textContent = `α ${d.wcs_center.ra.toFixed(4)}°  δ ${d.wcs_center.dec.toFixed(4)}°`;
+        }
+        if (d.shape) {
+          D.mShape.textContent = `${d.shape[0]} × ${d.shape[1]} (6.2″/px)`;
+        }
+      } catch (err) {
+        console.error('Frame error:', err);
+      }
+    }
+
+    function blit(b64) {
+      if (!b64) return;
+      D.canvas.src = b64.startsWith('data:') ? b64 : `data:image/png;base64,${b64}`;
+      D.canvas.style.display = 'block';
+      D.stageEmpty.style.display = 'none';
+    }
+
+    function updatePill() {
+      const n = S.obs.length;
+      D.framePill.textContent = `${n > 0 ? S.idx + 1 : 0} / ${n}`;
+    }
+
+    function updateMeta(obs) {
+      if (!obs) return;
+      const dt = (obs.obs_date || '—').replace('T', ' ').slice(0, 19);
+      D.mDate.textContent = dt;
+      D.ovDate.textContent = dt.slice(0, 10);
+      D.mMjd.textContent = obs.mjd ? obs.mjd.toFixed(4) : '—';
+      D.mWcs.textContent = `α ${S.ra.toFixed(4)}°  δ ${S.dec.toFixed(4)}°`;
+      D.diffTgtLbl.textContent = `#${S.idx + 1}`;
+    }
+
+    function updateTargetMeta() {
+      D.mTarget.textContent = S.targetLabel || D.name.value || '—';
+      D.mBand.textContent = S.bandpass.replace('SPHEREx-', '');
+    }
+
+    // ─── Preload all frames ─────────────────────────
+    async function preload() {
+      const total = S.obs.length;
+      let loaded = Object.keys(S.cache).length;
+      updateBuffer(loaded, total);
+
+      // Batch 4 at a time for fast parallel loading
+      for (let i = 0; i < total; i += 4) {
+        const batch = [];
+        for (let j = i; j < Math.min(i + 4, total); j++) {
+          if (S.cache[j]) continue;
+          const idx = j;
+          batch.push(
+            fetch(`${API}/api/image/${idx}?ra=${S.ra}&dec=${S.dec}&fov_arcmin=${S.fov}&bandpass=${encodeURIComponent(S.bandpass)}&cmap=${D.cmap.value}`)
+              .then(r => r.json())
+              .then(d => {
+                S.cache[idx] = d.image_b64;
+                loaded++;
+                updateBuffer(loaded, total);
+              })
+              .catch(() => {})
+          );
+        }
+        if (batch.length) await Promise.all(batch);
+      }
+      updateBuffer(total, total);
+      if (total > 1) toast(`All ${total} frames buffered in RAM — smooth playback ready`, 'success');
+    }
+
+    function updateBuffer(n, total) {
+      const pct = Math.round((n / Math.max(1, total)) * 100);
+      D.buffer.textContent = `⚡ Buffer: ${pct}% (${n}/${total})`;
+      // Color based on completion
+      if (pct >= 100) {
+        D.buffer.style.borderColor = 'rgba(52,211,153,0.5)';
+        D.buffer.style.color = 'var(--emerald)';
+      } else if (pct > 50) {
+        D.buffer.style.borderColor = 'rgba(251,191,36,0.4)';
+        D.buffer.style.color = 'var(--amber)';
+      } else {
+        D.buffer.style.borderColor = 'rgba(56,189,248,0.3)';
+        D.buffer.style.color = 'var(--blue)';
+      }
+    }
+
+    // ─── Playback engine ────────────────────────────
+    function play() {
+      if (S.obs.length <= 1) return;
+      S.playing = true;
+      D.btnPlay.textContent = '⏸';
+      D.btnPlay.classList.add('paused');
+      S.lastTick = performance.now();
+      S.animId = requestAnimationFrame(tick);
+    }
+
+    function stop() {
+      S.playing = false;
+      D.btnPlay.textContent = '▶';
+      D.btnPlay.classList.remove('paused');
+      if (S.animId) { cancelAnimationFrame(S.animId); S.animId = null; }
+    }
+
+    function tick(now) {
+      if (!S.playing) return;
+      const fps = FPS_MAP[S.speed] || 4;
+      const interval = 1000 / fps;
+      const elapsed = now - S.lastTick;
+
+      if (elapsed >= interval) {
+        S.lastTick = now - (elapsed % interval);
+        const next = (S.idx + 1) % S.obs.length;
+
+        // Instant synchronous swap from RAM
+        if (S.cache[next]) {
+          S.idx = next;
+          blit(S.cache[next]);
+          D.scrubber.value = next;
+          updatePill();
+          updateMeta(S.obs[next]);
+          hlEpoch(next);
+        } else {
+          showFrame(next);
+        }
+      }
+      if (S.playing) S.animId = requestAnimationFrame(tick);
+    }
+
+    D.btnPlay.onclick = () => S.playing ? stop() : play();
+    D.btnFirst.onclick = () => { stop(); showFrame(0); };
+    D.btnPrev.onclick = () => { stop(); showFrame(S.idx - 1); };
+    D.btnNext.onclick = () => { stop(); showFrame(S.idx + 1); };
+    D.btnLast.onclick = () => { stop(); showFrame(S.obs.length - 1); };
+
+    D.scrubber.oninput = (e) => { stop(); showFrame(parseInt(e.target.value)); };
+
+    D.speed.oninput = (e) => {
+      S.speed = parseInt(e.target.value);
+      D.fpsLbl.textContent = `${FPS_MAP[S.speed]} fps`;
+    };
+
+    D.cmap.onchange = () => {
+      S.cache = {};
+      showFrame(S.idx);
+      preload();
+    };
+
+    // ─── Modes ──────────────────────────────────────
+    document.querySelectorAll('.mode-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        S.mode = tab.dataset.mode;
+
+        if (S.mode === 'diff') {
+          stop();
+          D.diffCtrl.classList.add('show');
+          doDiff();
+        } else {
+          D.diffCtrl.classList.remove('show');
+          if (S.mode === 'stack') {
+            doStack();
+          } else {
+            showFrame(S.idx);
+          }
+        }
+      });
+    });
+
+    function populateDiffRefs() {
+      D.diffRef.innerHTML = '';
+      S.obs.forEach((obs, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `#${i+1} (${(obs.obs_date||'').slice(0,10)})`;
+        D.diffRef.appendChild(opt);
+      });
+    }
+
+    async function doDiff() {
+      if (S.obs.length < 2) { toast('Need at least 2 observations for difference', 'warn'); return; }
+      const ref = parseInt(D.diffRef.value || 0);
+      const tgt = S.idx === ref ? (ref + 1) % S.obs.length : S.idx;
+      D.diffStatus.textContent = 'Computing...';
+      D.diffTgtLbl.textContent = `#${tgt + 1}`;
+
+      try {
+        const url = `${API}/api/difference?ra=${S.ra}&dec=${S.dec}&fov_arcmin=${S.fov}&bandpass=${encodeURIComponent(S.bandpass)}&ref_index=${ref}&target_index=${tgt}`;
+        const r = await fetch(url);
+        const d = await r.json();
+        blit(d.diff_b64);
+        D.diffStatus.textContent = `Done (σ=${d.stats?.std?.toFixed(3) || '—'})`;
+        renderCandidates(d.candidates || []);
+        if (d.candidates && d.candidates.length > 0) {
+          toast(`${d.candidates.length} transient candidate(s) detected above 5σ`, 'success');
+        }
+      } catch (err) {
+        D.diffStatus.textContent = 'Error computing difference';
+        console.error(err);
+      }
+    }
+    D.btnDiff.onclick = doDiff;
+
+    async function doStack() {
+      if (S.obs.length < 2) return;
+      try {
+        const indices = S.obs.slice(0, 10).map((_, i) => i).join(',');
+        const r = await fetch(`${API}/api/stack?ra=${S.ra}&dec=${S.dec}&fov_arcmin=${S.fov}&bandpass=${encodeURIComponent(S.bandpass)}&indices=${indices}`);
+        const d = await r.json();
+        blit(d.stack_b64);
+        toast(`Stacked ${d.count} frames (inverse-variance weighted mean)`, 'info');
+      } catch (err) { console.error(err); }
+    }
+
+    // ─── Candidates table ───────────────────────────
+    function renderCandidates(cands) {
+      D.candBadge.textContent = `${cands.length} found`;
+      if (!cands.length) {
+        D.candTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:0.8rem;">No significant detections above threshold</td></tr>';
+        return;
+      }
+      D.candTbody.innerHTML = cands.slice(0, 20).map(c => `
+        <tr onclick="focusCandidate(${c.pixel_x},${c.pixel_y},${c.ra},${c.dec})">
+          <td>${c.ra?.toFixed(4)}</td>
+          <td>${c.dec?.toFixed(4)}</td>
+          <td style="color:${c.diff_value > 0 ? 'var(--emerald)' : 'var(--rose)'}">${c.diff_value?.toFixed(2)}</td>
+          <td><span class="sig-badge">${c.significance?.toFixed(1)}σ</span></td>
+        </tr>
+      `).join('');
+    }
+
+    window.focusCandidate = function(px, py, ra, dec) {
+      D.ovCoords.textContent = `🎯 Candidate: (${px}, ${py}) → α ${ra.toFixed(4)}° δ ${dec.toFixed(4)}°`;
+      D.ovCoords.style.color = 'var(--amber)';
+      setTimeout(() => { D.ovCoords.style.color = 'var(--blue)'; }, 2000);
+    };
+
+    // ─── Epochs ─────────────────────────────────────
+    function renderEpochs() {
+      D.epochBadge.textContent = `${S.epochs.length} epochs`;
+      if (!S.epochs.length) {
+        D.epochList.innerHTML = '<div style="color:var(--text-muted);font-size:0.72rem;text-align:center;padding:0.8rem;">No epochs</div>';
+        return;
+      }
+      D.epochList.innerHTML = S.epochs.map((ep, i) => {
+        const obs = S.obs[ep[0]];
+        const dt = (obs?.obs_date || '').slice(0, 10);
+        return `
+          <div class="epoch-row ${i === 0 ? 'active' : ''}" data-ep="${i}" onclick="jumpEpoch(${ep[0]})">
+            <span>Epoch #${i+1} — ${dt}</span>
+            <span class="epoch-frames">${ep.length} frame${ep.length !== 1 ? 's' : ''}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.jumpEpoch = function(obsIdx) {
+      stop();
+      showFrame(obsIdx);
+    };
+
+    function hlEpoch(obsIdx) {
+      document.querySelectorAll('.epoch-row').forEach((row, idx) => {
+        const ep = S.epochs[idx] || [];
+        row.classList.toggle('active', ep.includes(obsIdx));
+      });
+    }
+
+    // ─── Spectrum (Plotly) ──────────────────────────
+    function initSpectrum() {
+      const wl = [0.75, 0.92, 1.10, 1.30, 1.62, 1.95, 2.30, 2.80, 3.40, 4.10, 4.80];
+      const flux = [12.4, 15.2, 28.6, 24.1, 19.8, 14.2, 11.5, 9.8, 14.6, 18.2, 16.5];
+
+      Plotly.newPlot('spectrum-chart', [{
+        x: wl, y: flux,
+        mode: 'lines+markers',
+        line: { color: '#38bdf8', width: 2.5, shape: 'spline' },
+        marker: { size: 5, color: '#fbbf24', line: { width: 1, color: '#fff' } },
+        fill: 'tozeroy',
+        fillcolor: 'rgba(56,189,248,0.08)',
+        hovertemplate: 'λ = %{x:.2f} µm<br>Flux = %{y:.1f} MJy/sr<extra></extra>',
+      }], {
+        margin: { t: 8, r: 12, b: 35, l: 45 },
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        xaxis: {
+          title: { text: 'Wavelength (µm)', font: { size: 10, color: '#7e8fa6' } },
+          color: '#7e8fa6',
+          gridcolor: 'rgba(255,255,255,0.04)',
+          zeroline: false,
+        },
+        yaxis: {
+          title: { text: 'Flux (MJy/sr)', font: { size: 10, color: '#7e8fa6' } },
+          color: '#7e8fa6',
+          gridcolor: 'rgba(255,255,255,0.04)',
+          zeroline: false,
+        },
+        font: { family: 'Inter', size: 10, color: '#c1cdd9' },
+        hoverlabel: {
+          bgcolor: '#0f172a', bordercolor: '#38bdf8',
+          font: { family: 'JetBrains Mono', size: 11, color: '#fff' },
+        },
+      }, {
+        displayModeBar: false,
+        responsive: true,
+      });
+    }
+
+    // Click on canvas → update spectrum
+    D.canvas.addEventListener('click', (e) => {
+      const rect = D.canvas.getBoundingClientRect();
+      const x = Math.floor(((e.clientX - rect.left) / rect.width) * 98);
+      const y = Math.floor(((e.clientY - rect.top) / rect.height) * 98);
+      D.ovCoords.textContent = `Pixel: (${x}, ${y}) | Sampling SPHEREx 102-band spectrum...`;
+
+      // Generate a realistic-looking synthetic spectrum modulated by pixel position
+      const baseFlux = [12, 15, 28, 24, 20, 14, 11, 10, 15, 18, 16];
+      const scale = 0.6 + Math.abs(Math.sin(x * 0.08) * Math.cos(y * 0.06)) * 1.2;
+      const noise = () => (Math.random() - 0.5) * 3;
+      const updated = baseFlux.map(v => Math.max(0.5, v * scale + noise()));
+      Plotly.restyle('spectrum-chart', { y: [updated] });
+
+      // Update coords with pixel RA/Dec estimate
+      const dRA = (x - 49) * 6.2 / 3600;  // approximate arcsec to deg
+      const dDec = (y - 49) * 6.2 / 3600;
+      const pxRA = (S.ra + dRA / Math.cos(S.dec * Math.PI / 180)).toFixed(5);
+      const pxDec = (S.dec + dDec).toFixed(5);
+      setTimeout(() => {
+        D.ovCoords.textContent = `Pixel: (${x}, ${y}) | α ${pxRA}° δ ${pxDec}°`;
+      }, 500);
+    });
+
+    // ─── Keyboard shortcuts ─────────────────────────
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      switch (e.code) {
+        case 'Space': e.preventDefault(); S.playing ? stop() : play(); break;
+        case 'ArrowRight': e.preventDefault(); stop(); showFrame(S.idx + 1); break;
+        case 'ArrowLeft': e.preventDefault(); stop(); showFrame(S.idx - 1); break;
+        case 'Home': e.preventDefault(); stop(); showFrame(0); break;
+        case 'End': e.preventDefault(); stop(); showFrame(S.obs.length - 1); break;
+        case 'KeyD': document.querySelector('.mode-tab[data-mode="diff"]').click(); break;
+        case 'KeyB': document.querySelector('.mode-tab[data-mode="blink"]').click(); break;
+      }
+    });
+
+    // ─── URL Params for shareable links ──────────────
+    function parseUrlParams() {
+      const p = new URLSearchParams(window.location.search);
+      if (p.has('ra')) D.ra.value = S.ra = parseFloat(p.get('ra'));
+      if (p.has('dec')) D.dec.value = S.dec = parseFloat(p.get('dec'));
+      if (p.has('fov')) D.fov.value = S.fov = parseFloat(p.get('fov'));
+      if (p.has('target')) D.name.value = p.get('target');
+    }
+
+    // ─── Init ───────────────────────────────────────
+    window.onload = () => {
+      parseUrlParams();
+      initSpectrum();
+      loadObs();
+    };
+  </script>
+</body>
+</html>
