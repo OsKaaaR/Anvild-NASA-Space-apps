@@ -450,6 +450,19 @@ def stack(
 # ---------------------------------------------------------------------------
 
 
+@app.get("/Logo.png")
+@app.get("/logo.png")
+def serve_logo():
+    for candidate in [
+        os.path.join(FRONTEND_DIR, "logo_thumb.png"),
+        os.path.join(FRONTEND_DIR, "Logo.png"),
+        os.path.join(PROJECT_ROOT, "Logo.png"),
+    ]:
+        if os.path.isfile(candidate):
+            return FileResponse(candidate, media_type="image/png")
+    raise HTTPException(status_code=404, detail="Logo not found")
+
+
 @app.get("/")
 @app.get("/app")
 def serve_frontend():
