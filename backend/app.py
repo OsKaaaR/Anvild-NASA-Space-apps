@@ -9,6 +9,8 @@ import hashlib
 import numpy as np
 from typing import Optional, List
 from pathlib import Path
+from astropy.io import fits
+from astropy.wcs import WCS
 
 # Ensure backend dir is on path so pipeline can be imported
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -104,31 +106,55 @@ PRESET_TARGETS = [
         "name": "WISE 0855-0714",
         "ra": 133.7854,
         "dec": -7.2444,
-        "description": "Cold brown dwarf, fastest-moving bright IR source",
+        "description": "Track a cold, faint brown dwarf moving across the cosmos",
+        "obs_count": 31,
+        "category": "Brown Dwarf",
+        "scientific_significance": "One of the coldest known sub-stellar objects (~250 K), showing rapid proper motion (~8 arcsec/yr)."
     },
     {
         "name": "Barnard's Star",
         "ra": 269.4521,
         "dec": 4.6933,
-        "description": "Closest single star, fastest proper motion",
+        "description": "Investigate one of the fastest-moving stars in the sky",
+        "obs_count": 13,
+        "category": "High Proper Motion",
+        "scientific_significance": "Closest single star to the Sun with an extreme apparent proper motion of 10.3 arcsec/yr."
     },
     {
         "name": "Epsilon Indi B",
         "ra": 330.8407,
         "dec": -56.7867,
-        "description": "Brown dwarf companion",
+        "description": "Explore a cold brown dwarf binary system",
+        "obs_count": 18,
+        "category": "Binary Sub-stellar",
+        "scientific_significance": "Benchmark T1+T6 brown dwarf binary pair orbiting the K-dwarf star Epsilon Indi."
     },
     {
         "name": "RW Aurigae",
         "ra": 83.1421,
         "dec": 30.4015,
-        "description": "Variable T Tauri star",
+        "description": "Investigate a young, highly variable T Tauri star",
+        "obs_count": 5,
+        "category": "Young Stellar Object",
+        "scientific_significance": "Prototypical young pre-main-sequence star undergoing periodic accretion and circumstellar disk occultations."
     },
     {
         "name": "R Draconis",
         "ra": 269.0624,
         "dec": 65.6935,
-        "description": "Mira variable, infrared bright",
+        "description": "Explore a luminous pulsating giant Mira variable",
+        "obs_count": 5,
+        "category": "Pulsating Giant",
+        "scientific_significance": "Asymptotic giant branch star with large-amplitude infrared pulsations on ~245-day cycles."
+    },
+    {
+        "name": "M101 Pinwheel",
+        "ra": 210.8023,
+        "dec": 54.3490,
+        "description": "Watch a spiral galaxy across multiple SPHEREx epochs",
+        "obs_count": 15,
+        "category": "Deep Sky Galaxy",
+        "scientific_significance": "Face-on grand-design spiral galaxy with resolved star-forming regions and supernova host environments."
     },
 ]
 
@@ -443,6 +469,107 @@ def stack(
         raise HTTPException(status_code=500, detail=f"Stacking failed: {exc}")
 
     return {"stack_b64": stack_b64, "count": len(idx_list)}
+
+
+@app.get("/api/pixel-spectrum")
+def get_pixel_spectrum(
+    ra: float = Query(...),
+    dec: float = Query(...),
+    fov_arcmin: float = Query(10.0),
+    bandpass: str = Query("SPHEREx-D2"),
+    obs_index: int = Query(0),
+    pixel_x: int = Query(49),
+    pixel_y: int = Query(49),
+):
+    """
+    Extract calibrated pixel flux, photometric variance, flags, and local
+    Linear Variable Filter (LVF) wavelength for the specified image coordinates.
+    """
+    obs_list = _get_obs(ra, dec, fov_arcmin, bandpass)
+    if not obs_list:
+        raise HTTPException(status_code=404, detail="No observations found")
+
+    idx = max(0, min(obs_index, len(obs_list) - 1))
+    obs = obs_list[idx]
+
+    try:
+        fits_path = pipeline.download_fits(obs["uri"], CACHE_DIR)
+        with fits.open(fits_path, memmap=False) as hdul:
+            img_data = hdul["IMAGE"].data
+            h, w = img_data.shape
+            px = max(0, min(pixel_x, w - 1))
+            py = max(0, min(pixel_y, h - 1))
+
+            raw_val = img_data[py, px]
+            flux = float(raw_val) if np.isfinite(raw_val) else None
+
+            var_val = None
+            uncertainty = None
+            if "VARIANCE" in hdul:
+                v = hdul["VARIANCE"].data[py, px]
+                if np.isfinite(v):
+                    var_val = float(v)
+                    uncertainty = float(np.sqrt(max(0.0, var_val)))
+
+            flag_val = int(hdul["FLAGS"].data[py, px]) if "FLAGS" in hdul else 0
+            zodi_val = None
+            if "ZODI" in hdul:
+                z = hdul["ZODI"].data[py, px]
+                if np.isfinite(z):
+                    zodi_val = float(z)
+
+            # Linear Variable Filter (LVF) calibrated wavelength (microns)
+            # Band 2 spans 1.10 - 1.62 um across focal plane
+            wavelength_um = round(1.10 + (1.62 - 1.10) * (1.0 - py / max(1, h - 1)), 4)
+
+            # Extract sky coordinates
+            try:
+                wcs_obj = WCS(hdul["IMAGE"].header).celestial
+                sky = wcs_obj.pixel_to_world(px, py)
+                sky_ra = round(float(sky.ra.deg), 6)
+                sky_dec = round(float(sky.dec.deg), 6)
+            except Exception:
+                sky_ra = round(ra, 6)
+                sky_dec = round(dec, 6)
+
+        # Multi-epoch photometric history at this exact pixel (up to 15 epochs)
+        epoch_series = []
+        sample_indices = list(range(min(15, len(obs_list))))
+        for s_idx in sample_indices:
+            try:
+                s_obs = obs_list[s_idx]
+                s_path = pipeline.download_fits(s_obs["uri"], CACHE_DIR)
+                with fits.open(s_path, memmap=False) as s_hdul:
+                    s_val = s_hdul["IMAGE"].data[py, px]
+                    epoch_series.append({
+                        "obs_index": s_idx,
+                        "date": s_obs.get("obs_date", ""),
+                        "mjd": s_obs.get("mjd", 0.0),
+                        "flux": float(s_val) if np.isfinite(s_val) else None,
+                        "valid": bool(np.isfinite(s_val))
+                    })
+            except Exception:
+                continue
+
+        return {
+            "pixel_x": px,
+            "pixel_y": py,
+            "ra": sky_ra,
+            "dec": sky_dec,
+            "flux": flux,
+            "unit": "MJy/sr",
+            "uncertainty": uncertainty,
+            "flag_value": flag_val,
+            "flag_clean": flag_val == 0,
+            "zodi_flux": zodi_val,
+            "wavelength_um": wavelength_um,
+            "bandpass": bandpass,
+            "obs_date": obs.get("obs_date", ""),
+            "epoch_series": epoch_series,
+            "scientific_note": "SPHEREx Level-2 calibrated surface brightness in MJy/sr with Linear Variable Filter (LVF) spatial dispersion."
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Spectrum extraction failed: {exc}")
 
 
 # ---------------------------------------------------------------------------

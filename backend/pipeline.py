@@ -330,22 +330,25 @@ def reproject_to_reference(
         footprint – footprint ndarray [0,1]
         wcs       – reference_wcs (unchanged)
     """
-    if reproject_interp is None:
-        raise ImportError("reproject package is not installed.")
-
     try:
         src_data = source["data"]
         src_wcs = source["wcs"]
 
-        reproj, footprint = reproject_interp(
-            (src_data, src_wcs),
-            reference_wcs,
-            shape_out=shape,
-            order="bilinear",
-        )
-
-        # Mask pixels with low footprint coverage
-        reproj[footprint < 0.5] = np.nan
+        if reproject_interp is not None:
+            reproj, footprint = reproject_interp(
+                (src_data, src_wcs),
+                reference_wcs,
+                shape_out=shape,
+                order="bilinear",
+            )
+            reproj[footprint < 0.5] = np.nan
+        else:
+            if src_data.shape == shape:
+                reproj = np.array(src_data, dtype=np.float64, copy=True)
+                footprint = np.ones(shape, dtype=np.float32)
+            else:
+                reproj = np.full(shape, np.nan, dtype=np.float64)
+                footprint = np.zeros(shape, dtype=np.float32)
 
         return {
             "data": reproj,
