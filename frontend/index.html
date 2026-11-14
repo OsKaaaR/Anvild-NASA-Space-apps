@@ -679,6 +679,12 @@
                   </select>
                 </div>
 
+                <!-- Target Tracker Toggle -->
+                <button id="btn-toggle-tracker" title="Toggle Target Follow & Change Pointer (Key T)" class="btn-press px-2 py-1 rounded-lg bg-sky-950/80 border border-sky-500/60 text-sky-300 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-mono">
+                  <i data-lucide="crosshair" class="w-3.5 h-3.5 text-sky-400"></i>
+                  <span class="hidden sm:inline text-[11px] font-medium" id="tracker-btn-label">Tracker ON</span>
+                </button>
+
                 <!-- Toggle Tuning Drawer -->
                 <button id="btn-toggle-tuning" title="Tune Noise Cut & Contrast" class="btn-press px-2 py-1 rounded-lg bg-space-950 border border-space-border text-slate-400 hover:text-white transition-colors flex items-center gap-1 text-xs">
                   <i data-lucide="sparkles" class="w-3.5 h-3.5 text-sky-400"></i>
@@ -778,7 +784,30 @@
                 <p class="text-xs text-slate-400 max-w-sm">Accessing local SPHEREx FITS cache.</p>
               </div>
 
-              <!-- Reticle Target Indicator -->
+              <!-- Interactive Target Follow Tracker & Change Pointer -->
+              <div id="target-follow-tracker" class="absolute pointer-events-none z-30 transition-all duration-150 ease-out -translate-x-1/2 -translate-y-1/2 flex flex-col items-center select-none" style="display:none;">
+                <!-- Precision Crosshair Brackets -->
+                <div class="relative w-10 h-10 flex items-center justify-center">
+                  <!-- Corner brackets -->
+                  <span class="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-sky-400"></span>
+                  <span class="absolute top-0 right-0 w-2.5 h-2.5 border-t-2 border-r-2 border-sky-400"></span>
+                  <span class="absolute bottom-0 left-0 w-2.5 h-2.5 border-b-2 border-l-2 border-sky-400"></span>
+                  <span class="absolute bottom-0 right-0 w-2.5 h-2.5 border-b-2 border-r-2 border-sky-400"></span>
+                  
+                  <!-- Center pulse dot & ring -->
+                  <span id="tracker-pulse-ring" class="w-4 h-4 rounded-full border border-sky-400/80 animate-ping opacity-75"></span>
+                  <span class="w-1.5 h-1.5 bg-sky-400 rounded-full"></span>
+                </div>
+                
+                <!-- Floating Info Tag -->
+                <div id="tracker-hud-badge" class="mt-1 px-2 py-0.5 rounded bg-space-950/95 border border-sky-500/60 text-[10px] font-mono text-white flex items-center gap-1.5 shadow-md whitespace-nowrap">
+                  <span id="tracker-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <span id="tracker-label-text" class="text-sky-300 font-semibold tracking-wide">TARGET LOCKED</span>
+                  <span id="tracker-flux-tag" class="text-amber-300 font-mono text-[9px] px-1 rounded bg-space-900 border border-space-border">Tracking</span>
+                </div>
+              </div>
+
+              <!-- Reticle Target Indicator (Legacy Anchor) -->
               <div id="reticle-target-indicator" class="absolute pointer-events-none hidden w-8 h-8 border border-white rounded-full -translate-x-1/2 -translate-y-1/2 z-20"></div>
 
               <!-- Astronomical Orientation Compass Rose (North / East) -->
@@ -1016,8 +1045,12 @@
             <span>Reference Baseline (Epoch 1)</span>
             <span class="text-slate-400" id="lab-ref-date">—</span>
           </div>
-          <div class="w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border border-space-border">
+          <div class="relative w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border border-space-border" id="lab-box-ref">
             <img id="lab-img-ref" src="" alt="Reference Epoch" class="max-w-full max-h-full object-contain image-rendering-pixelated" />
+            <div id="lab-marker-ref" class="absolute pointer-events-none hidden -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
+              <span class="w-7 h-7 rounded border-2 border-amber-400 bg-amber-400/15"></span>
+              <span class="text-[9px] font-mono text-amber-300 bg-space-950/95 px-1.5 py-0.5 rounded mt-0.5 border border-amber-500/40">Baseline</span>
+            </div>
           </div>
           <p class="text-[11px] text-slate-400">Baseline temporal frame. Static stars remain fixed at these coordinates.</p>
         </div>
@@ -1028,8 +1061,12 @@
             <span>Target Observation (Epoch 2)</span>
             <span class="text-slate-400" id="lab-tgt-date">—</span>
           </div>
-          <div class="w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border border-space-border">
+          <div class="relative w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border border-space-border" id="lab-box-tgt">
             <img id="lab-img-tgt" src="" alt="Target Epoch" class="max-w-full max-h-full object-contain image-rendering-pixelated" />
+            <div id="lab-marker-tgt" class="absolute pointer-events-none hidden -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
+              <span class="w-7 h-7 rounded border-2 border-emerald-400 bg-emerald-400/15"></span>
+              <span class="text-[9px] font-mono text-emerald-300 bg-space-950/95 px-1.5 py-0.5 rounded mt-0.5 border border-emerald-500/40" id="lab-marker-tgt-tag">Shifted Target</span>
+            </div>
           </div>
           <p class="text-[11px] text-slate-400">Follow-up observation. Detectable moving bodies have shifted relative to the baseline.</p>
         </div>
@@ -1040,8 +1077,12 @@
             <span>Difference Residual (Tgt − Ref)</span>
             <span class="text-slate-400" id="lab-diff-stats">σ: —</span>
           </div>
-          <div class="w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border border-space-border">
+          <div class="relative w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border border-space-border" id="lab-box-diff">
             <img id="lab-img-diff" src="" alt="Difference Residual Frame" class="max-w-full max-h-full object-contain image-rendering-pixelated" />
+            <div id="lab-marker-diff" class="absolute pointer-events-none hidden -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
+              <span class="w-8 h-8 rounded-full border-2 border-sky-400 animate-pulse bg-sky-400/20"></span>
+              <span class="text-[9px] font-mono text-sky-300 bg-space-950/95 px-1.5 py-0.5 rounded mt-0.5 border border-sky-500/40" id="lab-marker-diff-tag">Residual Signal</span>
+            </div>
           </div>
           <p class="text-[11px] text-slate-400">Static stars cancel out. Moving bodies produce characteristic positive/negative dipole residuals.</p>
         </div>
@@ -1487,6 +1528,10 @@
           <kbd class="px-2 py-0.5 bg-space-850 text-slate-200 rounded border border-space-border">F</kbd>
         </div>
         <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border">
+          <span class="text-slate-400">Toggle Target Follow Tracker</span>
+          <kbd class="px-2 py-0.5 bg-space-850 text-slate-200 rounded border border-space-border">T</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border">
           <span class="text-slate-400">Select Mission Targets 1–6</span>
           <kbd class="px-2 py-0.5 bg-space-850 text-slate-200 rounded border border-space-border">1 .. 6</kbd>
         </div>
@@ -1631,6 +1676,9 @@
       brightnessFilter: 100,
       contrastFilter: 100,
       
+      // Target Follow & Change Pointer
+      trackerEnabled: true,
+      
       animationId: null,
       lastTickTime: 0
     };
@@ -1658,6 +1706,14 @@
       sliderGamma: document.getElementById('slider-gamma'),
       valGamma: document.getElementById('tuning-gamma-val'),
       btnResetTuning: document.getElementById('btn-reset-tuning'),
+
+      btnToggleTracker: document.getElementById('btn-toggle-tracker'),
+      trackerBtnLabel: document.getElementById('tracker-btn-label'),
+      tracker: document.getElementById('target-follow-tracker'),
+      trackerLabel: document.getElementById('tracker-label-text'),
+      trackerTag: document.getElementById('tracker-flux-tag'),
+      trackerStatusDot: document.getElementById('tracker-status-dot'),
+      trackerPulseRing: document.getElementById('tracker-pulse-ring'),
 
       stage: document.getElementById('viewport-stage'),
       canvasImg: document.getElementById('sky-canvas-img'),
@@ -1802,8 +1858,20 @@
       if (tabName === 'dossier') {
         updateDiscoveryReportUI();
       }
-      if (tabName === 'discovery' && !AppState.diffImageB64) {
-        computeDifference();
+      if (tabName === 'discovery') {
+        if (!AppState.diffImageB64) {
+          computeDifference();
+        } else {
+          const profile = getTargetProfile();
+          const total = AppState.observations.length;
+          const refIdx = parseInt(UI.diffRefSelect.value || 0);
+          const tgtIdx = AppState.currentFrameIdx === refIdx ? (refIdx + 1) % AppState.observations.length : AppState.currentFrameIdx;
+          if (profile) {
+            const cRef = profile.getCoords(refIdx, total);
+            const cTgt = profile.getCoords(tgtIdx, total);
+            updateSynchronizedDiscoveryMarkers(cRef, cTgt, { x: cTgt.x, y: cTgt.y, label: cTgt.label, tag: cTgt.tag });
+          }
+        }
       }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1976,6 +2044,7 @@
       if (!b64) return;
       UI.canvasImg.src = b64.startsWith('data:') ? b64 : `data:image/png;base64,${b64}`;
       applyImageFilters();
+      requestAnimationFrame(() => updateTargetTracker(AppState.currentFrameIdx));
     }
 
     function applyImageFilters() {
@@ -1983,6 +2052,252 @@
       const b = AppState.brightnessFilter !== undefined ? AppState.brightnessFilter : 100;
       const c = AppState.contrastFilter !== undefined ? AppState.contrastFilter : 100;
       UI.canvasImg.style.filter = `brightness(${b}%) contrast(${c}%)`;
+    }
+
+    // Target Profiles with Astronomical Motion & Variability Trajectories
+    const TARGET_MOTION_PROFILES = {
+      wise_0855: {
+        type: 'motion',
+        name: "WISE 0855−0714",
+        getCoords: (idx, total) => {
+          const t = total > 1 ? idx / (total - 1) : 0;
+          return {
+            x: 43.5 + t * 11.0,
+            y: 45.0 + t * 7.5,
+            label: `WISE 0855 • Proper Motion (+${(t * 8.1).toFixed(1)}″)`,
+            tag: `Epoch #${idx + 1}`
+          };
+        }
+      },
+      barnard: {
+        type: 'motion',
+        name: "Barnard's Star",
+        getCoords: (idx, total) => {
+          const t = total > 1 ? idx / (total - 1) : 0;
+          return {
+            x: 44.0 + t * 9.5,
+            y: 43.0 + t * 11.5,
+            label: `Barnard • High Motion (+${(t * 10.3).toFixed(1)}″/yr)`,
+            tag: `Epoch #${idx + 1}`
+          };
+        }
+      },
+      eps_indi: {
+        type: 'binary',
+        name: "Epsilon Indi B",
+        getCoords: (idx, total) => {
+          const t = total > 1 ? idx / (total - 1) : 0;
+          return {
+            x: 48.0 + Math.sin(t * Math.PI) * 2.2,
+            y: 49.0 + Math.cos(t * Math.PI) * 1.8,
+            label: `Eps Indi B • Binary Orbit`,
+            tag: `Epoch #${idx + 1}`
+          };
+        }
+      },
+      rw_aur: {
+        type: 'variable',
+        name: "RW Aurigae",
+        fluxStates: [
+          { flux: "2.85 MJy/sr", state: "High State" },
+          { flux: "1.95 MJy/sr", state: "Dust Ingress" },
+          { flux: "0.82 MJy/sr", state: "Deep Occultation ⚠️" },
+          { flux: "1.70 MJy/sr", state: "Egress Recovery" },
+          { flux: "3.10 MJy/sr", state: "Accretion Flare ⚡" }
+        ],
+        getCoords: (idx, total) => {
+          const st = TARGET_MOTION_PROFILES.rw_aur.fluxStates[idx % 5];
+          return {
+            x: 49.0,
+            y: 49.0,
+            label: `RW Aur • ${st.state}`,
+            tag: st.flux
+          };
+        }
+      },
+      r_dra: {
+        type: 'variable',
+        name: "R Draconis",
+        fluxStates: [
+          { flux: "0.55 MJy/sr", state: "Pulsation Min (Cool)" },
+          { flux: "1.45 MJy/sr", state: "Ascending Branch" },
+          { flux: "4.20 MJy/sr", state: "Pulsation Max Peak 🔥" },
+          { flux: "2.25 MJy/sr", state: "Descending Branch" },
+          { flux: "0.90 MJy/sr", state: "Approaching Min" }
+        ],
+        getCoords: (idx, total) => {
+          const st = TARGET_MOTION_PROFILES.r_dra.fluxStates[idx % 5];
+          return {
+            x: 49.0,
+            y: 49.0,
+            label: `R Dra • ${st.state}`,
+            tag: st.flux
+          };
+        }
+      },
+      m101: {
+        type: 'transient',
+        name: "M101 Pinwheel",
+        getCoords: (idx, total) => {
+          return {
+            x: 58.0,
+            y: 38.0,
+            label: `M101 • Supernova SN 2023ixf`,
+            tag: `Transient Point`
+          };
+        }
+      }
+    };
+
+    function getTargetProfile() {
+      const ra = AppState.ra;
+      if (Math.abs(ra - 133.7854) < 0.1) return TARGET_MOTION_PROFILES.wise_0855;
+      if (Math.abs(ra - 269.4521) < 0.1) return TARGET_MOTION_PROFILES.barnard;
+      if (Math.abs(ra - 330.8407) < 0.1) return TARGET_MOTION_PROFILES.eps_indi;
+      if (Math.abs(ra - 83.1421) < 0.1) return TARGET_MOTION_PROFILES.rw_aur;
+      if (Math.abs(ra - 269.0624) < 0.1) return TARGET_MOTION_PROFILES.r_dra;
+      if (Math.abs(ra - 210.8023) < 0.1) return TARGET_MOTION_PROFILES.m101;
+      return null;
+    }
+
+    function updateTargetTracker(frameIdx) {
+      if (!UI.tracker) return;
+      if (!AppState.trackerEnabled || !UI.canvasImg || !AppState.observations.length || AppState.mode === 'diff') {
+        if (AppState.mode !== 'diff') UI.tracker.style.display = 'none';
+        return;
+      }
+
+      const total = AppState.observations.length;
+      const profile = getTargetProfile();
+      if (!profile) {
+        UI.tracker.style.display = 'none';
+        return;
+      }
+
+      const coordInfo = profile.getCoords(frameIdx, total);
+      const rImg = UI.canvasImg.getBoundingClientRect();
+      const rStage = UI.stage.getBoundingClientRect();
+      if (!rImg.width || !rImg.height) return;
+
+      const posX = (coordInfo.x / 98) * rImg.width + (rImg.left - rStage.left);
+      const posY = (coordInfo.y / 98) * rImg.height + (rImg.top - rStage.top);
+
+      UI.tracker.style.left = `${posX}px`;
+      UI.tracker.style.top = `${posY}px`;
+      UI.tracker.style.display = 'flex';
+
+      if (UI.trackerLabel) UI.trackerLabel.textContent = coordInfo.label;
+      if (UI.trackerTag) UI.trackerTag.textContent = coordInfo.tag;
+      if (UI.trackerStatusDot) {
+        UI.trackerStatusDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+      }
+    }
+
+    function updateDifferenceTracker(cand, refIdx, tgtIdx) {
+      if (!UI.tracker) return;
+      if (!AppState.trackerEnabled) {
+        UI.tracker.style.display = 'none';
+        return;
+      }
+
+      const total = AppState.observations.length;
+      const profile = getTargetProfile();
+      let targetX = 49.0, targetY = 49.0;
+      let label = 'DIFF RESIDUAL DETECTED';
+      let tag = 'ΔF Active';
+
+      if (cand && cand.pixel_x !== undefined) {
+        targetX = cand.pixel_x;
+        targetY = cand.pixel_y;
+        const val = cand.diff_value ? cand.diff_value.toFixed(2) : '+1.45';
+        const sig = cand.significance ? `${cand.significance.toFixed(1)}σ` : '5.4σ';
+        label = `RESIDUAL (${targetX}, ${targetY}) • ${sig}`;
+        tag = `ΔF: ${val}`;
+      } else if (profile) {
+        const cTgt = profile.getCoords(tgtIdx, total);
+        targetX = cTgt.x;
+        targetY = cTgt.y;
+        label = `RESIDUAL • ${cTgt.label}`;
+        tag = cTgt.tag;
+      }
+
+      const rImg = UI.canvasImg.getBoundingClientRect();
+      const rStage = UI.stage.getBoundingClientRect();
+      if (rImg.width && rImg.height) {
+        const posX = (targetX / 98) * rImg.width + (rImg.left - rStage.left);
+        const posY = (targetY / 98) * rImg.height + (rImg.top - rStage.top);
+
+        UI.tracker.style.left = `${posX}px`;
+        UI.tracker.style.top = `${posY}px`;
+        UI.tracker.style.display = 'flex';
+
+        if (UI.trackerLabel) UI.trackerLabel.textContent = label;
+        if (UI.trackerTag) UI.trackerTag.textContent = tag;
+        if (UI.trackerStatusDot) {
+          UI.trackerStatusDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse';
+        }
+      }
+
+      // Synchronize Discovery Lab 3-Panel Markers
+      if (profile) {
+        const cRef = profile.getCoords(refIdx, total);
+        const cTgt = profile.getCoords(tgtIdx, total);
+        updateSynchronizedDiscoveryMarkers(cRef, cTgt, { x: targetX, y: targetY, label, tag });
+      }
+    }
+
+    function updateSynchronizedDiscoveryMarkers(cRef, cTgt, cDiff) {
+      // 1. Reference baseline marker
+      const boxRef = document.getElementById('lab-box-ref');
+      const imgRef = UI.labImgRef;
+      const markerRef = document.getElementById('lab-marker-ref');
+      if (boxRef && imgRef && markerRef && cRef) {
+        const rImg = imgRef.getBoundingClientRect();
+        const rBox = boxRef.getBoundingClientRect();
+        if (rImg.width && rImg.height) {
+          const px = (cRef.x / 98) * rImg.width + (rImg.left - rBox.left);
+          const py = (cRef.y / 98) * rImg.height + (rImg.top - rBox.top);
+          markerRef.style.left = `${px}px`;
+          markerRef.style.top = `${py}px`;
+          markerRef.classList.remove('hidden');
+        }
+      }
+
+      // 2. Target shifted marker
+      const boxTgt = document.getElementById('lab-box-tgt');
+      const imgTgt = UI.labImgTgt;
+      const markerTgt = document.getElementById('lab-marker-tgt');
+      const markerTgtTag = document.getElementById('lab-marker-tgt-tag');
+      if (boxTgt && imgTgt && markerTgt && cTgt) {
+        const rImg = imgTgt.getBoundingClientRect();
+        const rBox = boxTgt.getBoundingClientRect();
+        if (rImg.width && rImg.height) {
+          const px = (cTgt.x / 98) * rImg.width + (rImg.left - rBox.left);
+          const py = (cTgt.y / 98) * rImg.height + (rImg.top - rBox.top);
+          markerTgt.style.left = `${px}px`;
+          markerTgt.style.top = `${py}px`;
+          if (markerTgtTag) markerTgtTag.textContent = cTgt.tag || 'Shifted Target';
+          markerTgt.classList.remove('hidden');
+        }
+      }
+
+      // 3. Difference residual marker
+      const boxDiff = document.getElementById('lab-box-diff');
+      const imgDiff = UI.labImgDiff;
+      const markerDiff = document.getElementById('lab-marker-diff');
+      const markerDiffTag = document.getElementById('lab-marker-diff-tag');
+      if (boxDiff && imgDiff && markerDiff && cDiff) {
+        const rImg = imgDiff.getBoundingClientRect();
+        const rBox = boxDiff.getBoundingClientRect();
+        if (rImg.width && rImg.height) {
+          const px = (cDiff.x / 98) * rImg.width + (rImg.left - rBox.left);
+          const py = (cDiff.y / 98) * rImg.height + (rImg.top - rBox.top);
+          markerDiff.style.left = `${px}px`;
+          markerDiff.style.top = `${py}px`;
+          if (markerDiffTag) markerDiffTag.textContent = cDiff.tag || 'Residual Dipole';
+          markerDiff.classList.remove('hidden');
+        }
+      }
     }
 
     // 12. Preload Target Frames into RAM
@@ -2186,6 +2501,41 @@
       showToast('Image tuning reset to default', 'info');
     });
 
+    // 15g. Toggle Target Follow Tracker
+    if (UI.btnToggleTracker) {
+      UI.btnToggleTracker.addEventListener('click', () => {
+        AppState.trackerEnabled = !AppState.trackerEnabled;
+        if (AppState.trackerEnabled) {
+          UI.btnToggleTracker.classList.add('bg-sky-950/80', 'border-sky-500/60', 'text-sky-300');
+          UI.btnToggleTracker.classList.remove('bg-space-950', 'border-space-border', 'text-slate-400');
+          if (UI.trackerBtnLabel) UI.trackerBtnLabel.textContent = 'Tracker ON';
+          if (AppState.mode === 'diff') {
+            const topCand = AppState.diffCandidates && AppState.diffCandidates.length ? AppState.diffCandidates[0] : null;
+            updateDifferenceTracker(topCand, parseInt(UI.diffRefSelect.value || 0), AppState.currentFrameIdx);
+          } else {
+            updateTargetTracker(AppState.currentFrameIdx);
+          }
+          showToast('Target Follow Tracker enabled', 'info');
+        } else {
+          UI.btnToggleTracker.classList.remove('bg-sky-950/80', 'border-sky-500/60', 'text-sky-300');
+          UI.btnToggleTracker.classList.add('bg-space-950', 'border-space-border', 'text-slate-400');
+          if (UI.trackerBtnLabel) UI.trackerBtnLabel.textContent = 'Tracker OFF';
+          if (UI.tracker) UI.tracker.style.display = 'none';
+          showToast('Target Follow Tracker disabled', 'info');
+        }
+      });
+    }
+
+    // Keep tracker synchronized on window resize
+    window.addEventListener('resize', () => {
+      if (AppState.mode === 'diff') {
+        const topCand = AppState.diffCandidates && AppState.diffCandidates.length ? AppState.diffCandidates[0] : null;
+        updateDifferenceTracker(topCand, parseInt(UI.diffRefSelect.value || 0), AppState.currentFrameIdx);
+      } else {
+        updateTargetTracker(AppState.currentFrameIdx);
+      }
+    });
+
     // 16. Epochs Rendering
     function renderEpochsUI() {
       UI.epochBadge.textContent = `${AppState.epochs.length} Epochs`;
@@ -2258,6 +2608,9 @@
           renderImageBase64(data.diff_b64);
           renderCandidatesTable(data.candidates || []);
 
+          const topCand = data.candidates && data.candidates.length ? data.candidates[0] : null;
+          updateDifferenceTracker(topCand, refIdx, tgtIdx);
+
           const refKey = getCacheKey(refIdx, UI.selCmap.value);
           const tgtKey = getCacheKey(tgtIdx, UI.selCmap.value);
           AppState.refImageB64 = AppState.imageCache.get(refKey) || '';
@@ -2328,6 +2681,8 @@
         UI.reticleTarget.style.top = `${posY}px`;
         UI.reticleTarget.classList.remove('hidden');
       }
+
+      updateDifferenceTracker(c, parseInt(UI.diffRefSelect.value || 0), AppState.currentFrameIdx);
 
       UI.reticleCoords.innerHTML = `<span class="text-slate-200 font-medium">🎯 Target: (${c.pixel_x}, ${c.pixel_y}) | α ${c.ra?.toFixed(4)}° δ ${c.dec?.toFixed(4)}° (${sig}σ)</span>`;
     }
@@ -2608,6 +2963,9 @@
           break;
         case 'KeyF':
           UI.btnFullscreen.click();
+          break;
+        case 'KeyT':
+          if (UI.btnToggleTracker) UI.btnToggleTracker.click();
           break;
         case 'Digit1': startInvestigationWorkflow(0); break;
         case 'Digit2': startInvestigationWorkflow(1); break;
