@@ -243,8 +243,12 @@ def get_image(
     fov_arcmin: float = Query(10.0),
     bandpass: str = Query("SPHEREx-D2"),
     cmap: str = Query("inferno"),
+    stretch: str = Query("linear"),
+    clip_lo: float = Query(2.0),
+    clip_hi: float = Query(98.0),
+    gamma: float = Query(1.0),
 ):
-    print(f"[image] obs_index={obs_index} ra={ra} dec={dec} cmap={cmap}")
+    print(f"[image] obs_index={obs_index} ra={ra} dec={dec} cmap={cmap} stretch={stretch} clip={clip_lo}-{clip_hi}%")
     obs_list = _get_obs(ra, dec, fov_arcmin, bandpass)
 
     if obs_index < 0 or obs_index >= len(obs_list):
@@ -255,9 +259,17 @@ def get_image(
 
     obs = obs_list[obs_index]
     url_hash = hashlib.sha256(obs.get("uri", "").encode()).hexdigest()[:16]
+
+    # Use pre-rendered cache only when defaults are requested
+    is_default_enhancement = (
+        stretch == "linear" and
+        abs(clip_lo - 2.0) < 0.5 and
+        abs(clip_hi - 98.0) < 0.5 and
+        abs(gamma - 1.0) < 0.05
+    )
     render_file = Path(CACHE_DIR) / f"render_{url_hash}_{cmap}.txt"
 
-    if render_file.exists():
+    if is_default_enhancement and render_file.exists():
         try:
             image_b64 = render_file.read_text(encoding="utf-8")
             return {
@@ -271,19 +283,28 @@ def get_image(
         except Exception:
             pass
 
-    render_key = (obs.get("uri", ""), cmap)
-    if render_key in _rendered_cache:
+    # In-memory cache key (includes enhancement params)
+    render_key = (obs.get("uri", ""), cmap, stretch, round(clip_lo, 1), round(clip_hi, 1), round(gamma, 2))
+    if is_default_enhancement and render_key in _rendered_cache:
         return _rendered_cache[render_key]
 
     try:
         fits_path = pipeline.download_fits(obs["uri"], CACHE_DIR)
         img = pipeline.load_fits_image(fits_path)
-        norm_data = pipeline.normalize_image(img["data"])
+        norm_data = pipeline.normalize_image(
+            img["data"],
+            stretch=stretch,
+            clip_lo=clip_lo,
+            clip_hi=clip_hi,
+            gamma=gamma,
+        )
         image_b64 = pipeline.image_to_png_base64(norm_data, cmap=cmap)
-        try:
-            render_file.write_text(image_b64, encoding="utf-8")
-        except Exception:
-            pass
+        # Only write pre-rendered cache for default enhancement
+        if is_default_enhancement:
+            try:
+                render_file.write_text(image_b64, encoding="utf-8")
+            except Exception:
+                pass
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Image processing failed: {exc}")
 
@@ -320,23 +341,33 @@ def preload_images(
     fov_arcmin: float = Query(10.0),
     bandpass: str = Query("SPHEREx-D2"),
     cmap: str = Query("inferno"),
+    stretch: str = Query("linear"),
+    clip_lo: float = Query(2.0),
+    clip_hi: float = Query(98.0),
+    gamma: float = Query(1.0),
     limit: int = Query(25),
 ):
     """Pre-process frames in batch to enable instant, zero-lag playback."""
-    print(f"[preload] ra={ra} dec={dec} limit={limit}")
+    print(f"[preload] ra={ra} dec={dec} limit={limit} stretch={stretch}")
     obs_list = _get_obs(ra, dec, fov_arcmin, bandpass)
     results = {}
     target_count = min(limit, len(obs_list))
     for i in range(target_count):
         try:
             obs = obs_list[i]
-            render_key = (obs.get("uri", ""), cmap)
+            render_key = (obs.get("uri", ""), cmap, stretch, round(clip_lo, 1), round(clip_hi, 1), round(gamma, 2))
             if render_key in _rendered_cache:
                 results[i] = _rendered_cache[render_key]
             else:
                 fits_path = pipeline.download_fits(obs["uri"], CACHE_DIR)
                 img = pipeline.load_fits_image(fits_path)
-                norm_data = pipeline.normalize_image(img["data"])
+                norm_data = pipeline.normalize_image(
+                    img["data"],
+                    stretch=stretch,
+                    clip_lo=clip_lo,
+                    clip_hi=clip_hi,
+                    gamma=gamma,
+                )
                 image_b64 = pipeline.image_to_png_base64(norm_data, cmap=cmap)
                 payload = {
                     "image_b64": image_b64,

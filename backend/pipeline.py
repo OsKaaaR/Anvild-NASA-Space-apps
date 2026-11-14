@@ -426,18 +426,26 @@ def compute_difference(img1: dict, img2: dict) -> dict:
 def normalize_image(
     data: np.ndarray,
     method: str = "percentile",
+    stretch: str = "linear",
+    clip_lo: float = 2.0,
+    clip_hi: float = 98.0,
+    gamma: float = 1.0,
 ) -> np.ndarray:
     """
-    Normalise a 2-D array to [0, 1].
+    Normalise a 2-D array to [0, 1] with optional stretch and clipping.
 
     Parameters
     ----------
-    data : ndarray
-    method : {"percentile", "minmax"}
+    data    : ndarray (2-D raw flux values)
+    method  : {"percentile", "minmax"} — how to pick lo/hi clip values
+    stretch : {"linear", "log", "sqrt", "asinh", "power"} — tone-mapping
+    clip_lo : float — lower percentile cut (default 2)
+    clip_hi : float — upper percentile cut (default 98)
+    gamma   : float — exponent for "power" stretch (default 1.0 = linear)
 
     Returns
     -------
-    float32 ndarray, NaN preserved.
+    float32 ndarray [0,1], NaN preserved.
     """
     try:
         arr = np.array(data, dtype=np.float64)
@@ -447,22 +455,41 @@ def normalize_image(
             print("[PIPELINE ERROR] normalize_image: no finite pixels.")
             return arr.astype(np.float32)
 
-        if method == "percentile":
-            lo = np.percentile(valid, 2)
-            hi = np.percentile(valid, 98)
-        elif method == "minmax":
+        # --- Percentile clipping ---
+        lo = np.percentile(valid, float(clip_lo))
+        hi = np.percentile(valid, float(clip_hi))
+
+        if method == "minmax":
             lo = valid.min()
             hi = valid.max()
-        else:
-            raise ValueError(f"Unknown normalisation method: '{method}'")
 
         if hi == lo:
-            norm = np.where(np.isfinite(arr), 0.0, np.nan)
-        else:
-            norm = (arr - lo) / (hi - lo)
-            norm = np.clip(norm, 0.0, 1.0)
-            norm[~np.isfinite(arr)] = np.nan
+            return np.where(np.isfinite(arr), 0.0, np.nan).astype(np.float32)
 
+        # --- Linear rescale to [0,1] ---
+        norm = (arr - lo) / (hi - lo)
+        norm = np.clip(norm, 0.0, 1.0)
+
+        # --- Stretch ---
+        eps = 1e-10
+        if stretch == "log":
+            norm = np.log10(norm + eps) - np.log10(eps)
+            norm /= np.log10(1.0 + eps) - np.log10(eps)  # re-normalise
+            norm = np.clip(norm, 0.0, 1.0)
+        elif stretch == "sqrt":
+            norm = np.sqrt(norm)
+        elif stretch == "asinh":
+            # Standard astronomical asinh stretch (softening β = 0.1)
+            beta = 0.1
+            norm = np.arcsinh(norm / beta) / np.arcsinh(1.0 / beta)
+            norm = np.clip(norm, 0.0, 1.0)
+        elif stretch == "power":
+            g = max(0.1, min(float(gamma), 5.0))
+            norm = np.power(norm, g)
+        # else: "linear" — already done
+
+        # Restore NaN mask
+        norm[~np.isfinite(arr)] = np.nan
         return norm.astype(np.float32)
 
     except Exception as exc:

@@ -651,10 +651,10 @@
                 </button>
               </div>
 
-              <!-- Colormap & View Controls -->
+              <!-- Colormap, Stretch & View Controls -->
               <div class="flex items-center gap-2">
                 <!-- Colormap Selector -->
-                <div class="flex items-center gap-1.5 text-xs bg-space-950 px-2.5 py-1 rounded-lg border border-space-border">
+                <div class="flex items-center gap-1.5 text-xs bg-space-950 px-2.5 py-1 rounded-lg border border-space-border" title="Colormap">
                   <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-400"></i>
                   <select id="select-colormap" class="bg-space-950 text-white font-mono text-xs rounded px-1.5 py-0.5 focus:outline-none cursor-pointer border-0">
                     <option value="inferno" selected>Inferno (High Contrast)</option>
@@ -667,12 +667,76 @@
                   </select>
                 </div>
 
+                <!-- Astronomical Stretch Mode -->
+                <div class="flex items-center gap-1.5 text-xs bg-space-950 px-2.5 py-1 rounded-lg border border-space-border" title="Astronomical Stretch & Tone-Mapping">
+                  <i data-lucide="sliders" class="w-3.5 h-3.5 text-slate-400"></i>
+                  <select id="select-stretch" class="bg-space-950 text-white font-mono text-xs rounded px-1.5 py-0.5 focus:outline-none cursor-pointer border-0">
+                    <option value="linear" selected>Linear (Raw)</option>
+                    <option value="log">Log (Noise Suppress)</option>
+                    <option value="asinh">Asinh (Deep Field)</option>
+                    <option value="sqrt">Square Root</option>
+                    <option value="power">Power (Gamma)</option>
+                  </select>
+                </div>
+
+                <!-- Toggle Tuning Drawer -->
+                <button id="btn-toggle-tuning" title="Tune Noise Cut & Contrast" class="btn-press px-2 py-1 rounded-lg bg-space-950 border border-space-border text-slate-400 hover:text-white transition-colors flex items-center gap-1 text-xs">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 text-sky-400"></i>
+                  <span class="font-mono text-[11px] hidden sm:inline">Tune</span>
+                </button>
+
                 <!-- Zoom Controls -->
                 <div class="flex items-center bg-space-950 rounded-lg border border-space-border p-0.5 text-xs">
                   <button id="btn-zoom-in" title="Zoom In (+)" class="p-1.5 text-slate-400 hover:text-white transition-colors"><i data-lucide="zoom-in" class="w-4 h-4"></i></button>
                   <button id="btn-zoom-out" title="Zoom Out (-)" class="p-1.5 text-slate-400 hover:text-white transition-colors"><i data-lucide="zoom-out" class="w-4 h-4"></i></button>
                   <button id="btn-zoom-reset" title="Reset View (Key R)" class="p-1.5 text-slate-400 hover:text-white transition-colors"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i></button>
                   <button id="btn-fullscreen" title="Toggle Fullscreen (Key F)" class="p-1.5 text-slate-400 hover:text-white transition-colors"><i data-lucide="maximize" class="w-3.5 h-3.5"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Image Tuning & Noise Reduction Drawer -->
+            <div id="image-tuning-drawer" class="hidden px-4 py-2.5 bg-space-950/95 border-b border-space-border text-xs text-slate-300">
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center">
+                <!-- Brightness -->
+                <div class="flex flex-col gap-1">
+                  <div class="flex justify-between items-center text-[11px] font-mono text-slate-400">
+                    <span>Brightness</span>
+                    <span id="tuning-brightness-val" class="text-sky-400 font-bold">100%</span>
+                  </div>
+                  <input type="range" id="slider-brightness" min="40" max="180" value="100" class="w-full accent-sky-500 cursor-pointer" />
+                </div>
+
+                <!-- Contrast -->
+                <div class="flex flex-col gap-1">
+                  <div class="flex justify-between items-center text-[11px] font-mono text-slate-400">
+                    <span>Contrast</span>
+                    <span id="tuning-contrast-val" class="text-sky-400 font-bold">100%</span>
+                  </div>
+                  <input type="range" id="slider-contrast" min="50" max="200" value="100" class="w-full accent-sky-500 cursor-pointer" />
+                </div>
+
+                <!-- Noise Floor Cut (Percentile Low) -->
+                <div class="flex flex-col gap-1">
+                  <div class="flex justify-between items-center text-[11px] font-mono text-slate-400">
+                    <span>Noise Cut (Floor)</span>
+                    <span id="tuning-clip-val" class="text-sky-400 font-bold">2.0%</span>
+                  </div>
+                  <input type="range" id="slider-clip-lo" min="0" max="15" step="0.5" value="2" class="w-full accent-sky-500 cursor-pointer" />
+                </div>
+
+                <!-- Gamma Power & Reset -->
+                <div class="flex items-center gap-3">
+                  <div class="flex flex-col gap-1 flex-1">
+                    <div class="flex justify-between items-center text-[11px] font-mono text-slate-400">
+                      <span>Gamma</span>
+                      <span id="tuning-gamma-val" class="text-sky-400 font-bold">1.0</span>
+                    </div>
+                    <input type="range" id="slider-gamma" min="0.4" max="2.2" step="0.1" value="1.0" class="w-full accent-sky-500 cursor-pointer" />
+                  </div>
+                  <button id="btn-reset-tuning" title="Reset image enhancement to default" class="btn-press px-2.5 py-1 rounded bg-space-900 hover:bg-space-800 border border-space-border text-slate-400 hover:text-white text-[11px] font-mono mt-3 transition-colors">
+                    Reset
+                  </button>
                 </div>
               </div>
             </div>
@@ -1559,6 +1623,14 @@
       diffImageB64: '',
       diffCandidates: [],
       
+      // Enhancement & Tone-mapping
+      stretch: 'linear',
+      clipLo: 2.0,
+      clipHi: 98.0,
+      gamma: 1.0,
+      brightnessFilter: 100,
+      contrastFilter: 100,
+      
       animationId: null,
       lastTickTime: 0
     };
@@ -1574,6 +1646,19 @@
       btnResolve: document.getElementById('btn-resolve-name'),
       
       selCmap: document.getElementById('select-colormap'),
+      selStretch: document.getElementById('select-stretch'),
+      btnToggleTuning: document.getElementById('btn-toggle-tuning'),
+      tuningDrawer: document.getElementById('image-tuning-drawer'),
+      sliderBrightness: document.getElementById('slider-brightness'),
+      valBrightness: document.getElementById('tuning-brightness-val'),
+      sliderContrast: document.getElementById('slider-contrast'),
+      valContrast: document.getElementById('tuning-contrast-val'),
+      sliderClipLo: document.getElementById('slider-clip-lo'),
+      valClipLo: document.getElementById('tuning-clip-val'),
+      sliderGamma: document.getElementById('slider-gamma'),
+      valGamma: document.getElementById('tuning-gamma-val'),
+      btnResetTuning: document.getElementById('btn-reset-tuning'),
+
       stage: document.getElementById('viewport-stage'),
       canvasImg: document.getElementById('sky-canvas-img'),
       placeholder: document.getElementById('viewport-placeholder'),
@@ -1840,7 +1925,11 @@
 
     // 10. Cache Key Generator
     function getCacheKey(frameIdx, cmap) {
-      return `${AppState.ra.toFixed(4)}_${AppState.dec.toFixed(4)}_${cmap}_${frameIdx}`;
+      const st = AppState.stretch || 'linear';
+      const lo = AppState.clipLo !== undefined ? AppState.clipLo : 2.0;
+      const hi = AppState.clipHi !== undefined ? AppState.clipHi : 98.0;
+      const gm = AppState.gamma !== undefined ? AppState.gamma : 1.0;
+      return `${AppState.ra.toFixed(4)}_${AppState.dec.toFixed(4)}_${cmap}_${st}_${lo}_${hi}_${gm}_${frameIdx}`;
     }
 
     // 11. Display Frame in Time Machine
@@ -1866,7 +1955,11 @@
       }
 
       try {
-        const url = `${API}/api/image/${idx}?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&cmap=${cmap}`;
+        const st = AppState.stretch || 'linear';
+        const lo = AppState.clipLo !== undefined ? AppState.clipLo : 2.0;
+        const hi = AppState.clipHi !== undefined ? AppState.clipHi : 98.0;
+        const gm = AppState.gamma !== undefined ? AppState.gamma : 1.0;
+        const url = `${API}/api/image/${idx}?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&cmap=${cmap}&stretch=${st}&clip_lo=${lo}&clip_hi=${hi}&gamma=${gm}`;
         const res = await fetch(url);
         const data = await res.json();
 
@@ -1882,6 +1975,14 @@
     function renderImageBase64(b64) {
       if (!b64) return;
       UI.canvasImg.src = b64.startsWith('data:') ? b64 : `data:image/png;base64,${b64}`;
+      applyImageFilters();
+    }
+
+    function applyImageFilters() {
+      if (!UI.canvasImg) return;
+      const b = AppState.brightnessFilter !== undefined ? AppState.brightnessFilter : 100;
+      const c = AppState.contrastFilter !== undefined ? AppState.contrastFilter : 100;
+      UI.canvasImg.style.filter = `brightness(${b}%) contrast(${c}%)`;
     }
 
     // 12. Preload Target Frames into RAM
@@ -1895,13 +1996,18 @@
       }
       updateBufferUI(loaded, total);
 
+      const st = AppState.stretch || 'linear';
+      const lo = AppState.clipLo !== undefined ? AppState.clipLo : 2.0;
+      const hi = AppState.clipHi !== undefined ? AppState.clipHi : 98.0;
+      const gm = AppState.gamma !== undefined ? AppState.gamma : 1.0;
+
       for (let i = 0; i < total; i += 4) {
         const batch = [];
         for (let j = i; j < Math.min(i + 4, total); j++) {
           const key = getCacheKey(j, cmap);
           if (!AppState.imageCache.has(key)) {
             batch.push(
-              fetch(`${API}/api/image/${j}?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&cmap=${cmap}`)
+              fetch(`${API}/api/image/${j}?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&cmap=${cmap}&stretch=${st}&clip_lo=${lo}&clip_hi=${hi}&gamma=${gm}`)
                 .then(r => r.json())
                 .then(d => {
                   if (d.image_b64) {
@@ -1995,6 +2101,89 @@
     UI.selCmap.addEventListener('change', () => {
       displayFrame(AppState.currentFrameIdx);
       preloadTargetFrames();
+    });
+
+    // 15b. Stretch & Tone-Mapping Event Handler
+    UI.selStretch.addEventListener('change', (e) => {
+      AppState.stretch = e.target.value;
+      displayFrame(AppState.currentFrameIdx);
+      preloadTargetFrames();
+    });
+
+    // 15c. Image Tuning Drawer Toggle
+    UI.btnToggleTuning.addEventListener('click', () => {
+      const isHidden = UI.tuningDrawer.classList.contains('hidden');
+      if (isHidden) {
+        UI.tuningDrawer.classList.remove('hidden');
+        UI.btnToggleTuning.classList.add('bg-space-800', 'border-sky-500', 'text-white');
+      } else {
+        UI.tuningDrawer.classList.add('hidden');
+        UI.btnToggleTuning.classList.remove('bg-space-800', 'border-sky-500', 'text-white');
+      }
+    });
+
+    // 15d. Instant Client-Side Brightness & Contrast
+    UI.sliderBrightness.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      AppState.brightnessFilter = val;
+      UI.valBrightness.textContent = `${val}%`;
+      applyImageFilters();
+    });
+
+    UI.sliderContrast.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      AppState.contrastFilter = val;
+      UI.valContrast.textContent = `${val}%`;
+      applyImageFilters();
+    });
+
+    // 15e. Backend Tone-Mapping (Clip & Gamma) with debounce
+    let tuningDebounceTimer = null;
+    function triggerTuningUpdate() {
+      clearTimeout(tuningDebounceTimer);
+      tuningDebounceTimer = setTimeout(() => {
+        displayFrame(AppState.currentFrameIdx);
+        preloadTargetFrames();
+      }, 250);
+    }
+
+    UI.sliderClipLo.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      AppState.clipLo = val;
+      UI.valClipLo.textContent = `${val.toFixed(1)}%`;
+      triggerTuningUpdate();
+    });
+
+    UI.sliderGamma.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      AppState.gamma = val;
+      UI.valGamma.textContent = val.toFixed(1);
+      triggerTuningUpdate();
+    });
+
+    // 15f. Reset Tuning
+    UI.btnResetTuning.addEventListener('click', () => {
+      AppState.brightnessFilter = 100;
+      AppState.contrastFilter = 100;
+      AppState.clipLo = 2.0;
+      AppState.clipHi = 98.0;
+      AppState.gamma = 1.0;
+      AppState.stretch = 'linear';
+
+      UI.sliderBrightness.value = 100;
+      UI.valBrightness.textContent = '100%';
+      UI.sliderContrast.value = 100;
+      UI.valContrast.textContent = '100%';
+      UI.sliderClipLo.value = 2.0;
+      UI.valClipLo.textContent = '2.0%';
+      UI.sliderGamma.value = 1.0;
+      UI.valGamma.textContent = '1.0';
+      UI.selStretch.value = 'linear';
+
+      applyImageFilters();
+      displayFrame(AppState.currentFrameIdx);
+      preloadTargetFrames();
+      showToast('Image tuning reset to default', 'info');
     });
 
     // 16. Epochs Rendering
