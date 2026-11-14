@@ -161,6 +161,18 @@
 
 <body class="bg-space-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-slate-800 selection:text-white relative">
 
+  <!-- Top Global Loading Progress Bar -->
+  <div id="global-progress-container" class="fixed top-0 left-0 w-full h-[3px] bg-transparent z-[100] pointer-events-none overflow-hidden">
+    <div id="global-progress-bar" class="h-full bg-gradient-to-r from-sky-500 via-cyan-400 to-amber-400 w-0 transition-all duration-300 ease-out shadow-[0_0_8px_rgba(56,189,248,0.6)]"></div>
+  </div>
+
+  <!-- Friendly Floating Operations Status Pill -->
+  <div id="global-status-pill" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none transition-all duration-300 transform -translate-y-12 opacity-0 flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-space-900/95 border border-sky-500/40 text-xs font-mono text-slate-200 shadow-xl backdrop-blur-md">
+    <span id="global-status-spinner" class="w-3.5 h-3.5 border-2 border-sky-400 border-t-transparent rounded-full animate-spin"></span>
+    <span id="global-status-icon" class="text-emerald-400 font-bold hidden">✓</span>
+    <span id="global-status-text" class="text-[11px] font-medium tracking-wide">Calibrating SPHEREx Data...</span>
+  </div>
+
   <!-- Interactive Subtle Cosmic Background Particles -->
   <canvas id="ambient-stars"></canvas>
 
@@ -804,6 +816,49 @@
                   <span id="tracker-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                   <span id="tracker-label-text" class="text-sky-300 font-semibold tracking-wide">TARGET LOCKED</span>
                   <span id="tracker-flux-tag" class="text-amber-300 font-mono text-[9px] px-1 rounded bg-space-900 border border-space-border">Tracking</span>
+                </div>
+              </div>
+
+              <!-- Motion Vector Arrow SVG Layer -->
+              <svg id="tracker-motion-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-visible" style="display:none;">
+                <defs>
+                  <marker id="motion-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                    <polygon points="0 0, 6 3, 0 6" fill="#38bdf8" />
+                  </marker>
+                </defs>
+                <line id="tracker-motion-line" x1="0" y1="0" x2="0" y2="0" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#motion-arrow)" />
+              </svg>
+
+              <!-- Ghost Position Reticle (Previous Epoch Footprint) -->
+              <div id="tracker-ghost" class="absolute pointer-events-none z-20 transition-all duration-300 ease-out -translate-x-1/2 -translate-y-1/2 flex flex-col items-center select-none" style="display:none;">
+                <div class="relative w-8 h-8 rounded-full border border-dashed border-sky-400/60 bg-sky-500/10 flex items-center justify-center">
+                  <span class="w-1.5 h-1.5 bg-sky-400/70 rounded-full"></span>
+                </div>
+                <span class="text-[8px] font-mono text-sky-400/80 mt-0.5 px-1 rounded bg-space-950/80 border border-sky-500/30">Epoch T-1</span>
+              </div>
+
+              <!-- Target Loupe (Magnified 5x Inset Window) -->
+              <div id="target-loupe-container" class="absolute top-4 left-4 z-30 pointer-events-none transition-all duration-200 rounded-xl bg-space-950/90 border border-sky-500/40 p-2 shadow-2xl backdrop-blur-md flex flex-col items-center gap-1.5 select-none" style="display:none;">
+                <div class="flex items-center justify-between w-full px-0.5 text-[10px] font-mono text-sky-300 font-semibold tracking-wide">
+                  <span class="flex items-center gap-1">
+                    <i data-lucide="zoom-in" class="w-3 h-3 text-sky-400"></i>
+                    <span>LOUPE 5×</span>
+                  </span>
+                  <span id="loupe-pulse-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                </div>
+                <div class="relative w-[112px] h-[112px] rounded-lg overflow-hidden border border-space-border bg-black flex items-center justify-center shadow-inner">
+                  <canvas id="target-loupe-canvas" width="112" height="112" class="w-full h-full object-cover"></canvas>
+                  <!-- Loupe Central Precision Reticle -->
+                  <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                    <div class="w-full h-[1px] bg-sky-400/25"></div>
+                  </div>
+                  <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                    <div class="h-full w-[1px] bg-sky-400/25"></div>
+                  </div>
+                  <div class="absolute w-4 h-4 border border-sky-400/60 rounded-full pointer-events-none"></div>
+                </div>
+                <div id="target-loupe-info" class="text-[9px] font-mono text-slate-300 tracking-tight text-center max-w-[112px] truncate px-1 rounded bg-space-900 border border-space-border/60">
+                  Target Centroid
                 </div>
               </div>
 
@@ -1714,6 +1769,12 @@
       trackerTag: document.getElementById('tracker-flux-tag'),
       trackerStatusDot: document.getElementById('tracker-status-dot'),
       trackerPulseRing: document.getElementById('tracker-pulse-ring'),
+      trackerGhost: document.getElementById('tracker-ghost'),
+      trackerMotionSvg: document.getElementById('tracker-motion-svg'),
+      trackerMotionLine: document.getElementById('tracker-motion-line'),
+      targetLoupeContainer: document.getElementById('target-loupe-container'),
+      targetLoupeCanvas: document.getElementById('target-loupe-canvas'),
+      targetLoupeInfo: document.getElementById('target-loupe-info'),
 
       stage: document.getElementById('viewport-stage'),
       canvasImg: document.getElementById('sky-canvas-img'),
@@ -1800,6 +1861,63 @@
       
       toastContainer: document.getElementById('toast-container')
     };
+
+    // 4b. Global Progress Bar & Friendly Operations Pill
+    let globalProgressTimer = null;
+
+    function showGlobalProgress(message = 'Processing SPHEREx Data...', initialPct = 25) {
+      const bar = document.getElementById('global-progress-bar');
+      const pill = document.getElementById('global-status-pill');
+      const txt = document.getElementById('global-status-text');
+      const spinner = document.getElementById('global-status-spinner');
+      const icon = document.getElementById('global-status-icon');
+
+      if (globalProgressTimer) clearTimeout(globalProgressTimer);
+
+      if (bar) {
+        bar.style.transition = 'width 250ms ease-out';
+        bar.style.width = `${initialPct}%`;
+      }
+      if (txt) txt.textContent = message;
+      if (spinner) spinner.classList.remove('hidden');
+      if (icon) icon.classList.add('hidden');
+      if (pill) {
+        pill.classList.remove('-translate-y-12', 'opacity-0');
+        pill.classList.add('translate-y-0', 'opacity-100');
+      }
+    }
+
+    function updateGlobalProgress(pct, message = null) {
+      const bar = document.getElementById('global-progress-bar');
+      const txt = document.getElementById('global-status-text');
+      if (bar) bar.style.width = `${Math.min(95, Math.max(5, pct))}%`;
+      if (message && txt) txt.textContent = message;
+    }
+
+    function finishGlobalProgress(successText = 'Operation Complete') {
+      const bar = document.getElementById('global-progress-bar');
+      const pill = document.getElementById('global-status-pill');
+      const txt = document.getElementById('global-status-text');
+      const spinner = document.getElementById('global-status-spinner');
+      const icon = document.getElementById('global-status-icon');
+
+      if (bar) bar.style.width = '100%';
+      if (txt) txt.textContent = successText;
+      if (spinner) spinner.classList.add('hidden');
+      if (icon) icon.classList.remove('hidden');
+
+      if (globalProgressTimer) clearTimeout(globalProgressTimer);
+      globalProgressTimer = setTimeout(() => {
+        if (pill) {
+          pill.classList.remove('translate-y-0', 'opacity-100');
+          pill.classList.add('-translate-y-12', 'opacity-0');
+        }
+        if (bar) {
+          bar.style.transition = 'none';
+          bar.style.width = '0%';
+        }
+      }, 700);
+    }
 
     // 5. Toast Notification System
     function showToast(message, type = 'info') {
@@ -1959,10 +2077,13 @@
       AppState.fov = parseFloat(UI.selFov.value);
       AppState.bandpass = UI.selBand.value;
 
+      showGlobalProgress('Querying SPHEREx Observation Database...', 15);
+
       try {
         const queryUrl = `${API}/api/search?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}`;
         const res = await fetch(queryUrl);
         if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+        updateGlobalProgress(40, 'Parsing observation catalog...');
         const data = await res.json();
 
         AppState.observations = data.observations || [];
@@ -1973,20 +2094,24 @@
 
         renderEpochsUI();
         populateDifferenceRefOptions();
+        updateGlobalProgress(60, 'Rendering first epoch frame...');
 
         if (AppState.observations.length > 0) {
           UI.placeholder.style.display = 'none';
           UI.canvasImg.style.display = 'block';
           await displayFrame(0);
+          finishGlobalProgress(`Loaded ${AppState.observations.length} SPHEREx frames ✓`);
           preloadTargetFrames();
           showToast(`Loaded ${AppState.observations.length} SPHEREx frames`, 'success');
         } else {
           UI.placeholder.style.display = 'flex';
           UI.canvasImg.style.display = 'none';
+          finishGlobalProgress('No observations found');
           showToast('No observations in catalog for this field', 'warn');
         }
       } catch (err) {
         console.error('Observation loading error:', err);
+        finishGlobalProgress('Error loading data');
         showToast('Error querying SPHEREx offline database', 'warn');
       }
     }
@@ -2062,23 +2187,41 @@
         getCoords: (idx, total) => {
           const t = total > 1 ? idx / (total - 1) : 0;
           return {
-            x: 43.5 + t * 11.0,
-            y: 45.0 + t * 7.5,
+            x: 47.0 + t * 3.5,
+            y: 47.5 + t * 2.2,
             label: `WISE 0855 • Proper Motion (+${(t * 8.1).toFixed(1)}″)`,
-            tag: `Epoch #${idx + 1}`
+            tag: `Sub-stellar Y-Dwarf`
           };
         }
       },
       barnard: {
         type: 'motion',
         name: "Barnard's Star",
+        // Direct pixel centroid lock on actual bright source from SPHEREx FITS
+        barnardFrames: [
+          { x: 44.0, y: 90.0, flux: "1876 MJy/sr" },
+          { x: 45.0, y: 91.0, flux: "1764 MJy/sr" },
+          { x: 45.0, y: 93.0, flux: "1123 MJy/sr" },
+          { x: 45.0, y: 91.0, flux: "1242 MJy/sr" },
+          { x: 46.0, y: 92.0, flux: "592 MJy/sr" },
+          { x: 46.0, y: 92.0, flux: "1224 MJy/sr" },
+          { x: 45.0, y: 93.0, flux: "2478 MJy/sr" },
+          { x: 45.0, y: 93.0, flux: "2149 MJy/sr" },
+          { x: 47.0, y: 91.0, flux: "943 MJy/sr" },
+          { x: 45.0, y: 91.0, flux: "2063 MJy/sr" },
+          { x: 43.0, y: 91.0, flux: "416 MJy/sr" },
+          { x: 45.0, y: 93.0, flux: "2250 MJy/sr" },
+          { x: 45.0, y: 93.0, flux: "1643 MJy/sr" }
+        ],
         getCoords: (idx, total) => {
           const t = total > 1 ? idx / (total - 1) : 0;
+          const frames = TARGET_MOTION_PROFILES.barnard.barnardFrames;
+          const f = frames[idx % frames.length];
           return {
-            x: 44.0 + t * 9.5,
-            y: 43.0 + t * 11.5,
+            x: f.x,
+            y: f.y,
             label: `Barnard • High Motion (+${(t * 10.3).toFixed(1)}″/yr)`,
-            tag: `Epoch #${idx + 1}`
+            tag: `${f.flux}`
           };
         }
       },
@@ -2087,11 +2230,13 @@
         name: "Epsilon Indi B",
         getCoords: (idx, total) => {
           const t = total > 1 ? idx / (total - 1) : 0;
+          const ox = Math.sin(t * Math.PI * 2) * 2.2;
+          const oy = Math.cos(t * Math.PI * 2) * 1.8;
           return {
-            x: 48.0 + Math.sin(t * Math.PI) * 2.2,
-            y: 49.0 + Math.cos(t * Math.PI) * 1.8,
+            x: 39.0 + ox,
+            y: 66.0 + oy,
             label: `Eps Indi B • Binary Orbit`,
-            tag: `Epoch #${idx + 1}`
+            tag: `~3.5k MJy/sr`
           };
         }
       },
@@ -2099,11 +2244,11 @@
         type: 'variable',
         name: "RW Aurigae",
         fluxStates: [
-          { flux: "2.85 MJy/sr", state: "High State" },
-          { flux: "1.95 MJy/sr", state: "Dust Ingress" },
-          { flux: "0.82 MJy/sr", state: "Deep Occultation ⚠️" },
-          { flux: "1.70 MJy/sr", state: "Egress Recovery" },
-          { flux: "3.10 MJy/sr", state: "Accretion Flare ⚡" }
+          { flux: "3.21 MJy/sr", state: "High State (Bright Flare)" },
+          { flux: "2.27 MJy/sr", state: "Dust Ingress (Dimming)" },
+          { flux: "1.11 MJy/sr", state: "Deep Occultation (Obscured)" },
+          { flux: "2.00 MJy/sr", state: "Egress Recovery (Brightening)" },
+          { flux: "3.40 MJy/sr", state: "Accretion Burst Peak ⚡" }
         ],
         getCoords: (idx, total) => {
           const st = TARGET_MOTION_PROFILES.rw_aur.fluxStates[idx % 5];
@@ -2119,11 +2264,11 @@
         type: 'variable',
         name: "R Draconis",
         fluxStates: [
-          { flux: "0.55 MJy/sr", state: "Pulsation Min (Cool)" },
-          { flux: "1.45 MJy/sr", state: "Ascending Branch" },
-          { flux: "4.20 MJy/sr", state: "Pulsation Max Peak 🔥" },
-          { flux: "2.25 MJy/sr", state: "Descending Branch" },
-          { flux: "0.90 MJy/sr", state: "Approaching Min" }
+          { flux: "0.84 MJy/sr", state: "Pulsation Min (Cool Phase)" },
+          { flux: "1.58 MJy/sr", state: "Ascending Branch" },
+          { flux: "4.37 MJy/sr", state: "Thermal Maximum Peak 🔥" },
+          { flux: "2.40 MJy/sr", state: "Descending Branch" },
+          { flux: "1.06 MJy/sr", state: "Approaching Minimum" }
         ],
         getCoords: (idx, total) => {
           const st = TARGET_MOTION_PROFILES.r_dra.fluxStates[idx % 5];
@@ -2140,10 +2285,10 @@
         name: "M101 Pinwheel",
         getCoords: (idx, total) => {
           return {
-            x: 58.0,
-            y: 38.0,
-            label: `M101 • Supernova SN 2023ixf`,
-            tag: `Transient Point`
+            x: 49.0,
+            y: 48.0,
+            label: `M101 • Supernova SN 2023ixf Field`,
+            tag: `SN 2023ixf`
           };
         }
       }
@@ -2160,10 +2305,58 @@
       return null;
     }
 
+    function updateTargetLoupe(coordInfo) {
+      const container = document.getElementById('target-loupe-container');
+      const canvas = document.getElementById('target-loupe-canvas');
+      const info = document.getElementById('target-loupe-info');
+      if (!container || !canvas || !UI.canvasImg) return;
+
+      if (!AppState.trackerEnabled || AppState.mode === 'diff') {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'flex';
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+
+      const nw = UI.canvasImg.naturalWidth || 98;
+      const nh = UI.canvasImg.naturalHeight || 98;
+
+      const centerNatX = (coordInfo.x / 98) * nw;
+      const centerNatY = (coordInfo.y / 98) * nh;
+
+      const cropSize = 16;
+      const half = cropSize / 2;
+      const sx = Math.max(0, Math.min(nw - cropSize, centerNatX - half));
+      const sy = Math.max(0, Math.min(nh - cropSize, centerNatY - half));
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      try {
+        if (UI.canvasImg.complete && UI.canvasImg.naturalWidth > 0) {
+          ctx.drawImage(UI.canvasImg, sx, sy, cropSize, cropSize, 0, 0, canvas.width, canvas.height);
+        }
+      } catch (e) {}
+
+      if (info) {
+        info.textContent = coordInfo.tag ? `${coordInfo.tag}` : `[${Math.round(coordInfo.x)}, ${Math.round(coordInfo.y)}]`;
+      }
+    }
+
     function updateTargetTracker(frameIdx) {
       if (!UI.tracker) return;
+      const ghost = document.getElementById('tracker-ghost');
+      const motionSvg = document.getElementById('tracker-motion-svg');
+      const motionLine = document.getElementById('tracker-motion-line');
+      const loupe = document.getElementById('target-loupe-container');
+
       if (!AppState.trackerEnabled || !UI.canvasImg || !AppState.observations.length || AppState.mode === 'diff') {
-        if (AppState.mode !== 'diff') UI.tracker.style.display = 'none';
+        if (AppState.mode !== 'diff') {
+          UI.tracker.style.display = 'none';
+          if (ghost) ghost.style.display = 'none';
+          if (motionSvg) motionSvg.style.display = 'none';
+          if (loupe) loupe.style.display = 'none';
+        }
         return;
       }
 
@@ -2171,6 +2364,9 @@
       const profile = getTargetProfile();
       if (!profile) {
         UI.tracker.style.display = 'none';
+        if (ghost) ghost.style.display = 'none';
+        if (motionSvg) motionSvg.style.display = 'none';
+        if (loupe) loupe.style.display = 'none';
         return;
       }
 
@@ -2191,10 +2387,44 @@
       if (UI.trackerStatusDot) {
         UI.trackerStatusDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
       }
+
+      // 1. Update Magnified Loupe
+      updateTargetLoupe(coordInfo);
+
+      // 2. Update Ghost Trail & Motion Vector (for motion / binary targets)
+      if ((profile.type === 'motion' || profile.type === 'binary') && frameIdx > 0) {
+        const prevCoord = profile.getCoords(frameIdx - 1, total);
+        const prevX = (prevCoord.x / 98) * rImg.width + (rImg.left - rStage.left);
+        const prevY = (prevCoord.y / 98) * rImg.height + (rImg.top - rStage.top);
+
+        if (ghost) {
+          ghost.style.left = `${prevX}px`;
+          ghost.style.top = `${prevY}px`;
+          ghost.style.display = 'flex';
+        }
+
+        if (motionSvg && motionLine) {
+          motionSvg.style.display = 'block';
+          motionLine.setAttribute('x1', prevX);
+          motionLine.setAttribute('y1', prevY);
+          motionLine.setAttribute('x2', posX);
+          motionLine.setAttribute('y2', posY);
+        }
+      } else {
+        if (ghost) ghost.style.display = 'none';
+        if (motionSvg) motionSvg.style.display = 'none';
+      }
     }
 
     function updateDifferenceTracker(cand, refIdx, tgtIdx) {
       if (!UI.tracker) return;
+      const ghost = document.getElementById('tracker-ghost');
+      const motionSvg = document.getElementById('tracker-motion-svg');
+      const loupe = document.getElementById('target-loupe-container');
+      if (ghost) ghost.style.display = 'none';
+      if (motionSvg) motionSvg.style.display = 'none';
+      if (loupe) loupe.style.display = 'none';
+
       if (!AppState.trackerEnabled) {
         UI.tracker.style.display = 'none';
         return;
@@ -2208,7 +2438,7 @@
 
       if (cand && cand.pixel_x !== undefined) {
         targetX = cand.pixel_x;
-        targetY = cand.pixel_y;
+        targetY = 97 - cand.pixel_y; // Map FITS row (lower-left) to Screen (top-left)
         const val = cand.diff_value ? cand.diff_value.toFixed(2) : '+1.45';
         const sig = cand.significance ? `${cand.significance.toFixed(1)}σ` : '5.4σ';
         label = `RESIDUAL (${targetX}, ${targetY}) • ${sig}`;
@@ -2237,6 +2467,14 @@
           UI.trackerStatusDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse';
         }
       }
+
+      // Synchronize Discovery Lab 3-Panel Markers
+      if (profile) {
+        const cRef = profile.getCoords(refIdx, total);
+        const cTgt = profile.getCoords(tgtIdx, total);
+        updateSynchronizedDiscoveryMarkers(cRef, cTgt, { x: targetX, y: targetY, label, tag });
+      }
+    }
 
       // Synchronize Discovery Lab 3-Panel Markers
       if (profile) {
@@ -2311,6 +2549,10 @@
       }
       updateBufferUI(loaded, total);
 
+      if (loaded < total) {
+        showGlobalProgress(`Caching ${total} epoch frames...`, 10);
+      }
+
       const st = AppState.stretch || 'linear';
       const lo = AppState.clipLo !== undefined ? AppState.clipLo : 2.0;
       const hi = AppState.clipHi !== undefined ? AppState.clipHi : 98.0;
@@ -2329,6 +2571,7 @@
                     AppState.imageCache.set(key, d.image_b64);
                     loaded++;
                     updateBufferUI(loaded, total);
+                    updateGlobalProgress(Math.round((loaded / total) * 90) + 5, `Caching frame ${loaded}/${total}...`);
                   }
                 }).catch(() => {})
             );
@@ -2337,6 +2580,7 @@
         if (batch.length > 0) await Promise.all(batch);
       }
       updateBufferUI(total, total);
+      finishGlobalProgress(`All ${total} frames cached ✓`);
     }
 
     function updateBufferUI(loaded, total) {
@@ -2521,6 +2765,9 @@
           UI.btnToggleTracker.classList.add('bg-space-950', 'border-space-border', 'text-slate-400');
           if (UI.trackerBtnLabel) UI.trackerBtnLabel.textContent = 'Tracker OFF';
           if (UI.tracker) UI.tracker.style.display = 'none';
+          if (UI.trackerGhost) UI.trackerGhost.style.display = 'none';
+          if (UI.trackerMotionSvg) UI.trackerMotionSvg.style.display = 'none';
+          if (UI.targetLoupeContainer) UI.targetLoupeContainer.style.display = 'none';
           showToast('Target Follow Tracker disabled', 'info');
         }
       });
@@ -2597,10 +2844,14 @@
       const refIdx = parseInt(UI.diffRefSelect.value || 0);
       const tgtIdx = AppState.currentFrameIdx === refIdx ? (refIdx + 1) % AppState.observations.length : AppState.currentFrameIdx;
 
+      showGlobalProgress('Computing Difference Subtraction...', 30);
+
       try {
         const url = `${API}/api/difference?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&ref_index=${refIdx}&target_index=${tgtIdx}`;
+        updateGlobalProgress(50, 'Reprojecting & subtracting frames...');
         const res = await fetch(url);
         const data = await res.json();
+        updateGlobalProgress(80, 'Detecting transient candidates...');
 
         if (data.diff_b64) {
           AppState.diffImageB64 = data.diff_b64;
@@ -2627,10 +2878,12 @@
           const stdVal = data.stats?.std ? `σ = ${data.stats.std.toFixed(3)}` : 'σ = 0.042';
           UI.labDiffStats.textContent = stdVal;
 
+          finishGlobalProgress(`Difference complete • ${data.candidates?.length || 0} candidates ✓`);
           showToast(`Difference computed (${stdVal})`, 'success');
         }
       } catch (err) {
         console.error('Difference computation error:', err);
+        finishGlobalProgress('Difference failed');
         showToast('Difference computation failed', 'warn');
       }
     }
@@ -2718,19 +2971,23 @@
     });
 
     async function executeCoAddStack() {
+      showGlobalProgress('Computing Co-Add Stack...', 25);
       showToast('Computing Co-Add Stack...', 'info');
       try {
         const count = Math.min(8, AppState.observations.length);
         const indices = Array.from({length: count}, (_, i) => i).join(',');
         const url = `${API}/api/stack?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&indices=${indices}`;
+        updateGlobalProgress(50, `Stacking ${count} epochs...`);
         const res = await fetch(url);
         const data = await res.json();
         if (data.stack_b64) {
           renderImageBase64(data.stack_b64);
+          finishGlobalProgress(`Co-added ${data.count} epochs ✓`);
           showToast(`Co-added ${data.count} observation epochs`, 'success');
         }
       } catch (err) {
         console.error('Stack error:', err);
+        finishGlobalProgress('Stack failed');
       }
     }
 
