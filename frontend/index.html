@@ -2476,14 +2476,6 @@
       }
     }
 
-      // Synchronize Discovery Lab 3-Panel Markers
-      if (profile) {
-        const cRef = profile.getCoords(refIdx, total);
-        const cTgt = profile.getCoords(tgtIdx, total);
-        updateSynchronizedDiscoveryMarkers(cRef, cTgt, { x: targetX, y: targetY, label, tag });
-      }
-    }
-
     function updateSynchronizedDiscoveryMarkers(cRef, cTgt, cDiff) {
       // 1. Reference baseline marker
       const boxRef = document.getElementById('lab-box-ref');
