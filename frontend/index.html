@@ -820,11 +820,11 @@
                   </select>
                 </div>
 
-                <!-- Target Tracker Toggle -->
+                <!-- Target Tracker Toggle (Default OFF) -->
                 <button id="btn-toggle-tracker" title="Toggle Target Follow & Change Pointer (Key T)"
-                  class="btn-press px-2 py-1 rounded-lg bg-sky-950/80 border border-sky-500/60 text-sky-300 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-mono">
-                  <i data-lucide="crosshair" class="w-3.5 h-3.5 text-sky-400"></i>
-                  <span class="hidden sm:inline text-[11px] font-medium" id="tracker-btn-label">Tracker ON</span>
+                  class="btn-press px-2 py-1 rounded-lg bg-space-950 border border-space-border text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-mono">
+                  <i data-lucide="crosshair" class="w-3.5 h-3.5 text-slate-400"></i>
+                  <span class="hidden sm:inline text-[11px] font-medium" id="tracker-btn-label">Tracker OFF</span>
                 </button>
 
                 <!-- Toggle Tuning Drawer -->
@@ -1318,7 +1318,7 @@
             class="relative w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border border-space-border"
             id="lab-box-ref">
             <img id="lab-img-ref" src="" alt="Reference Epoch"
-              class="max-w-full max-h-full object-contain image-rendering-pixelated" />
+              class="max-w-full max-h-full object-contain image-rendering-pixelated transform scale-110" />
             <div id="lab-marker-ref"
               class="absolute pointer-events-none hidden -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
               <span class="w-7 h-7 rounded border-2 border-amber-400 bg-amber-400/15"></span>
@@ -1341,7 +1341,7 @@
             class="relative w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border border-space-border"
             id="lab-box-tgt">
             <img id="lab-img-tgt" src="" alt="Target Epoch"
-              class="max-w-full max-h-full object-contain image-rendering-pixelated" />
+              class="max-w-full max-h-full object-contain image-rendering-pixelated transform scale-110" />
             <div id="lab-marker-tgt"
               class="absolute pointer-events-none hidden -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
               <span class="w-7 h-7 rounded border-2 border-emerald-400 bg-emerald-400/15"></span>
@@ -1365,7 +1365,7 @@
             class="relative w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border border-space-border"
             id="lab-box-diff">
             <img id="lab-img-diff" src="" alt="Difference Residual Frame"
-              class="max-w-full max-h-full object-contain image-rendering-pixelated" />
+              class="max-w-full max-h-full object-contain image-rendering-pixelated transform scale-110" />
             <div id="lab-marker-diff"
               class="absolute pointer-events-none hidden -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
               <span class="w-8 h-8 rounded-full border-2 border-sky-400 animate-pulse bg-sky-400/20"></span>
@@ -1882,8 +1882,8 @@
   <!-- ========================================================================= -->
   <div id="tour-guide-overlay"
     class="fixed inset-0 z-[8500] pointer-events-none transition-opacity duration-300 opacity-0 select-none hidden">
-    <!-- Semi-transparent backdrop -->
-    <div class="absolute inset-0 bg-space-950/75 backdrop-blur-[2px] pointer-events-auto" onclick="skipTourGuide()"></div>
+    <!-- Semi-transparent subtle backdrop (Light blur) -->
+    <div class="absolute inset-0 bg-space-950/40 backdrop-blur-[0.5px] pointer-events-auto" onclick="skipTourGuide()"></div>
 
     <!-- Dynamic Spotlight Box (highlights target element) -->
     <div id="tour-spotlight-box"
@@ -2053,7 +2053,7 @@
       isPlaying: false,
       speedIndex: 2, // 4 fps
 
-      zoom: 1.0,
+      zoom: 1.25, // Default comfortably zoomed-in frame view
       panX: 0,
       panY: 0,
 
@@ -2072,8 +2072,8 @@
       brightnessFilter: 100,
       contrastFilter: 100,
 
-      // Target Follow & Change Pointer
-      trackerEnabled: true,
+      // Target Follow & Change Pointer (Default OFF)
+      trackerEnabled: false,
 
       animationId: null,
       lastTickTime: 0
@@ -2514,7 +2514,10 @@
       if (!b64) return;
       UI.canvasImg.src = b64.startsWith('data:') ? b64 : `data:image/png;base64,${b64}`;
       applyImageFilters();
-      requestAnimationFrame(() => updateTargetTracker(AppState.currentFrameIdx));
+      applyTransform();
+      if (AppState.trackerEnabled) {
+        requestAnimationFrame(() => updateTargetTracker(AppState.currentFrameIdx));
+      }
     }
 
     function applyImageFilters() {
@@ -3457,9 +3460,9 @@
       UI.canvasImg.style.transform = `scale(${AppState.zoom}) translate(${AppState.panX}px, ${AppState.panY}px)`;
     }
 
-    UI.btnZoomIn.onclick = () => { AppState.zoom = Math.min(4.0, AppState.zoom + 0.3); applyTransform(); };
-    UI.btnZoomOut.onclick = () => { AppState.zoom = Math.max(0.6, AppState.zoom - 0.3); applyTransform(); };
-    UI.btnZoomReset.onclick = () => { AppState.zoom = 1.0; AppState.panX = 0; AppState.panY = 0; applyTransform(); };
+    UI.btnZoomIn.onclick = () => { AppState.zoom = Math.min(4.0, AppState.zoom + 0.25); applyTransform(); };
+    UI.btnZoomOut.onclick = () => { AppState.zoom = Math.max(0.6, AppState.zoom - 0.25); applyTransform(); };
+    UI.btnZoomReset.onclick = () => { AppState.zoom = 1.25; AppState.panX = 0; AppState.panY = 0; applyTransform(); };
 
     UI.stage.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -3588,7 +3591,7 @@
           document.querySelector('.mode-btn[data-mode="blink"]')?.click();
           break;
         case 'KeyR':
-          AppState.zoom = 1.0; AppState.panX = 0; AppState.panY = 0; applyTransform();
+          AppState.zoom = 1.25; AppState.panX = 0; AppState.panY = 0; applyTransform();
           break;
         case 'KeyF':
           UI.btnFullscreen.click();
