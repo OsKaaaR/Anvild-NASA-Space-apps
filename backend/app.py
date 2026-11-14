@@ -610,10 +610,16 @@ def get_pixel_spectrum(
 
 @app.get("/Logo.png")
 @app.get("/logo.png")
+@app.get("/SkyBlink Cosmic Galaxy Logo.png")
+@app.get("/SkyBlink%20Cosmic%20Galaxy%20Logo.png")
+@app.get("/skyblink_logo.png")
 def serve_logo():
     for candidate in [
+        os.path.join(FRONTEND_DIR, "SkyBlink Cosmic Galaxy Logo.png"),
+        os.path.join(FRONTEND_DIR, "skyblink_logo.png"),
         os.path.join(FRONTEND_DIR, "logo_thumb.png"),
         os.path.join(FRONTEND_DIR, "Logo.png"),
+        os.path.join(PROJECT_ROOT, "SkyBlink Cosmic Galaxy Logo.png"),
         os.path.join(PROJECT_ROOT, "Logo.png"),
     ]:
         if os.path.isfile(candidate):
@@ -631,3 +637,13 @@ def serve_frontend():
         {"message": "SkyBlink API is running. Frontend not yet deployed."},
         status_code=200,
     )
+
+
+@app.get("/{filename:path}")
+def serve_frontend_asset(filename: str):
+    target = os.path.join(FRONTEND_DIR, filename)
+    if os.path.isfile(target):
+        # Determine media type for common web assets
+        media_type = "image/png" if filename.lower().endswith(".png") else None
+        return FileResponse(target, media_type=media_type)
+    raise HTTPException(status_code=404, detail=f"Asset '{filename}' not found")
