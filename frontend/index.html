@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SkyBlink ✦ Cosmic Detective | NASA Space Apps Cairo 2026</title>
-  <meta name="description" content="Cinematic astronomical investigation experience using NASA SPHEREx time-domain observations. Track brown dwarfs, pulsating stars, and transient phenomena across cosmic epochs." />
+  <title>SkyBlink — SPHEREx Time-Domain Sky Explorer</title>
+  <meta name="description" content="Astronomical investigation platform for NASA SPHEREx observations. Compare infrared epochs, detect proper motion, and inspect transient phenomena." />
 
   <!-- Tailwind CSS v3 via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -15,42 +15,28 @@
         extend: {
           colors: {
             space: {
-              950: '#02040a',
-              900: '#060b18',
-              850: '#0a1228',
-              800: '#0f1b38',
-              750: '#16254c',
-              700: '#1e3364',
-              border: 'rgba(56, 189, 248, 0.16)',
-              borderHover: 'rgba(56, 189, 248, 0.5)'
+              950: '#030712', // Clean deep obsidian
+              900: '#0b1120',
+              850: '#111827',
+              800: '#1f2937',
+              750: '#374151',
+              700: '#4b5563',
+              border: '#1f2937',
+              borderHover: '#374151'
             },
-            electric: {
+            accent: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
               400: '#38bdf8',
               500: '#0ea5e9',
-              600: '#0284c7'
-            },
-            cosmic: {
-              400: '#a78bfa',
-              500: '#8b5cf6',
-              600: '#7c3aed'
-            },
-            discovery: {
-              400: '#fbbf24',
-              500: '#f59e0b',
-              600: '#d97706'
+              600: '#0284c7',
+              700: '#0369a1'
             }
           },
           fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
             display: ['Space Grotesk', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          boxShadow: {
-            'glow-cyan': '0 0 24px -2px rgba(56, 189, 248, 0.35)',
-            'glow-violet': '0 0 24px -2px rgba(139, 92, 246, 0.35)',
-            'glow-gold': '0 0 24px -2px rgba(245, 158, 11, 0.35)',
-            'glass': '0 12px 40px 0 rgba(0, 0, 0, 0.65)',
-            'cinematic': '0 20px 50px rgba(2, 6, 23, 0.9)'
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
           }
         }
       }
@@ -60,7 +46,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -69,46 +55,35 @@
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 
   <style>
-    /* Custom Scrollbars */
+    /* Minimalist Human-Crafted Custom Scrollbars */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(2, 4, 10, 0.8); }
-    ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.6); }
+    ::-webkit-scrollbar-track { background: #030712; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
 
-    /* Custom Range Sliders */
+    /* Clean Range Slider without artificial glow */
     input[type=range] {
       -webkit-appearance: none;
-      background: rgba(255, 255, 255, 0.12);
+      background: #1f2937;
       border-radius: 9999px;
-      height: 6px;
+      height: 4px;
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
-      background: #38bdf8;
-      box-shadow: 0 0 12px #38bdf8;
+      background: #ffffff;
+      border: 2px solid #0284c7;
       cursor: pointer;
-      border: 2px solid #ffffff;
-      transition: transform 0.15s ease, background 0.15s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      transition: transform 0.15s ease;
     }
     input[type=range]::-webkit-slider-thumb:hover {
-      transform: scale(1.3);
-      background: #7dd3fc;
+      transform: scale(1.2);
     }
 
-    /* Cinematic Deep Space Background */
-    body {
-      background-color: #02040a;
-      background-image: 
-        radial-gradient(ellipse at 20% 0%, rgba(14, 165, 233, 0.09) 0px, transparent 60%),
-        radial-gradient(ellipse at 80% 100%, rgba(99, 102, 241, 0.08) 0px, transparent 60%),
-        radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.04) 0px, transparent 70%);
-      background-attachment: fixed;
-    }
-
-    /* Ambient Canvas Starfield */
+    /* Ambient Subtle Starfield */
     #ambient-stars {
       position: fixed;
       top: 0;
@@ -119,12 +94,33 @@
       z-index: 0;
     }
 
-    /* Soft pulse animations */
-    @keyframes pulse-slow {
-      0%, 100% { opacity: 0.8; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.02); }
+    /* Fluid View Transitions */
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    .animate-pulse-slow { animation: pulse-slow 4s infinite ease-in-out; }
+    .view-section:not(.hidden) {
+      animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Micro-Interactions */
+    .btn-press:active {
+      transform: scale(0.98);
+    }
+    
+    .card-hover {
+      transition: border-color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      border-color: #4b5563;
+    }
 
     /* Print Dossier Styling */
     @media print {
@@ -135,69 +131,69 @@
   </style>
 </head>
 
-<body class="text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-electric-500/30 selection:text-electric-400 relative">
+<body class="bg-space-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-slate-800 selection:text-white relative">
 
   <!-- Interactive Subtle Cosmic Background Particles -->
   <canvas id="ambient-stars"></canvas>
 
   <!-- ========================================================================= -->
-  <!-- 1. TOP CINEMATIC NAVIGATION HUD -->
+  <!-- 1. TOP MINIMAL NAVIGATION BAR -->
   <!-- ========================================================================= -->
-  <header class="sticky top-0 z-50 backdrop-blur-xl bg-space-950/85 border-b border-space-border/80 shadow-cinematic px-4 lg:px-8 py-3">
-    <div class="max-w-[1780px] mx-auto flex items-center justify-between gap-4">
+  <header class="sticky top-0 z-50 backdrop-blur-md bg-space-950/90 border-b border-space-border px-4 lg:px-8 py-3">
+    <div class="max-w-[1720px] mx-auto flex items-center justify-between gap-4">
       
-      <!-- Brand & Mission Badge -->
+      <!-- Logo & Brand Identity -->
       <div class="flex items-center gap-3.5">
-        <a href="#home" class="flex items-center gap-3 group">
-          <div class="w-11 h-11 rounded-xl bg-space-950 p-0.5 border border-electric-400/50 shadow-glow-cyan flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-105 group-hover:border-electric-400 group-hover:shadow-[0_0_24px_rgba(56,189,248,0.6)]">
-            <img src="/Logo.png" alt="SkyBlink Emblem" class="w-full h-full object-contain rounded-lg" onerror="this.onerror=null; this.src='Logo.png';" />
+        <a href="#home" onclick="navigateTo('home')" class="flex items-center gap-3 group">
+          <div class="w-9 h-9 rounded-lg bg-space-900 border border-slate-700/80 flex items-center justify-center overflow-hidden transition-colors group-hover:border-slate-500">
+            <img src="/Logo.png" alt="SkyBlink Emblem" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='Logo.png';" />
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <span class="font-display font-black text-xl lg:text-2xl tracking-tight bg-gradient-to-r from-white via-cyan-100 to-sky-400 bg-clip-text text-transparent group-hover:brightness-125 transition-all">
-                SKYBLINK
+              <span class="font-display font-bold text-lg tracking-tight text-white">
+                SkyBlink
               </span>
-              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-950/90 text-cyan-300 border border-cyan-800/80 font-bold tracking-wider shadow-sm">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-space-850 text-slate-400 border border-space-border font-medium">
                 SPHEREx
               </span>
             </div>
-            <p class="text-[11px] text-slate-400 hidden sm:flex items-center gap-1.5 font-medium tracking-wide">
+            <p class="text-[11px] text-slate-400 hidden sm:flex items-center gap-1.5 font-normal">
               <span>NASA Space Apps Cairo 2026</span>
               <span class="text-slate-600">•</span>
-              <span class="text-cosmic-400 font-semibold">Cosmic Detective</span>
+              <span>Cosmic Detective</span>
             </p>
           </div>
         </a>
       </div>
 
-      <!-- Center: Detective Journey Workflow Steps (Desktop) -->
-      <nav class="hidden xl:flex items-center gap-1 bg-space-900/90 border border-space-border/60 rounded-xl p-1 shadow-inner text-xs font-medium">
-        <button onclick="navigateTo('home')" class="nav-step-btn px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1.5" data-tab="home">
-          <i data-lucide="compass" class="w-3.5 h-3.5 text-cyan-400"></i>
+      <!-- Center: Clean Linear Navigation Steps (Desktop) -->
+      <nav class="hidden xl:flex items-center gap-1 bg-space-900 border border-space-border rounded-xl p-1 text-xs font-medium">
+        <button onclick="navigateTo('home')" class="nav-step-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-colors flex items-center gap-1.5" data-tab="home">
+          <i data-lucide="compass" class="w-3.5 h-3.5"></i>
           <span>Home</span>
         </button>
-        <button onclick="navigateTo('missions')" class="nav-step-btn px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1.5" data-tab="missions">
-          <i data-lucide="folder" class="w-3.5 h-3.5 text-amber-400"></i>
+        <button onclick="navigateTo('missions')" class="nav-step-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-colors flex items-center gap-1.5" data-tab="missions">
+          <i data-lucide="folder" class="w-3.5 h-3.5"></i>
           <span>Missions</span>
         </button>
-        <button onclick="navigateTo('investigation')" class="nav-step-btn active px-3 py-1.5 rounded-lg bg-gradient-to-r from-electric-500 to-cosmic-600 text-white font-semibold shadow-sm transition-all flex items-center gap-1.5" data-tab="investigation">
-          <i data-lucide="clock" class="w-3.5 h-3.5 text-white"></i>
+        <button onclick="navigateTo('investigation')" class="nav-step-btn active px-3 py-1.5 rounded-lg bg-space-800 text-white font-semibold transition-colors flex items-center gap-1.5" data-tab="investigation">
+          <i data-lucide="clock" class="w-3.5 h-3.5"></i>
           <span>Time Machine</span>
         </button>
-        <button onclick="navigateTo('discovery')" class="nav-step-btn px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1.5" data-tab="discovery">
-          <i data-lucide="search" class="w-3.5 h-3.5 text-rose-400"></i>
+        <button onclick="navigateTo('discovery')" class="nav-step-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-colors flex items-center gap-1.5" data-tab="discovery">
+          <i data-lucide="search" class="w-3.5 h-3.5"></i>
           <span>Discovery Lab</span>
         </button>
-        <button onclick="navigateTo('spectrum')" class="nav-step-btn px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1.5" data-tab="spectrum">
-          <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-400"></i>
+        <button onclick="navigateTo('spectrum')" class="nav-step-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-colors flex items-center gap-1.5" data-tab="spectrum">
+          <i data-lucide="activity" class="w-3.5 h-3.5"></i>
           <span>Spectral Explorer</span>
         </button>
-        <button onclick="navigateTo('dossier')" class="nav-step-btn px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1.5" data-tab="dossier">
-          <i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-400"></i>
-          <span>Discovery Report</span>
+        <button onclick="navigateTo('dossier')" class="nav-step-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-colors flex items-center gap-1.5" data-tab="dossier">
+          <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+          <span>Report</span>
         </button>
-        <button onclick="navigateTo('about')" class="nav-step-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-1.5" data-tab="about">
-          <i data-lucide="info" class="w-3.5 h-3.5 text-slate-400"></i>
+        <button onclick="navigateTo('about')" class="nav-step-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-colors flex items-center gap-1.5" data-tab="about">
+          <i data-lucide="info" class="w-3.5 h-3.5"></i>
           <span>About</span>
         </button>
       </nav>
@@ -205,32 +201,32 @@
       <!-- Right Controls: Detective/Astrometry View Toggle & Tools -->
       <div class="flex items-center gap-2.5">
         
-        <!-- View Mode Toggle: Beginner Detective vs Advanced Astrometry -->
-        <div class="flex items-center bg-space-900 border border-space-border/80 rounded-xl p-0.5 text-xs">
-          <button id="toggle-view-beginner" class="px-2.5 py-1 rounded-lg font-semibold bg-electric-500/20 text-electric-400 border border-electric-500/40 shadow-sm transition-all flex items-center gap-1.5" title="Cosmic Detective View: Clean, intuitive, focused on exploration">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+        <!-- View Mode Toggle: Detective vs Astrometry -->
+        <div class="flex items-center bg-space-900 border border-space-border rounded-lg p-0.5 text-xs">
+          <button id="toggle-view-beginner" class="px-2.5 py-1 rounded-md font-medium bg-space-800 text-white transition-colors flex items-center gap-1.5" title="Cosmic Detective: Simple, discovery-focused workflow">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-sky-400"></i>
             <span class="hidden sm:inline">Detective</span>
           </button>
-          <button id="toggle-view-advanced" class="px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white transition-all flex items-center gap-1.5" title="Astrometry View: Full scientific telemetry, WCS matrices, FITS cards">
+          <button id="toggle-view-advanced" class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-1.5" title="Astrometry: Full technical telemetry and metadata">
             <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
             <span class="hidden sm:inline">Astrometry</span>
           </button>
         </div>
 
         <!-- Latency / Cache Badge -->
-        <div class="hidden md:flex items-center gap-1.5 text-xs font-mono py-1 px-3 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 shadow-sm">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="font-semibold" id="ram-status-badge">Offline Buffer Active (0.1ms)</span>
+        <div class="hidden md:flex items-center gap-2 text-xs font-mono py-1 px-2.5 rounded-lg bg-space-900 border border-space-border text-slate-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span id="ram-status-badge">Offline Buffer (0.1ms)</span>
         </div>
 
         <!-- "What Am I Seeing?" Help Button -->
-        <button id="btn-open-explainer" class="flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-xl bg-space-850 hover:bg-space-800 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400 transition-all shadow-sm">
-          <i data-lucide="help-circle" class="w-4 h-4 text-cyan-400"></i>
-          <span class="hidden sm:inline">What Am I Seeing?</span>
+        <button id="btn-open-explainer" class="flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-lg bg-space-900 hover:bg-space-850 text-slate-300 hover:text-white border border-space-border transition-colors">
+          <i data-lucide="help-circle" class="w-4 h-4 text-slate-400"></i>
+          <span class="hidden sm:inline">Guide</span>
         </button>
 
         <!-- Keyboard Shortcuts Toggle -->
-        <button id="btn-open-shortcuts" title="Keyboard Shortcuts (Key ?)" class="p-2 rounded-xl bg-space-850 hover:bg-space-800 text-slate-300 border border-space-border hover:text-white transition-all shadow-sm">
+        <button id="btn-open-shortcuts" title="Keyboard Shortcuts" class="p-2 rounded-lg bg-space-900 hover:bg-space-850 text-slate-400 hover:text-white border border-space-border transition-colors">
           <i data-lucide="keyboard" class="w-4 h-4"></i>
         </button>
       </div>
@@ -238,74 +234,73 @@
     </div>
   </header>
 
-  <!-- Mobile Tab Navigation Bar (Small Screens) -->
-  <div class="xl:hidden bg-space-900/90 border-b border-space-border/60 px-2 py-2 overflow-x-auto flex items-center gap-1.5 z-40">
-    <button onclick="navigateTo('home')" class="nav-step-mobile px-3 py-1 text-xs rounded-lg text-slate-300 whitespace-nowrap" data-tab="home">Home</button>
-    <button onclick="navigateTo('missions')" class="nav-step-mobile px-3 py-1 text-xs rounded-lg text-slate-300 whitespace-nowrap" data-tab="missions">Missions</button>
-    <button onclick="navigateTo('investigation')" class="nav-step-mobile active px-3 py-1 text-xs rounded-lg bg-electric-500 text-white font-bold whitespace-nowrap" data-tab="investigation">Time Machine</button>
-    <button onclick="navigateTo('discovery')" class="nav-step-mobile px-3 py-1 text-xs rounded-lg text-slate-300 whitespace-nowrap" data-tab="discovery">Discovery Lab</button>
-    <button onclick="navigateTo('spectrum')" class="nav-step-mobile px-3 py-1 text-xs rounded-lg text-slate-300 whitespace-nowrap" data-tab="spectrum">Spectrum</button>
-    <button onclick="navigateTo('dossier')" class="nav-step-mobile px-3 py-1 text-xs rounded-lg text-slate-300 whitespace-nowrap" data-tab="dossier">Report</button>
+  <!-- Mobile Tab Navigation Bar -->
+  <div class="xl:hidden bg-space-950 border-b border-space-border px-3 py-2 overflow-x-auto flex items-center gap-1.5 z-40">
+    <button onclick="navigateTo('home')" class="nav-step-mobile px-3 py-1 text-xs rounded-lg text-slate-400 whitespace-nowrap" data-tab="home">Home</button>
+    <button onclick="navigateTo('missions')" class="nav-step-mobile px-3 py-1 text-xs rounded-lg text-slate-400 whitespace-nowrap" data-tab="missions">Missions</button>
+    <button onclick="navigateTo('investigation')" class="nav-step-mobile active px-3 py-1 text-xs rounded-lg bg-space-800 text-white font-medium whitespace-nowrap" data-tab="investigation">Time Machine</button>
+    <button onclick="navigateTo('discovery')" class="nav-step-mobile px-3 py-1 text-xs rounded-lg text-slate-400 whitespace-nowrap" data-tab="discovery">Discovery Lab</button>
+    <button onclick="navigateTo('spectrum')" class="nav-step-mobile px-3 py-1 text-xs rounded-lg text-slate-400 whitespace-nowrap" data-tab="spectrum">Spectrum</button>
+    <button onclick="navigateTo('dossier')" class="nav-step-mobile px-3 py-1 text-xs rounded-lg text-slate-400 whitespace-nowrap" data-tab="dossier">Report</button>
     <button onclick="navigateTo('about')" class="nav-step-mobile px-3 py-1 text-xs rounded-lg text-slate-400 whitespace-nowrap" data-tab="about">About</button>
   </div>
 
   <!-- ========================================================================= -->
   <!-- MAIN WORKSPACE CONTAINER -->
   <!-- ========================================================================= -->
-  <main class="flex-1 max-w-[1780px] w-full mx-auto p-3 lg:p-6 flex flex-col gap-6 relative z-10">
+  <main class="flex-1 max-w-[1720px] w-full mx-auto p-3 lg:p-6 flex flex-col gap-6 relative z-10">
 
     <!-- ===================================================================== -->
-    <!-- SECTION 1: CINEMATIC HERO & MISSION LAUNCHPAD (LANDING) -->
+    <!-- SECTION 1: CLEAN HERO & MISSION LAUNCHPAD (LANDING) -->
     <!-- ===================================================================== -->
     <section id="section-home" class="view-section transition-all duration-300 flex flex-col gap-6">
       
-      <!-- Cinematic Hero Banner -->
-      <div class="relative rounded-3xl overflow-hidden border border-space-border/80 bg-gradient-to-b from-space-900/95 via-space-950/90 to-space-950 p-6 lg:p-12 shadow-2xl">
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(56,189,248,0.12)_0%,transparent_70%)] pointer-events-none"></div>
-        <div class="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center">
+      <!-- Clean Hero Banner -->
+      <div class="relative rounded-2xl border border-space-border bg-space-900/60 p-8 lg:p-14">
+        <div class="max-w-3xl mx-auto text-center flex flex-col items-center">
           
-          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-space-850/90 border border-electric-400/40 text-electric-400 text-xs font-mono font-semibold tracking-wider mb-5 shadow-glow-cyan">
-            <span class="w-2 h-2 rounded-full bg-electric-400 animate-ping"></span>
-            <span>NASA SPHEREx MISSION • PLANET X & TIME-DOMAIN SKY EXPLORER</span>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-space-850 border border-space-border text-slate-400 text-xs font-mono font-medium mb-6">
+            <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+            <span>NASA SPHEREx • Planet X and SPHEREx Challenge</span>
           </div>
 
-          <h1 class="font-display font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-white uppercase mb-4 leading-tight">
-            THE UNIVERSE NEVER <span class="bg-gradient-to-r from-electric-400 via-cyan-200 to-cosmic-400 bg-clip-text text-transparent">STANDS STILL.</span>
+          <h1 class="font-display font-bold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-white uppercase mb-4 leading-tight">
+            THE UNIVERSE NEVER STANDS STILL.
           </h1>
 
-          <p class="text-base sm:text-lg text-slate-300 max-w-2xl font-light leading-relaxed mb-8">
+          <p class="text-base sm:text-lg text-slate-400 font-normal leading-relaxed mb-8 max-w-2xl">
             Explore the invisible infrared universe. Compare observations across time. Discover what changed.
           </p>
 
           <!-- Core Call to Actions -->
-          <div class="flex flex-wrap items-center justify-center gap-4">
-            <button onclick="startInvestigationWorkflow(0)" class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-electric-500 via-sky-500 to-cosmic-600 hover:from-electric-400 hover:to-cosmic-500 text-white font-bold text-sm tracking-wide shadow-glow-cyan hover:scale-[1.03] transition-all flex items-center gap-2.5">
-              <i data-lucide="play" class="w-5 h-5 fill-white"></i>
+          <div class="flex flex-wrap items-center justify-center gap-3">
+            <button onclick="startInvestigationWorkflow(0)" class="btn-press px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm transition-colors flex items-center gap-2">
+              <i data-lucide="play" class="w-4 h-4 fill-white"></i>
               <span>START YOUR INVESTIGATION</span>
             </button>
-            <button onclick="navigateTo('missions')" class="px-7 py-3.5 rounded-2xl bg-space-850/80 hover:bg-space-800 text-slate-200 hover:text-white border border-space-border/80 hover:border-electric-400/50 font-semibold text-sm transition-all flex items-center gap-2.5">
-              <i data-lucide="compass" class="w-5 h-5 text-amber-400"></i>
+            <button onclick="navigateTo('missions')" class="btn-press px-6 py-3 rounded-xl bg-space-850 hover:bg-space-800 text-slate-200 border border-space-border hover:border-slate-600 font-medium text-sm transition-colors flex items-center gap-2">
+              <i data-lucide="compass" class="w-4 h-4 text-slate-400"></i>
               <span>EXPLORE THE MISSIONS</span>
             </button>
           </div>
 
-          <!-- Quick Fact Pills for Non-Scientists -->
-          <div class="mt-10 pt-8 border-t border-space-border/40 grid grid-cols-2 md:grid-cols-4 gap-4 w-full text-left font-mono text-xs">
-            <div class="p-3 rounded-xl bg-space-950/60 border border-space-border/40">
-              <span class="text-slate-400 block text-[10px] uppercase font-bold">What is SPHEREx?</span>
-              <span class="text-white font-semibold">NASA all-sky spectral satellite scanning in 102 infrared bands</span>
+          <!-- Quick Fact Tiles -->
+          <div class="mt-12 pt-8 border-t border-space-border/60 grid grid-cols-2 md:grid-cols-4 gap-4 w-full text-left font-mono text-xs">
+            <div class="p-3.5 rounded-xl bg-space-950 border border-space-border">
+              <span class="text-slate-500 block text-[10px] uppercase font-bold mb-0.5">NASA Mission</span>
+              <span class="text-slate-200 font-medium">SPHEREx 102-Band All-Sky Survey</span>
             </div>
-            <div class="p-3 rounded-xl bg-space-950/60 border border-space-border/40">
-              <span class="text-slate-400 block text-[10px] uppercase font-bold">The Cosmic Blink</span>
-              <span class="text-cyan-300 font-semibold">Flips between epochs to reveal stellar motion & elusive Planet X</span>
+            <div class="p-3.5 rounded-xl bg-space-950 border border-space-border">
+              <span class="text-slate-500 block text-[10px] uppercase font-bold mb-0.5">Time Machine</span>
+              <span class="text-slate-200 font-medium">Blink observations to spot real motion</span>
             </div>
-            <div class="p-3 rounded-xl bg-space-950/60 border border-space-border/40">
-              <span class="text-slate-400 block text-[10px] uppercase font-bold">Difference Imaging</span>
-              <span class="text-rose-300 font-semibold">Subtracts static stars to isolate candidates exceeding 5σ</span>
+            <div class="p-3.5 rounded-xl bg-space-950 border border-space-border">
+              <span class="text-slate-500 block text-[10px] uppercase font-bold mb-0.5">Difference Lab</span>
+              <span class="text-slate-200 font-medium">Automated subtraction & >5σ detection</span>
             </div>
-            <div class="p-3 rounded-xl bg-space-950/60 border border-space-border/40">
-              <span class="text-slate-400 block text-[10px] uppercase font-bold">Data Authenticity</span>
-              <span class="text-emerald-300 font-semibold">100% authentic FITS calibrated observations</span>
+            <div class="p-3.5 rounded-xl bg-space-950 border border-space-border">
+              <span class="text-slate-500 block text-[10px] uppercase font-bold mb-0.5">Data Integrity</span>
+              <span class="text-slate-200 font-medium">100% authentic FITS calibrated frames</span>
             </div>
           </div>
 
@@ -315,7 +310,7 @@
     </section>
 
     <!-- ===================================================================== -->
-    <!-- SECTION 2: MISSION DOSSIER SELECTION (CATALOG & CUSTOM SEARCH) -->
+    <!-- SECTION 2: MISSION SELECTION (CATALOG & CUSTOM SEARCH) -->
     <!-- ===================================================================== -->
     <section id="section-missions" class="view-section transition-all duration-300 flex flex-col gap-5">
       
@@ -323,19 +318,19 @@
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <i data-lucide="folder" class="w-5 h-5 text-amber-400"></i>
-            <h2 class="text-xl font-display font-bold text-white tracking-wide">
+            <i data-lucide="folder" class="w-5 h-5 text-sky-400"></i>
+            <h2 class="text-lg font-display font-bold text-white tracking-wide">
               ASTRONOMICAL MISSION DOSSIERS
             </h2>
           </div>
           <p class="text-xs text-slate-400">
-            Select a target below to begin a cosmic investigation. Real observation counts extracted directly from SPHEREx data.
+            Select an astronomical target below to begin an investigation. Real observation counts extracted directly from SPHEREx data.
           </p>
         </div>
 
-        <button onclick="openBriefingModal()" class="text-xs font-mono px-3 py-1.5 rounded-xl bg-space-850 border border-space-border text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
-          <i data-lucide="file-text" class="w-3.5 h-3.5 text-cyan-400"></i>
-          <span>View Current Briefing</span>
+        <button onclick="openBriefingModal()" class="btn-press text-xs font-mono px-3 py-1.5 rounded-lg bg-space-900 border border-space-border text-slate-300 hover:text-white transition-colors flex items-center gap-1.5">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-400"></i>
+          <span>View Briefing</span>
         </button>
       </div>
 
@@ -343,15 +338,15 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="mission-cards-grid">
         
         <!-- Mission 1: WISE 0855 -->
-        <div class="mission-card group relative p-5 rounded-2xl bg-space-900/90 border border-electric-500/70 shadow-glow-cyan flex flex-col justify-between transition-all hover:-translate-y-1" data-idx="0">
+        <div class="mission-card card-hover group p-5 rounded-xl bg-space-900/60 border border-space-border flex flex-col justify-between" data-idx="0">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <span class="px-2.5 py-1 rounded-lg bg-electric-950 text-electric-400 border border-electric-500/40 text-[11px] font-mono font-bold">
+              <span class="px-2 py-0.5 rounded bg-space-850 text-sky-400 border border-space-border text-[11px] font-mono font-medium">
                 Brown Dwarf • 31 Obs
               </span>
-              <span class="text-2xl">🪐</span>
+              <span class="text-lg">🪐</span>
             </div>
-            <h3 class="font-display font-bold text-lg text-white group-hover:text-electric-400 transition-colors">
+            <h3 class="font-display font-bold text-base text-white group-hover:text-sky-300 transition-colors">
               WISE 0855−0714
             </h3>
             <p class="text-xs font-medium text-slate-300 mt-1 mb-2">
@@ -361,53 +356,53 @@
               At ~250 Kelvin, it is one of the coldest known sub-stellar objects. Detect its rapid ~8″/year motion against background stars.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-space-border/50 flex items-center justify-between">
+          <div class="mt-4 pt-3 border-t border-space-border/60 flex items-center justify-between">
             <span class="text-[10px] font-mono text-slate-500">RA 133.785° Dec -7.244°</span>
-            <button onclick="startInvestigationWorkflow(0)" class="px-3.5 py-1.5 rounded-xl bg-electric-500 hover:bg-electric-400 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all">
-              <span>INVESTIGATE</span>
+            <button onclick="startInvestigationWorkflow(0)" class="btn-press px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs flex items-center gap-1.5 transition-colors">
+              <span>Investigate</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </button>
           </div>
         </div>
 
         <!-- Mission 2: Barnard's Star -->
-        <div class="mission-card group relative p-5 rounded-2xl bg-space-900/60 border border-space-border/70 hover:border-electric-400/60 flex flex-col justify-between transition-all hover:-translate-y-1" data-idx="1">
+        <div class="mission-card card-hover group p-5 rounded-xl bg-space-900/60 border border-space-border flex flex-col justify-between" data-idx="1">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <span class="px-2.5 py-1 rounded-lg bg-space-850 text-amber-400 border border-amber-500/40 text-[11px] font-mono font-bold">
-                Extreme Motion • 13 Obs
+              <span class="px-2 py-0.5 rounded bg-space-850 text-slate-300 border border-space-border text-[11px] font-mono font-medium">
+                Fastest Motion • 13 Obs
               </span>
-              <span class="text-2xl">⭐</span>
+              <span class="text-lg">⭐</span>
             </div>
-            <h3 class="font-display font-bold text-lg text-white group-hover:text-amber-400 transition-colors">
+            <h3 class="font-display font-bold text-base text-white group-hover:text-sky-300 transition-colors">
               Barnard's Star
             </h3>
             <p class="text-xs font-medium text-slate-300 mt-1 mb-2">
               Investigate one of the fastest-moving stars in the sky.
             </p>
             <p class="text-[11px] text-slate-400 leading-relaxed">
-              Closest single star to our Sun with an extraordinary 10.3″/year proper motion. Obvious shift observable in the Time Machine.
+              Closest single star to our Sun with an extreme 10.3″/year proper motion. Obvious shift observable in the Time Machine.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-space-border/50 flex items-center justify-between">
+          <div class="mt-4 pt-3 border-t border-space-border/60 flex items-center justify-between">
             <span class="text-[10px] font-mono text-slate-500">RA 269.452° Dec +4.693°</span>
-            <button onclick="startInvestigationWorkflow(1)" class="px-3.5 py-1.5 rounded-xl bg-space-800 hover:bg-electric-500 text-slate-200 hover:text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all">
-              <span>INVESTIGATE</span>
+            <button onclick="startInvestigationWorkflow(1)" class="btn-press px-3 py-1.5 rounded-lg bg-space-800 hover:bg-space-700 text-slate-200 hover:text-white font-medium text-xs border border-space-border flex items-center gap-1.5 transition-colors">
+              <span>Investigate</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </button>
           </div>
         </div>
 
         <!-- Mission 3: Epsilon Indi B -->
-        <div class="mission-card group relative p-5 rounded-2xl bg-space-900/60 border border-space-border/70 hover:border-electric-400/60 flex flex-col justify-between transition-all hover:-translate-y-1" data-idx="2">
+        <div class="mission-card card-hover group p-5 rounded-xl bg-space-900/60 border border-space-border flex flex-col justify-between" data-idx="2">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <span class="px-2.5 py-1 rounded-lg bg-space-850 text-cosmic-400 border border-cosmic-500/40 text-[11px] font-mono font-bold">
+              <span class="px-2 py-0.5 rounded bg-space-850 text-slate-300 border border-space-border text-[11px] font-mono font-medium">
                 Binary System • 18 Obs
               </span>
-              <span class="text-2xl">💫</span>
+              <span class="text-lg">💫</span>
             </div>
-            <h3 class="font-display font-bold text-lg text-white group-hover:text-cosmic-400 transition-colors">
+            <h3 class="font-display font-bold text-base text-white group-hover:text-sky-300 transition-colors">
               Epsilon Indi B
             </h3>
             <p class="text-xs font-medium text-slate-300 mt-1 mb-2">
@@ -417,25 +412,25 @@
               Benchmark T1+T6 brown dwarf binary pair orbiting around the primary star. Ideal for comparing spectral energy distributions.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-space-border/50 flex items-center justify-between">
+          <div class="mt-4 pt-3 border-t border-space-border/60 flex items-center justify-between">
             <span class="text-[10px] font-mono text-slate-500">RA 330.841° Dec -56.787°</span>
-            <button onclick="startInvestigationWorkflow(2)" class="px-3.5 py-1.5 rounded-xl bg-space-800 hover:bg-electric-500 text-slate-200 hover:text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all">
-              <span>INVESTIGATE</span>
+            <button onclick="startInvestigationWorkflow(2)" class="btn-press px-3 py-1.5 rounded-lg bg-space-800 hover:bg-space-700 text-slate-200 hover:text-white font-medium text-xs border border-space-border flex items-center gap-1.5 transition-colors">
+              <span>Investigate</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </button>
           </div>
         </div>
 
         <!-- Mission 4: RW Aurigae -->
-        <div class="mission-card group relative p-5 rounded-2xl bg-space-900/60 border border-space-border/70 hover:border-electric-400/60 flex flex-col justify-between transition-all hover:-translate-y-1" data-idx="3">
+        <div class="mission-card card-hover group p-5 rounded-xl bg-space-900/60 border border-space-border flex flex-col justify-between" data-idx="3">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <span class="px-2.5 py-1 rounded-lg bg-space-850 text-rose-400 border border-rose-500/40 text-[11px] font-mono font-bold">
+              <span class="px-2 py-0.5 rounded bg-space-850 text-slate-300 border border-space-border text-[11px] font-mono font-medium">
                 Variable Star • 5 Obs
               </span>
-              <span class="text-2xl">🌟</span>
+              <span class="text-lg">🌟</span>
             </div>
-            <h3 class="font-display font-bold text-lg text-white group-hover:text-rose-400 transition-colors">
+            <h3 class="font-display font-bold text-base text-white group-hover:text-sky-300 transition-colors">
               RW Aurigae
             </h3>
             <p class="text-xs font-medium text-slate-300 mt-1 mb-2">
@@ -445,25 +440,25 @@
               Undergoing dramatic accretion bursts and circumstellar dust occultations. Difference imaging highlights significant flux variations.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-space-border/50 flex items-center justify-between">
+          <div class="mt-4 pt-3 border-t border-space-border/60 flex items-center justify-between">
             <span class="text-[10px] font-mono text-slate-500">RA 83.142° Dec +30.402°</span>
-            <button onclick="startInvestigationWorkflow(3)" class="px-3.5 py-1.5 rounded-xl bg-space-800 hover:bg-electric-500 text-slate-200 hover:text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all">
-              <span>INVESTIGATE</span>
+            <button onclick="startInvestigationWorkflow(3)" class="btn-press px-3 py-1.5 rounded-lg bg-space-800 hover:bg-space-700 text-slate-200 hover:text-white font-medium text-xs border border-space-border flex items-center gap-1.5 transition-colors">
+              <span>Investigate</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </button>
           </div>
         </div>
 
         <!-- Mission 5: R Draconis -->
-        <div class="mission-card group relative p-5 rounded-2xl bg-space-900/60 border border-space-border/70 hover:border-electric-400/60 flex flex-col justify-between transition-all hover:-translate-y-1" data-idx="4">
+        <div class="mission-card card-hover group p-5 rounded-xl bg-space-900/60 border border-space-border flex flex-col justify-between" data-idx="4">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <span class="px-2.5 py-1 rounded-lg bg-space-850 text-red-400 border border-red-500/40 text-[11px] font-mono font-bold">
+              <span class="px-2 py-0.5 rounded bg-space-850 text-slate-300 border border-space-border text-[11px] font-mono font-medium">
                 Mira Pulsator • 5 Obs
               </span>
-              <span class="text-2xl">🔴</span>
+              <span class="text-lg">🔴</span>
             </div>
-            <h3 class="font-display font-bold text-lg text-white group-hover:text-red-400 transition-colors">
+            <h3 class="font-display font-bold text-base text-white group-hover:text-sky-300 transition-colors">
               R Draconis
             </h3>
             <p class="text-xs font-medium text-slate-300 mt-1 mb-2">
@@ -473,25 +468,25 @@
               Asymptotic giant branch star with immense infrared flux swings over 245-day pulsation cycles. Clear target for difference residuals.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-space-border/50 flex items-center justify-between">
+          <div class="mt-4 pt-3 border-t border-space-border/60 flex items-center justify-between">
             <span class="text-[10px] font-mono text-slate-500">RA 269.062° Dec +65.694°</span>
-            <button onclick="startInvestigationWorkflow(4)" class="px-3.5 py-1.5 rounded-xl bg-space-800 hover:bg-electric-500 text-slate-200 hover:text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all">
-              <span>INVESTIGATE</span>
+            <button onclick="startInvestigationWorkflow(4)" class="btn-press px-3 py-1.5 rounded-lg bg-space-800 hover:bg-space-700 text-slate-200 hover:text-white font-medium text-xs border border-space-border flex items-center gap-1.5 transition-colors">
+              <span>Investigate</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </button>
           </div>
         </div>
 
         <!-- Mission 6: M101 Pinwheel Galaxy -->
-        <div class="mission-card group relative p-5 rounded-2xl bg-space-900/60 border border-space-border/70 hover:border-electric-400/60 flex flex-col justify-between transition-all hover:-translate-y-1" data-idx="5">
+        <div class="mission-card card-hover group p-5 rounded-xl bg-space-900/60 border border-space-border flex flex-col justify-between" data-idx="5">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <span class="px-2.5 py-1 rounded-lg bg-space-850 text-cyan-300 border border-cyan-500/40 text-[11px] font-mono font-bold">
+              <span class="px-2 py-0.5 rounded bg-space-850 text-slate-300 border border-space-border text-[11px] font-mono font-medium">
                 Deep Spiral • 15 Obs
               </span>
-              <span class="text-2xl">🌀</span>
+              <span class="text-lg">🌀</span>
             </div>
-            <h3 class="font-display font-bold text-lg text-white group-hover:text-cyan-300 transition-colors">
+            <h3 class="font-display font-bold text-base text-white group-hover:text-sky-300 transition-colors">
               M101 Pinwheel Galaxy
             </h3>
             <p class="text-xs font-medium text-slate-300 mt-1 mb-2">
@@ -501,10 +496,10 @@
               Grand-design face-on spiral galaxy. Demonstrates multi-epoch spatial alignment, background subtraction, and Co-Add stacking.
             </p>
           </div>
-          <div class="mt-4 pt-3 border-t border-space-border/50 flex items-center justify-between">
+          <div class="mt-4 pt-3 border-t border-space-border/60 flex items-center justify-between">
             <span class="text-[10px] font-mono text-slate-500">RA 210.802° Dec +54.349°</span>
-            <button onclick="startInvestigationWorkflow(5)" class="px-3.5 py-1.5 rounded-xl bg-space-800 hover:bg-electric-500 text-slate-200 hover:text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all">
-              <span>INVESTIGATE</span>
+            <button onclick="startInvestigationWorkflow(5)" class="btn-press px-3 py-1.5 rounded-lg bg-space-800 hover:bg-space-700 text-slate-200 hover:text-white font-medium text-xs border border-space-border flex items-center gap-1.5 transition-colors">
+              <span>Investigate</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </button>
           </div>
@@ -512,12 +507,12 @@
 
       </div>
 
-      <!-- Custom Astrometry Search Bar -->
-      <div class="p-5 rounded-2xl bg-space-900/80 border border-space-border/80 shadow-glass">
+      <!-- Custom Coordinates Search Bar -->
+      <div class="p-5 rounded-xl bg-space-900/60 border border-space-border">
         <div class="flex items-center gap-2 mb-3">
-          <i data-lucide="search" class="w-4 h-4 text-electric-400"></i>
-          <h3 class="text-xs font-display uppercase tracking-wider font-bold text-slate-200">
-            Custom Object & Astrometric Coordinates Search
+          <i data-lucide="search" class="w-4 h-4 text-sky-400"></i>
+          <h3 class="text-xs font-display uppercase tracking-wider font-bold text-slate-300">
+            Custom Object & Astrometric Search
           </h3>
         </div>
 
@@ -525,23 +520,23 @@
           <div>
             <label class="block text-[11px] font-mono uppercase text-slate-400 mb-1">Target Name</label>
             <div class="relative">
-              <input type="text" id="input-target-name" value="WISE 0855-0714" class="w-full bg-space-950/90 border border-space-border rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-electric-400 focus:outline-none" />
-              <button id="btn-resolve-name" title="Resolve Coordinates via SIMBAD/Catalog" class="absolute right-2 top-2 text-slate-400 hover:text-electric-400">
+              <input type="text" id="input-target-name" value="WISE 0855-0714" class="w-full bg-space-950 border border-space-border rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-sky-500 focus:outline-none" />
+              <button id="btn-resolve-name" title="Resolve Coordinates" class="absolute right-2 top-2 text-slate-500 hover:text-white">
                 <i data-lucide="locate" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
           <div>
             <label class="block text-[11px] font-mono uppercase text-slate-400 mb-1">Right Ascension (RA °)</label>
-            <input type="number" step="0.0001" id="input-ra" value="133.7854" class="w-full bg-space-950/90 border border-space-border rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-electric-400 focus:outline-none" />
+            <input type="number" step="0.0001" id="input-ra" value="133.7854" class="w-full bg-space-950 border border-space-border rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-sky-500 focus:outline-none" />
           </div>
           <div>
             <label class="block text-[11px] font-mono uppercase text-slate-400 mb-1">Declination (Dec °)</label>
-            <input type="number" step="0.0001" id="input-dec" value="-7.2444" class="w-full bg-space-950/90 border border-space-border rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-electric-400 focus:outline-none" />
+            <input type="number" step="0.0001" id="input-dec" value="-7.2444" class="w-full bg-space-950 border border-space-border rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-sky-500 focus:outline-none" />
           </div>
           <div>
             <label class="block text-[11px] font-mono uppercase text-slate-400 mb-1">Field of View (Arcmin)</label>
-            <select id="select-fov" class="w-full bg-space-950/90 border border-space-border rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-electric-400 focus:outline-none cursor-pointer">
+            <select id="select-fov" class="w-full bg-space-950 border border-space-border rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-sky-500 focus:outline-none cursor-pointer">
               <option value="5">5′ (High Magnification)</option>
               <option value="10" selected>10′ (Standard SPHEREx)</option>
               <option value="15">15′ (Wide Field)</option>
@@ -550,7 +545,7 @@
           </div>
           <div>
             <label class="block text-[11px] font-mono uppercase text-slate-400 mb-1">SPHEREx Bandpass</label>
-            <select id="select-bandpass" class="w-full bg-space-950/90 border border-space-border rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-electric-400 focus:outline-none cursor-pointer">
+            <select id="select-bandpass" class="w-full bg-space-950 border border-space-border rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-sky-500 focus:outline-none cursor-pointer">
               <option value="SPHEREx-D1">D1 (0.75 – 1.10 µm)</option>
               <option value="SPHEREx-D2" selected>D2 (1.10 – 1.62 µm)</option>
               <option value="SPHEREx-D3">D3 (1.62 – 2.42 µm)</option>
@@ -559,7 +554,7 @@
               <option value="SPHEREx-D6">D6 (4.42 – 5.00 µm)</option>
             </select>
           </div>
-          <button id="btn-load-sky" class="w-full bg-gradient-to-r from-electric-500 to-cosmic-600 hover:from-electric-400 hover:to-cosmic-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-glow-cyan flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
+          <button id="btn-load-sky" class="btn-press w-full bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
             <i data-lucide="radar" class="w-4 h-4"></i>
             <span>Query SPHEREx</span>
           </button>
@@ -573,32 +568,32 @@
     <!-- ===================================================================== -->
     <section id="section-investigation" class="view-section transition-all duration-300 flex flex-col gap-4">
 
-      <!-- Breadcrumbs & Investigation Target HUD -->
-      <div class="flex flex-wrap items-center justify-between gap-3 bg-space-900/80 backdrop-blur-md border border-space-border/70 rounded-2xl px-4 py-2.5 shadow-sm">
+      <!-- Active Target Strip -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-space-900/60 border border-space-border rounded-xl px-4 py-2.5">
         <div class="flex items-center gap-3">
-          <span class="text-xs font-mono px-2 py-0.5 rounded-lg bg-electric-950 text-electric-400 border border-electric-500/40 font-bold uppercase">
-            Active Case
+          <span class="text-xs font-mono px-2 py-0.5 rounded bg-space-850 text-sky-400 border border-space-border font-medium uppercase">
+            Active Target
           </span>
           <h2 class="text-sm sm:text-base font-display font-bold text-white flex items-center gap-2" id="hud-active-target">
             <span>WISE 0855−0714</span>
-            <span class="text-slate-500 font-mono text-xs font-normal">• RA 133.785° Dec -7.244°</span>
+            <span class="text-slate-400 font-mono text-xs font-normal">• RA 133.785° Dec -7.244°</span>
           </h2>
         </div>
 
         <div class="flex items-center gap-2">
-          <!-- Quick Mission Switcher Pill -->
+          <!-- Quick Target Chips -->
           <div class="hidden md:flex items-center gap-1 text-xs">
             <span class="text-slate-400 font-mono text-[11px] mr-1">Switch:</span>
-            <button onclick="startInvestigationWorkflow(0)" class="quick-target-chip active px-2.5 py-0.5 rounded-lg bg-space-850 hover:bg-space-800 text-slate-300 font-mono text-[11px] border border-space-border hover:border-electric-400" data-tidx="0">WISE</button>
-            <button onclick="startInvestigationWorkflow(1)" class="quick-target-chip px-2.5 py-0.5 rounded-lg bg-space-850 hover:bg-space-800 text-slate-300 font-mono text-[11px] border border-space-border hover:border-electric-400" data-tidx="1">Barnard</button>
-            <button onclick="startInvestigationWorkflow(2)" class="quick-target-chip px-2.5 py-0.5 rounded-lg bg-space-850 hover:bg-space-800 text-slate-300 font-mono text-[11px] border border-space-border hover:border-electric-400" data-tidx="2">EpsIndi</button>
-            <button onclick="startInvestigationWorkflow(3)" class="quick-target-chip px-2.5 py-0.5 rounded-lg bg-space-850 hover:bg-space-800 text-slate-300 font-mono text-[11px] border border-space-border hover:border-electric-400" data-tidx="3">RW Aur</button>
-            <button onclick="startInvestigationWorkflow(4)" class="quick-target-chip px-2.5 py-0.5 rounded-lg bg-space-850 hover:bg-space-800 text-slate-300 font-mono text-[11px] border border-space-border hover:border-electric-400" data-tidx="4">R Dra</button>
-            <button onclick="startInvestigationWorkflow(5)" class="quick-target-chip px-2.5 py-0.5 rounded-lg bg-space-850 hover:bg-space-800 text-slate-300 font-mono text-[11px] border border-space-border hover:border-electric-400" data-tidx="5">M101</button>
+            <button onclick="startInvestigationWorkflow(0)" class="quick-target-chip active px-2.5 py-0.5 rounded bg-space-800 text-white font-mono text-[11px] border border-space-border" data-tidx="0">WISE</button>
+            <button onclick="startInvestigationWorkflow(1)" class="quick-target-chip px-2.5 py-0.5 rounded bg-space-900 hover:bg-space-800 text-slate-300 font-mono text-[11px] border border-space-border" data-tidx="1">Barnard</button>
+            <button onclick="startInvestigationWorkflow(2)" class="quick-target-chip px-2.5 py-0.5 rounded bg-space-900 hover:bg-space-800 text-slate-300 font-mono text-[11px] border border-space-border" data-tidx="2">EpsIndi</button>
+            <button onclick="startInvestigationWorkflow(3)" class="quick-target-chip px-2.5 py-0.5 rounded bg-space-900 hover:bg-space-800 text-slate-300 font-mono text-[11px] border border-space-border" data-tidx="3">RW Aur</button>
+            <button onclick="startInvestigationWorkflow(4)" class="quick-target-chip px-2.5 py-0.5 rounded bg-space-900 hover:bg-space-800 text-slate-300 font-mono text-[11px] border border-space-border" data-tidx="4">R Dra</button>
+            <button onclick="startInvestigationWorkflow(5)" class="quick-target-chip px-2.5 py-0.5 rounded bg-space-900 hover:bg-space-800 text-slate-300 font-mono text-[11px] border border-space-border" data-tidx="5">M101</button>
           </div>
           
-          <button onclick="openBriefingModal()" class="text-xs px-2.5 py-1 rounded-lg bg-space-850 text-cyan-300 border border-space-border hover:border-cyan-400 flex items-center gap-1 font-mono">
-            <i data-lucide="info" class="w-3.5 h-3.5"></i>
+          <button onclick="openBriefingModal()" class="btn-press text-xs px-2.5 py-1 rounded bg-space-900 hover:bg-space-850 text-slate-300 border border-space-border flex items-center gap-1 font-mono transition-colors">
+            <i data-lucide="info" class="w-3.5 h-3.5 text-slate-400"></i>
             <span>Briefing</span>
           </button>
         </div>
@@ -610,20 +605,20 @@
         <!-- LEFT: COSMIC TIME MACHINE CANVAS VIEWER (7 Cols on LG, 8 on XL) -->
         <div class="lg:col-span-7 xl:col-span-8 flex flex-col gap-3">
           
-          <div class="bg-space-900/90 backdrop-blur-md border border-space-border/80 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+          <div class="bg-space-900/60 border border-space-border rounded-2xl overflow-hidden flex flex-col">
             
             <!-- Viewer Top HUD Bar -->
-            <div class="px-4 py-3 bg-space-850/90 border-b border-space-border/60 flex flex-wrap items-center justify-between gap-3">
+            <div class="px-4 py-2.5 bg-space-900/90 border-b border-space-border flex flex-wrap items-center justify-between gap-3">
               
               <!-- Analysis Mode Selector Pills -->
-              <div class="flex items-center p-1 rounded-xl bg-space-950/90 border border-space-border/60 text-xs">
-                <button class="mode-btn mode-tab active px-3.5 py-1.5 rounded-lg font-semibold text-white bg-gradient-to-r from-electric-500 to-cosmic-600 shadow-sm transition-all" data-mode="blink" title="Chronological Blink Flipbook Animation">
-                  <i data-lucide="play" class="w-3.5 h-3.5 inline mr-1"></i> Blink Flipbook
+              <div class="flex items-center p-0.5 rounded-lg bg-space-950 border border-space-border text-xs">
+                <button class="mode-btn mode-tab active px-3 py-1 rounded-md font-medium text-white bg-space-800 transition-colors" data-mode="blink" title="Chronological Blink Flipbook">
+                  <i data-lucide="play" class="w-3.5 h-3.5 inline mr-1 text-sky-400"></i> Blink Flipbook
                 </button>
-                <button class="mode-btn mode-tab px-3.5 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all" data-mode="diff" title="Difference Image Subtraction & Candidates">
-                  <i data-lucide="split" class="w-3.5 h-3.5 inline mr-1"></i> Difference Mode
+                <button class="mode-btn mode-tab px-3 py-1 rounded-md font-medium text-slate-400 hover:text-white transition-colors" data-mode="diff" title="Difference Subtraction">
+                  <i data-lucide="split" class="w-3.5 h-3.5 inline mr-1"></i> Difference
                 </button>
-                <button class="mode-btn mode-tab px-3.5 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all" data-mode="stack" title="Inverse-Variance Co-Add Stacking">
+                <button class="mode-btn mode-tab px-3 py-1 rounded-md font-medium text-slate-400 hover:text-white transition-colors" data-mode="stack" title="Co-Add Stacking">
                   <i data-lucide="layers" class="w-3.5 h-3.5 inline mr-1"></i> Co-Add Stack
                 </button>
               </div>
@@ -631,47 +626,47 @@
               <!-- Colormap & View Controls -->
               <div class="flex items-center gap-2">
                 <!-- Colormap Selector -->
-                <div class="flex items-center gap-1.5 text-xs bg-space-950/90 px-3 py-1.5 rounded-xl border border-space-border/60">
-                  <i data-lucide="palette" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <div class="flex items-center gap-1.5 text-xs bg-space-950 px-2.5 py-1 rounded-lg border border-space-border">
+                  <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-400"></i>
                   <select id="select-colormap" class="bg-transparent text-white font-mono text-xs focus:outline-none cursor-pointer">
-                    <option value="inferno" selected>🔥 Inferno (High Contrast)</option>
-                    <option value="viridis">🌿 Viridis (Perceptual Linear)</option>
-                    <option value="magma">🌋 Magma</option>
-                    <option value="plasma">⚡ Plasma</option>
-                    <option value="gray">⚪ Greyscale (Standard Astro)</option>
-                    <option value="cubehelix">🔮 Cubehelix</option>
-                    <option value="hot">☀️ Hot (Thermal IR)</option>
+                    <option value="inferno" selected>Inferno (High Contrast)</option>
+                    <option value="viridis">Viridis (Perceptual Linear)</option>
+                    <option value="magma">Magma</option>
+                    <option value="plasma">Plasma</option>
+                    <option value="gray">Greyscale (Standard Astro)</option>
+                    <option value="cubehelix">Cubehelix</option>
+                    <option value="hot">Hot (Thermal IR)</option>
                   </select>
                 </div>
 
                 <!-- Zoom Controls -->
-                <div class="flex items-center bg-space-950/90 rounded-xl border border-space-border/60 p-0.5 text-xs">
-                  <button id="btn-zoom-in" title="Zoom In (+)" class="p-1.5 hover:text-electric-400 transition-colors"><i data-lucide="zoom-in" class="w-4 h-4"></i></button>
-                  <button id="btn-zoom-out" title="Zoom Out (-)" class="p-1.5 hover:text-electric-400 transition-colors"><i data-lucide="zoom-out" class="w-4 h-4"></i></button>
-                  <button id="btn-zoom-reset" title="Reset View (Key R)" class="p-1.5 hover:text-electric-400 transition-colors"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i></button>
-                  <button id="btn-fullscreen" title="Toggle Fullscreen (Key F)" class="p-1.5 hover:text-electric-400 transition-colors"><i data-lucide="maximize" class="w-3.5 h-3.5"></i></button>
+                <div class="flex items-center bg-space-950 rounded-lg border border-space-border p-0.5 text-xs">
+                  <button id="btn-zoom-in" title="Zoom In (+)" class="p-1.5 text-slate-400 hover:text-white transition-colors"><i data-lucide="zoom-in" class="w-4 h-4"></i></button>
+                  <button id="btn-zoom-out" title="Zoom Out (-)" class="p-1.5 text-slate-400 hover:text-white transition-colors"><i data-lucide="zoom-out" class="w-4 h-4"></i></button>
+                  <button id="btn-zoom-reset" title="Reset View (Key R)" class="p-1.5 text-slate-400 hover:text-white transition-colors"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i></button>
+                  <button id="btn-fullscreen" title="Toggle Fullscreen (Key F)" class="p-1.5 text-slate-400 hover:text-white transition-colors"><i data-lucide="maximize" class="w-3.5 h-3.5"></i></button>
                 </div>
               </div>
             </div>
 
             <!-- Difference Toolbar (Shown in Difference Mode) -->
-            <div id="difference-toolbar" class="hidden px-4 py-2.5 bg-amber-950/40 border-b border-amber-500/40 flex flex-wrap items-center justify-between gap-3 text-xs text-amber-200">
+            <div id="difference-toolbar" class="hidden px-4 py-2 bg-space-950 border-b border-space-border flex flex-wrap items-center justify-between gap-3 text-xs text-slate-300">
               <div class="flex items-center gap-3">
-                <span class="font-bold flex items-center gap-1.5 text-amber-400">
+                <span class="font-medium flex items-center gap-1.5 text-amber-400">
                   <i data-lucide="git-commit" class="w-4 h-4"></i> Subtraction Pair:
                 </span>
                 <div class="flex items-center gap-1.5">
                   <span class="text-slate-400 font-mono">Reference:</span>
-                  <select id="select-diff-ref" class="bg-space-950 border border-amber-500/50 rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none"></select>
+                  <select id="select-diff-ref" class="bg-space-900 border border-space-border rounded px-2 py-0.5 text-xs text-white font-mono focus:outline-none"></select>
                 </div>
                 <span class="text-slate-500 font-bold">−</span>
                 <div class="flex items-center gap-1.5">
                   <span class="text-slate-400 font-mono">Target:</span>
-                  <span id="diff-target-label" class="font-mono bg-space-950 px-2.5 py-1 rounded-lg border border-space-border text-cyan-300 font-semibold">#1</span>
+                  <span id="diff-target-label" class="font-mono bg-space-900 px-2 py-0.5 rounded border border-space-border text-sky-400 font-medium">#1</span>
                 </div>
               </div>
-              <button id="btn-apply-diff" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-1.5 rounded-xl shadow-glow-amber transition-all flex items-center gap-1.5">
-                <i data-lucide="zap" class="w-4 h-4"></i>
+              <button id="btn-apply-diff" class="btn-press bg-amber-600 hover:bg-amber-500 text-white font-medium px-3 py-1 rounded text-xs transition-colors flex items-center gap-1.5">
+                <i data-lucide="zap" class="w-3.5 h-3.5"></i>
                 <span>Compute Subtraction</span>
               </button>
             </div>
@@ -684,86 +679,86 @@
               
               <!-- Empty state placeholder -->
               <div id="viewport-placeholder" class="flex flex-col items-center justify-center text-center p-6">
-                <div class="w-16 h-16 rounded-2xl bg-space-850 flex items-center justify-center text-cyan-400 mb-3 border border-space-border shadow-glow-cyan animate-pulse-slow">
-                  <i data-lucide="satellite" class="w-8 h-8"></i>
+                <div class="w-12 h-12 rounded-xl bg-space-900 flex items-center justify-center text-slate-400 mb-3 border border-space-border">
+                  <i data-lucide="satellite" class="w-6 h-6"></i>
                 </div>
-                <h4 class="text-base font-display font-bold text-white mb-1">Observation Initializing...</h4>
-                <p class="text-xs text-slate-400 max-w-sm">Loading calibrated SPHEREx FITS frames from local buffer.</p>
+                <h4 class="text-sm font-display font-medium text-white mb-1">Loading Observations...</h4>
+                <p class="text-xs text-slate-400 max-w-sm">Accessing local SPHEREx FITS cache.</p>
               </div>
 
-              <!-- Reticle Target Indicator (Candidate / Pixel Selected) -->
-              <div id="reticle-target-indicator" class="absolute pointer-events-none hidden w-10 h-10 border-2 border-discovery-400 rounded-full animate-ping -translate-x-1/2 -translate-y-1/2 z-20"></div>
+              <!-- Reticle Target Indicator -->
+              <div id="reticle-target-indicator" class="absolute pointer-events-none hidden w-8 h-8 border border-white rounded-full -translate-x-1/2 -translate-y-1/2 z-20"></div>
 
               <!-- Astronomical Orientation Compass Rose (North / East) -->
-              <div class="absolute top-4 right-4 bg-space-950/90 backdrop-blur-md border border-space-border/80 rounded-full w-10 h-10 flex items-center justify-center font-mono text-[11px] font-bold text-amber-300 shadow-md pointer-events-none select-none">
+              <div class="absolute top-4 right-4 bg-space-950/90 border border-space-border rounded-full w-8 h-8 flex items-center justify-center font-mono text-[10px] font-bold text-slate-300 pointer-events-none select-none">
                 N ↑
               </div>
 
               <!-- Live Pixel & Coordinates HUD -->
-              <div class="absolute bottom-4 left-4 bg-space-950/90 backdrop-blur-md border border-space-border/80 rounded-xl px-3 py-1.5 text-[11px] font-mono text-cyan-300 shadow-md pointer-events-none flex items-center gap-2" id="reticle-coords">
-                <i data-lucide="crosshair" class="w-4 h-4 text-cyan-400"></i>
+              <div class="absolute bottom-4 left-4 bg-space-950/90 border border-space-border rounded-lg px-2.5 py-1 text-[11px] font-mono text-slate-300 pointer-events-none flex items-center gap-2" id="reticle-coords">
+                <i data-lucide="crosshair" class="w-3.5 h-3.5 text-slate-400"></i>
                 <span id="coords-text">Center: Pixel (49, 49) | RA: 133.7854° Dec: -7.2444°</span>
               </div>
 
               <!-- Frame Date & Observation Info Overlay -->
-              <div class="absolute bottom-4 right-4 bg-space-950/90 backdrop-blur-md border border-space-border/80 rounded-xl px-3 py-1.5 text-[11px] font-mono text-slate-300 shadow-md pointer-events-none flex items-center gap-2" id="frame-date-overlay">
-                <i data-lucide="calendar" class="w-3.5 h-3.5 text-electric-400"></i>
+              <div class="absolute bottom-4 right-4 bg-space-950/90 border border-space-border rounded-lg px-2.5 py-1 text-[11px] font-mono text-slate-400 pointer-events-none flex items-center gap-2" id="frame-date-overlay">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
                 <span>UTC: —</span>
               </div>
 
             </div>
 
             <!-- Chronological Scrubber & Time Engine -->
-            <div class="p-4 bg-space-850/95 border-t border-space-border/60 flex flex-col gap-3">
+            <div class="p-4 bg-space-900/90 border-t border-space-border flex flex-col gap-3">
               
               <!-- Timeline Scrubber Bar -->
               <div class="flex items-center gap-3">
-                <span class="text-[11px] font-mono text-slate-400 font-bold">TIMELINE</span>
+                <span class="text-[11px] font-mono text-slate-400 font-medium">TIMELINE</span>
                 <input type="range" id="frame-scrubber" min="0" max="0" value="0" class="flex-1 cursor-pointer" />
-                <div class="font-mono text-xs px-3 py-1 rounded-lg bg-space-950 border border-space-border text-cyan-300 font-bold min-w-[80px] text-center" id="frame-counter">
+                <div class="font-mono text-xs px-2.5 py-0.5 rounded bg-space-950 border border-space-border text-slate-200 font-medium min-w-[70px] text-center" id="frame-counter">
                   0 / 0
                 </div>
               </div>
 
-              <!-- Navigation Controls & High-FPS Playback Engine -->
+              <!-- Navigation Controls -->
               <div class="flex flex-wrap items-center justify-between gap-3">
                 
                 <!-- Playback Buttons -->
-                <div class="flex items-center gap-2">
-                  <button id="btn-first" title="First Epoch (Home)" class="p-2 rounded-xl bg-space-900 hover:bg-space-800 text-slate-300 hover:text-white border border-space-border transition-all">
+                <div class="flex items-center gap-1.5">
+                  <button id="btn-first" title="First Epoch (Home)" class="btn-press p-2 rounded-lg bg-space-950 hover:bg-space-850 text-slate-300 hover:text-white border border-space-border transition-colors">
                     <i data-lucide="chevrons-left" class="w-4 h-4"></i>
                   </button>
-                  <button id="btn-prev" title="Previous Epoch (Left Arrow)" class="p-2 rounded-xl bg-space-900 hover:bg-space-800 text-slate-300 hover:text-white border border-space-border transition-all">
+                  <button id="btn-prev" title="Previous Epoch (Left Arrow)" class="btn-press p-2 rounded-lg bg-space-950 hover:bg-space-850 text-slate-300 hover:text-white border border-space-border transition-colors">
                     <i data-lucide="chevron-left" class="w-4 h-4"></i>
                   </button>
                   
                   <!-- Main Play/Pause Button -->
-                  <button id="btn-play" title="Play/Pause Flipbook (Spacebar)" class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-electric-500 to-cosmic-600 hover:from-electric-400 hover:to-cosmic-500 text-white font-bold text-xs shadow-glow-cyan flex items-center gap-2 transition-all active:scale-95">
+                  <button id="btn-play" title="Play/Pause (Spacebar)" class="btn-press px-5 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs flex items-center gap-2 transition-colors">
                     <i data-lucide="play" class="w-4 h-4 fill-white" id="play-icon"></i>
                     <span id="play-text">PLAY FLIPBOOK</span>
                   </button>
                   
-                  <button id="btn-next" title="Next Epoch (Right Arrow)" class="p-2 rounded-xl bg-space-900 hover:bg-space-800 text-slate-300 hover:text-white border border-space-border transition-all">
+                  <button id="btn-next" title="Next Epoch (Right Arrow)" class="btn-press p-2 rounded-lg bg-space-950 hover:bg-space-850 text-slate-300 hover:text-white border border-space-border transition-colors">
                     <i data-lucide="chevron-right" class="w-4 h-4"></i>
                   </button>
-                  <button id="btn-last" title="Last Epoch (End)" class="p-2 rounded-xl bg-space-900 hover:bg-space-800 text-slate-300 hover:text-white border border-space-border transition-all">
+                  <button id="btn-last" title="Last Epoch (End)" class="btn-press p-2 rounded-lg bg-space-950 hover:bg-space-850 text-slate-300 hover:text-white border border-space-border transition-colors">
                     <i data-lucide="chevrons-right" class="w-4 h-4"></i>
                   </button>
                 </div>
 
                 <!-- Playback Speed Slider -->
-                <div class="flex items-center gap-2 text-xs bg-space-950/80 px-3.5 py-1.5 rounded-xl border border-space-border/70">
+                <div class="flex items-center gap-2 text-xs bg-space-950 px-3 py-1.5 rounded-lg border border-space-border">
                   <span class="text-slate-400 font-mono text-[11px]">Speed:</span>
                   <input type="range" id="speed-slider" min="0" max="6" step="1" value="2" class="w-20" />
-                  <span class="font-mono font-bold text-amber-300 min-w-[45px]" id="fps-badge">4 fps</span>
+                  <span class="font-mono font-medium text-slate-200 min-w-[40px]" id="fps-badge">4 fps</span>
                 </div>
 
                 <!-- Buffer Progress -->
                 <div class="flex items-center gap-2 text-xs font-mono">
-                  <div class="w-28 bg-space-950 rounded-full h-2.5 overflow-hidden border border-space-border/60">
-                    <div id="buffer-fill" class="bg-gradient-to-r from-emerald-500 to-cyan-400 h-full transition-all duration-300" style="width: 100%;"></div>
+                  <div class="w-24 bg-space-950 rounded-full h-2 overflow-hidden border border-space-border">
+                    <div id="buffer-fill" class="bg-sky-500 h-full transition-all duration-300" style="width: 100%;"></div>
                   </div>
-                  <span class="text-emerald-400 text-[11px] font-semibold" id="buffer-pct">100% Cached</span>
+                  <span class="text-slate-400 text-[11px]" id="buffer-pct">100% Cached</span>
                 </div>
 
               </div>
@@ -777,39 +772,39 @@
         <!-- RIGHT: INVESTIGATION EVIDENCE & OBSERVATION TELEMETRY (5 Cols LG, 4 XL) -->
         <div class="lg:col-span-5 xl:col-span-4 flex flex-col gap-4">
           
-          <!-- CARD 1: DETECTIVE OBSERVATION DOSSIER -->
-          <div class="bg-space-900/90 backdrop-blur-md border border-space-border/80 rounded-2xl p-4 shadow-glass">
-            <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-space-border/50">
+          <!-- CARD 1: OBSERVATION TELEMETRY -->
+          <div class="bg-space-900/60 border border-space-border rounded-xl p-4">
+            <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-space-border">
               <div class="flex items-center gap-2">
-                <i data-lucide="activity" class="w-4 h-4 text-electric-400"></i>
-                <h3 class="text-xs font-display uppercase tracking-wider font-bold text-white">Observation Telemetry</h3>
+                <i data-lucide="activity" class="w-4 h-4 text-sky-400"></i>
+                <h3 class="text-xs font-display uppercase tracking-wider font-bold text-slate-200">Observation Telemetry</h3>
               </div>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 font-bold" id="telemetry-badge">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-space-850 text-slate-400 border border-space-border font-medium" id="telemetry-badge">
                 Level-2b Calibrated
               </span>
             </div>
 
             <div class="grid grid-cols-2 gap-2 text-xs font-mono">
-              <div class="p-2.5 rounded-xl bg-space-950/70 border border-space-border/40">
+              <div class="p-2.5 rounded-lg bg-space-950 border border-space-border">
                 <span class="text-[10px] text-slate-500 block uppercase">Observation UTC</span>
-                <span id="tel-date" class="text-white font-semibold truncate block">2025-05-06 02:33:29</span>
+                <span id="tel-date" class="text-white font-medium truncate block">2025-05-06 02:33:29</span>
               </div>
-              <div class="p-2.5 rounded-xl bg-space-950/70 border border-space-border/40">
+              <div class="p-2.5 rounded-lg bg-space-950 border border-space-border">
                 <span class="text-[10px] text-slate-500 block uppercase">Modified Julian (MJD)</span>
-                <span id="tel-mjd" class="text-white font-semibold truncate block">60801.1066</span>
+                <span id="tel-mjd" class="text-white font-medium truncate block">60801.1066</span>
               </div>
-              <div class="p-2.5 rounded-xl bg-space-950/70 border border-space-border/40">
+              <div class="p-2.5 rounded-lg bg-space-950 border border-space-border">
                 <span class="text-[10px] text-slate-500 block uppercase">WCS Sky Center</span>
-                <span id="tel-wcs" class="text-cyan-300 font-semibold truncate block">α 133.785° δ -7.244°</span>
+                <span id="tel-wcs" class="text-slate-200 font-medium truncate block">α 133.785° δ -7.244°</span>
               </div>
-              <div class="p-2.5 rounded-xl bg-space-950/70 border border-space-border/40">
+              <div class="p-2.5 rounded-lg bg-space-950 border border-space-border">
                 <span class="text-[10px] text-slate-500 block uppercase">Array & Plate Scale</span>
-                <span id="tel-scale" class="text-white font-semibold truncate block">98×98 (6.2″/pix)</span>
+                <span id="tel-scale" class="text-white font-medium truncate block">98×98 (6.2″/pix)</span>
               </div>
             </div>
 
             <!-- Advanced Metadata Accordion (Progressive Disclosure) -->
-            <div id="advanced-telemetry-panel" class="hidden mt-3 pt-3 border-t border-space-border/40 text-[11px] font-mono text-slate-400 space-y-1">
+            <div id="advanced-telemetry-panel" class="hidden mt-3 pt-3 border-t border-space-border text-[11px] font-mono text-slate-400 space-y-1">
               <div class="flex justify-between"><span>Detector Unit:</span><span class="text-slate-200">Detector 2 (1.10–1.62 µm)</span></div>
               <div class="flex justify-between"><span>Flux Calibration:</span><span class="text-slate-200">MJy / sr (Megajanskys)</span></div>
               <div class="flex justify-between"><span>Noise Estimator:</span><span class="text-slate-200">MAD × 1.4826 (Robust σ)</span></div>
@@ -818,13 +813,13 @@
           </div>
 
           <!-- CARD 2: EVIDENCE INSPECTION PANEL (>5.0σ MAD Candidates) -->
-          <div class="bg-space-900/90 backdrop-blur-md border border-space-border/80 rounded-2xl p-4 shadow-glass">
-            <div class="flex items-center justify-between pb-2 mb-2 border-b border-space-border/50">
+          <div class="bg-space-900/60 border border-space-border rounded-xl p-4">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-space-border">
               <div class="flex items-center gap-2">
-                <i data-lucide="target" class="w-4 h-4 text-rose-400"></i>
-                <h3 class="text-xs font-display uppercase tracking-wider font-bold text-white">Discovery Candidates</h3>
+                <i data-lucide="target" class="w-4 h-4 text-slate-300"></i>
+                <h3 class="text-xs font-display uppercase tracking-wider font-bold text-slate-200">Discovery Candidates</h3>
               </div>
-              <span id="candidates-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-bold">
+              <span id="candidates-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-space-850 text-slate-400 border border-space-border font-medium">
                 0 Detected
               </span>
             </div>
@@ -834,9 +829,9 @@
             </p>
 
             <!-- Candidates Table -->
-            <div class="overflow-y-auto max-h-[145px] border border-space-border/60 rounded-xl bg-space-950/70 mb-3">
+            <div class="overflow-y-auto max-h-[145px] border border-space-border rounded-lg bg-space-950 mb-3">
               <table class="w-full text-left text-[11px] font-mono">
-                <thead class="bg-space-900/90 text-slate-400 sticky top-0 border-b border-space-border/40">
+                <thead class="bg-space-900 text-slate-400 sticky top-0 border-b border-space-border">
                   <tr>
                     <th class="py-1 px-2.5">RA (°)</th>
                     <th class="py-1 px-2">Dec (°)</th>
@@ -844,7 +839,7 @@
                     <th class="py-1 px-2">Significance</th>
                   </tr>
                 </thead>
-                <tbody id="candidates-tbody" class="divide-y divide-space-border/30">
+                <tbody id="candidates-tbody" class="divide-y divide-space-border">
                   <tr>
                     <td colspan="4" class="text-center py-4 text-slate-500 text-[11px]">
                       Switch to Difference mode to compute candidates
@@ -855,17 +850,17 @@
             </div>
 
             <!-- Active Candidate Evidence Card -->
-            <div id="candidate-evidence-card" class="p-3 rounded-xl bg-space-950 border border-electric-500/30 text-xs">
+            <div id="candidate-evidence-card" class="p-3 rounded-lg bg-space-950 border border-space-border text-xs">
               <div class="flex items-center justify-between mb-1.5">
-                <span class="text-[11px] font-mono font-bold text-white" id="evidence-title">🎯 Candidate Evidence</span>
-                <span id="evidence-status-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-600 font-bold">
+                <span class="text-[11px] font-mono font-bold text-white" id="evidence-title">Candidate Evidence</span>
+                <span id="evidence-status-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-space-900 text-amber-400 border border-space-border font-medium">
                   Needs Validation
                 </span>
               </div>
-              <p class="text-[11px] text-slate-300 leading-relaxed mb-2" id="evidence-desc">
-                Select a candidate from the table or difference frame to inspect physical measurements, local noise floor, and validation hypothesis.
+              <p class="text-[11px] text-slate-400 leading-relaxed mb-2" id="evidence-desc">
+                Select a candidate from the table to inspect physical measurements and local noise estimates.
               </p>
-              <div class="flex items-center justify-between text-[11px] font-mono text-slate-400">
+              <div class="flex items-center justify-between text-[11px] font-mono text-slate-500">
                 <span id="evidence-coords">Pixel: (—, —)</span>
                 <span id="evidence-snr">SNR: —</span>
               </div>
@@ -874,13 +869,13 @@
           </div>
 
           <!-- CARD 3: TEMPORAL EPOCHS TIMELINE -->
-          <div class="bg-space-900/90 backdrop-blur-md border border-space-border/80 rounded-2xl p-4 shadow-glass">
-            <div class="flex items-center justify-between pb-2 mb-2 border-b border-space-border/50">
+          <div class="bg-space-900/60 border border-space-border rounded-xl p-4">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-space-border">
               <div class="flex items-center gap-2">
-                <i data-lucide="calendar" class="w-4 h-4 text-amber-400"></i>
-                <h3 class="text-xs font-display uppercase tracking-wider font-bold text-white">Temporal Epochs</h3>
+                <i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i>
+                <h3 class="text-xs font-display uppercase tracking-wider font-bold text-slate-200">Temporal Epochs</h3>
               </div>
-              <span id="epochs-count-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 font-bold">
+              <span id="epochs-count-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-space-850 text-slate-400 border border-space-border font-medium">
                 0 Epochs
               </span>
             </div>
@@ -904,17 +899,17 @@
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <i data-lucide="search" class="w-5 h-5 text-rose-400"></i>
-            <h2 class="text-xl font-display font-bold text-white tracking-wide">
+            <i data-lucide="search" class="w-5 h-5 text-sky-400"></i>
+            <h2 class="text-lg font-display font-bold text-white tracking-wide">
               DISCOVERY LAB — WHAT CHANGED?
             </h2>
           </div>
           <p class="text-xs text-slate-400">
-            Compare reference baseline against target observation. Inspect positive & negative flux residuals and transient dipoles.
+            Compare reference baseline against target observation. Inspect positive and negative flux residuals.
           </p>
         </div>
 
-        <button onclick="computeDifference()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-glow-amber flex items-center gap-2 transition-all">
+        <button onclick="computeDifference()" class="btn-press px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs flex items-center gap-2 transition-colors">
           <i data-lucide="zap" class="w-4 h-4"></i>
           <span>Re-Compute Difference Subtraction</span>
         </button>
@@ -924,61 +919,61 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         
         <!-- Panel 1: Reference Observation -->
-        <div class="p-4 rounded-2xl bg-space-900/90 border border-space-border/70 flex flex-col gap-2">
-          <div class="flex items-center justify-between text-xs font-mono font-bold text-slate-300 pb-1 border-b border-space-border/40">
+        <div class="p-4 rounded-xl bg-space-900/60 border border-space-border flex flex-col gap-2">
+          <div class="flex items-center justify-between text-xs font-mono font-medium text-slate-300 pb-1 border-b border-space-border">
             <span>Reference Baseline (Epoch 1)</span>
-            <span class="text-cyan-400" id="lab-ref-date">—</span>
+            <span class="text-slate-400" id="lab-ref-date">—</span>
           </div>
-          <div class="w-full h-64 bg-black rounded-xl overflow-hidden flex items-center justify-center border border-space-border/60">
+          <div class="w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border border-space-border">
             <img id="lab-img-ref" src="" alt="Reference Epoch" class="max-w-full max-h-full object-contain image-rendering-pixelated" />
           </div>
           <p class="text-[11px] text-slate-400">Baseline temporal frame. Static stars remain fixed at these coordinates.</p>
         </div>
 
         <!-- Panel 2: Target Observation -->
-        <div class="p-4 rounded-2xl bg-space-900/90 border border-space-border/70 flex flex-col gap-2">
-          <div class="flex items-center justify-between text-xs font-mono font-bold text-slate-300 pb-1 border-b border-space-border/40">
+        <div class="p-4 rounded-xl bg-space-900/60 border border-space-border flex flex-col gap-2">
+          <div class="flex items-center justify-between text-xs font-mono font-medium text-slate-300 pb-1 border-b border-space-border">
             <span>Target Observation (Epoch 2)</span>
-            <span class="text-cyan-400" id="lab-tgt-date">—</span>
+            <span class="text-slate-400" id="lab-tgt-date">—</span>
           </div>
-          <div class="w-full h-64 bg-black rounded-xl overflow-hidden flex items-center justify-center border border-space-border/60">
+          <div class="w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border border-space-border">
             <img id="lab-img-tgt" src="" alt="Target Epoch" class="max-w-full max-h-full object-contain image-rendering-pixelated" />
           </div>
           <p class="text-[11px] text-slate-400">Follow-up observation. Detectable moving bodies have shifted relative to the baseline.</p>
         </div>
 
         <!-- Panel 3: Difference Subtraction Frame -->
-        <div class="p-4 rounded-2xl bg-space-900/90 border border-rose-500/40 shadow-glass flex flex-col gap-2">
-          <div class="flex items-center justify-between text-xs font-mono font-bold text-rose-300 pb-1 border-b border-rose-500/30">
+        <div class="p-4 rounded-xl bg-space-900/60 border border-space-border flex flex-col gap-2">
+          <div class="flex items-center justify-between text-xs font-mono font-medium text-slate-300 pb-1 border-b border-space-border">
             <span>Difference Residual (Tgt − Ref)</span>
-            <span class="text-amber-400" id="lab-diff-stats">σ: —</span>
+            <span class="text-slate-400" id="lab-diff-stats">σ: —</span>
           </div>
-          <div class="w-full h-64 bg-black rounded-xl overflow-hidden flex items-center justify-center border border-rose-500/40">
+          <div class="w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border border-space-border">
             <img id="lab-img-diff" src="" alt="Difference Residual Frame" class="max-w-full max-h-full object-contain image-rendering-pixelated" />
           </div>
-          <p class="text-[11px] text-slate-400">Static background stars cancel to zero. Moving bodies produce characteristic positive/negative dipole residuals.</p>
+          <p class="text-[11px] text-slate-400">Static stars cancel out. Moving bodies produce characteristic positive/negative dipole residuals.</p>
         </div>
 
       </div>
 
       <!-- Scientific Validation Explainer -->
-      <div class="p-4 rounded-2xl bg-space-900/80 border border-space-border/70 text-xs text-slate-300 flex flex-col gap-2">
-        <h4 class="font-display font-bold text-white flex items-center gap-2">
+      <div class="p-4 rounded-xl bg-space-900/60 border border-space-border text-xs text-slate-300 flex flex-col gap-2">
+        <h4 class="font-display font-medium text-white flex items-center gap-2">
           <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-          <span>Scientific Integrity & Candidate Verification Guidelines</span>
+          <span>Scientific Integrity & Candidate Verification</span>
         </h4>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-[11px] mt-1">
-          <div class="p-2.5 rounded-xl bg-space-950 border border-space-border/40">
-            <span class="text-emerald-400 font-bold block mb-1">True Motion Candidate</span>
-            <p class="text-slate-400">Shows paired positive and negative peaks (dipole) along the expected proper motion or parallax trajectory.</p>
+          <div class="p-2.5 rounded-lg bg-space-950 border border-space-border">
+            <span class="text-emerald-400 font-medium block mb-1">True Motion Candidate</span>
+            <p class="text-slate-400">Shows paired positive and negative peaks (dipole) along the expected proper motion trajectory.</p>
           </div>
-          <div class="p-2.5 rounded-xl bg-space-950 border border-space-border/40">
-            <span class="text-amber-400 font-bold block mb-1">Variable Flux Candidate</span>
-            <p class="text-slate-400">Shows centered monopole residual with no spatial displacement (e.g. Mira pulsating giants or accretion flares).</p>
+          <div class="p-2.5 rounded-lg bg-space-950 border border-space-border">
+            <span class="text-amber-400 font-medium block mb-1">Variable Flux Candidate</span>
+            <p class="text-slate-400">Shows centered monopole residual with no spatial displacement (e.g. Mira pulsating stars).</p>
           </div>
-          <div class="p-2.5 rounded-xl bg-space-950 border border-space-border/40">
-            <span class="text-rose-400 font-bold block mb-1">PSF / Optical Artifact</span>
-            <p class="text-slate-400">Slight telescope jitter or FWHM differences can cause ring-like subtraction residues around saturated stars.</p>
+          <div class="p-2.5 rounded-lg bg-space-950 border border-space-border">
+            <span class="text-slate-400 font-medium block mb-1">PSF / Optical Artifact</span>
+            <p class="text-slate-500">Slight telescope jitter can cause ring-like subtraction residues around bright saturated stars.</p>
           </div>
         </div>
       </div>
@@ -993,8 +988,8 @@
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <i data-lucide="activity" class="w-5 h-5 text-indigo-400"></i>
-            <h2 class="text-xl font-display font-bold text-white tracking-wide">
+            <i data-lucide="activity" class="w-5 h-5 text-sky-400"></i>
+            <h2 class="text-lg font-display font-bold text-white tracking-wide">
               102-BAND SPECTRAL EXPLORER (SED)
             </h2>
           </div>
@@ -1004,10 +999,10 @@
         </div>
 
         <div class="flex items-center gap-2 font-mono text-xs">
-          <span class="px-2.5 py-1 rounded-lg bg-indigo-950 text-indigo-300 border border-indigo-700 font-bold">
+          <span class="px-2.5 py-1 rounded bg-space-900 text-slate-300 border border-space-border">
             Band 2: 1.10 – 1.62 µm
           </span>
-          <span class="px-2.5 py-1 rounded-lg bg-space-850 text-slate-300 border border-space-border">
+          <span class="px-2.5 py-1 rounded bg-space-900 text-slate-400 border border-space-border">
             Plate Scale: 6.2″/pixel
           </span>
         </div>
@@ -1016,57 +1011,57 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
         
         <!-- Plotly Spectrum Chart (8 Cols) -->
-        <div class="lg:col-span-8 p-5 rounded-2xl bg-space-900/90 border border-space-border/80 shadow-glass flex flex-col gap-3">
-          <div class="flex items-center justify-between pb-2 border-b border-space-border/50">
-            <span class="text-xs font-mono font-bold text-cyan-300" id="spectrum-point-label">
+        <div class="lg:col-span-8 p-5 rounded-xl bg-space-900/60 border border-space-border flex flex-col gap-3">
+          <div class="flex items-center justify-between pb-2 border-b border-space-border">
+            <span class="text-xs font-mono font-medium text-slate-300" id="spectrum-point-label">
               Calibrated Infrared Spectral Energy Distribution
             </span>
             <span class="text-[10px] font-mono text-slate-400" id="spectrum-cal-status">
-              Authentic FITS Pixel Sampling Active
+              FITS Pixel Sampling Active
             </span>
           </div>
 
           <!-- Plotly Target Div -->
           <div id="spectrum-chart-container" class="w-full h-[320px]"></div>
 
-          <div class="flex items-center justify-between text-xs font-mono text-slate-400 pt-2 border-t border-space-border/40">
-            <span>✦ Click on any pixel in the Cosmic Time Machine image to inspect its calibrated SED</span>
-            <span class="text-electric-400" id="spectrum-pixel-summary">Pixel: (49, 49)</span>
+          <div class="flex items-center justify-between text-xs font-mono text-slate-400 pt-2 border-t border-space-border">
+            <span>✦ Click any pixel on the Cosmic Time Machine image to inspect its calibrated SED</span>
+            <span class="text-slate-300" id="spectrum-pixel-summary">Pixel: (49, 49)</span>
           </div>
         </div>
 
         <!-- Spectral Physics & Calibration Explainer (4 Cols) -->
-        <div class="lg:col-span-4 p-5 rounded-2xl bg-space-900/90 border border-space-border/80 shadow-glass flex flex-col justify-between gap-4">
+        <div class="lg:col-span-4 p-5 rounded-xl bg-space-900/60 border border-space-border flex flex-col justify-between gap-4">
           <div>
-            <div class="flex items-center gap-2 mb-2 pb-2 border-b border-space-border/40">
-              <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i>
-              <h3 class="text-xs font-display uppercase tracking-wider font-bold text-white">Physical Measurements</h3>
+            <div class="flex items-center gap-2 mb-2 pb-2 border-b border-space-border">
+              <i data-lucide="sliders" class="w-4 h-4 text-slate-400"></i>
+              <h3 class="text-xs font-display uppercase tracking-wider font-bold text-slate-200">Physical Measurements</h3>
             </div>
 
-            <div class="space-y-2.5 text-xs font-mono">
-              <div class="p-2.5 rounded-xl bg-space-950 border border-space-border/40 flex justify-between">
+            <div class="space-y-2 text-xs font-mono">
+              <div class="p-2.5 rounded-lg bg-space-950 border border-space-border flex justify-between">
                 <span class="text-slate-400">Surface Brightness:</span>
-                <span class="text-cyan-300 font-bold" id="spec-flux-val">0.240 MJy/sr</span>
+                <span class="text-white font-medium" id="spec-flux-val">0.240 MJy/sr</span>
               </div>
-              <div class="p-2.5 rounded-xl bg-space-950 border border-space-border/40 flex justify-between">
+              <div class="p-2.5 rounded-lg bg-space-950 border border-space-border flex justify-between">
                 <span class="text-slate-400">Photometric Error (σ):</span>
-                <span class="text-white font-bold" id="spec-err-val">±0.018 MJy/sr</span>
+                <span class="text-slate-200" id="spec-err-val">±0.018 MJy/sr</span>
               </div>
-              <div class="p-2.5 rounded-xl bg-space-950 border border-space-border/40 flex justify-between">
+              <div class="p-2.5 rounded-lg bg-space-950 border border-space-border flex justify-between">
                 <span class="text-slate-400">LVF Wavelength (λ):</span>
-                <span class="text-amber-300 font-bold" id="spec-wave-val">1.357 µm</span>
+                <span class="text-slate-200" id="spec-wave-val">1.357 µm</span>
               </div>
-              <div class="p-2.5 rounded-xl bg-space-950 border border-space-border/40 flex justify-between">
+              <div class="p-2.5 rounded-lg bg-space-950 border border-space-border flex justify-between">
                 <span class="text-slate-400">Data Quality Flag:</span>
-                <span class="text-emerald-400 font-bold" id="spec-flag-val">0 (Clean Pixel)</span>
+                <span class="text-emerald-400 font-medium" id="spec-flag-val">0 (Clean Pixel)</span>
               </div>
             </div>
           </div>
 
-          <div class="p-3 rounded-xl bg-space-950/70 border border-space-border/40 text-[11px] text-slate-300 leading-relaxed">
-            <h4 class="font-bold text-white mb-1">How SPHEREx Obtains 102 Bands</h4>
-            <p class="text-slate-400">
-              Unlike slit spectrometers, SPHEREx mounts a Linear Variable Filter directly over each detector array. As the satellite slews across the sky, every celestial coordinate is observed through 102 filter steps!
+          <div class="p-3 rounded-lg bg-space-950 border border-space-border text-[11px] text-slate-400 leading-relaxed">
+            <h4 class="font-medium text-slate-200 mb-1">How SPHEREx Obtains 102 Bands</h4>
+            <p>
+              Unlike slit spectrometers, SPHEREx mounts a Linear Variable Filter directly over each detector array. As the satellite slews across the sky, every celestial coordinate is observed through 102 filter steps.
             </p>
           </div>
         </div>
@@ -1083,38 +1078,38 @@
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <i data-lucide="file-text" class="w-5 h-5 text-emerald-400"></i>
-            <h2 class="text-xl font-display font-bold text-white tracking-wide">
+            <i data-lucide="file-text" class="w-5 h-5 text-sky-400"></i>
+            <h2 class="text-lg font-display font-bold text-white tracking-wide">
               INVESTIGATION DOSSIER & DISCOVERY REPORT
             </h2>
           </div>
           <p class="text-xs text-slate-400">
-            Official astronomical investigation report ready for evaluation, sharing, or PDF export.
+            Astronomical investigation report ready for evaluation, sharing, or PDF export.
           </p>
         </div>
 
         <div class="flex items-center gap-2.5">
-          <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-space-850 hover:bg-space-800 text-white border border-space-border hover:border-emerald-400 font-semibold text-xs flex items-center gap-2 transition-all">
-            <i data-lucide="printer" class="w-4 h-4 text-emerald-400"></i>
+          <button onclick="window.print()" class="btn-press px-4 py-2 rounded-lg bg-space-900 hover:bg-space-850 text-white border border-space-border font-medium text-xs flex items-center gap-2 transition-colors">
+            <i data-lucide="printer" class="w-4 h-4 text-slate-400"></i>
             <span>Print / Save PDF</span>
           </button>
-          <button onclick="copyShareableSummary()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm flex items-center gap-2 transition-all">
+          <button onclick="copyShareableSummary()" class="btn-press px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs flex items-center gap-2 transition-colors">
             <i data-lucide="share-2" class="w-4 h-4"></i>
-            <span>Copy Shareable Link</span>
+            <span>Copy Summary</span>
           </button>
         </div>
       </div>
 
       <!-- Printable Investigation Dossier Sheet -->
-      <div id="printable-dossier" class="p-6 lg:p-10 rounded-3xl bg-space-900/90 border border-space-border/80 shadow-2xl flex flex-col gap-6 text-slate-200">
+      <div id="printable-dossier" class="p-6 lg:p-8 rounded-2xl bg-space-900/60 border border-space-border flex flex-col gap-6 text-slate-200">
         
         <!-- Dossier Header -->
-        <div class="flex flex-wrap items-start justify-between pb-6 border-b border-space-border/60 gap-4">
+        <div class="flex flex-wrap items-start justify-between pb-6 border-b border-space-border gap-4">
           <div>
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950 text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-2 border border-emerald-500/40">
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-space-850 text-slate-400 text-[10px] font-mono font-medium uppercase tracking-wider mb-2 border border-space-border">
               NASA Space Apps Cairo 2026 • Official Investigation Dossier
             </div>
-            <h3 class="text-2xl font-display font-bold text-white uppercase" id="rep-target-name">
+            <h3 class="text-xl font-display font-bold text-white uppercase" id="rep-target-name">
               CASE: WISE 0855−0714
             </h3>
             <p class="text-xs text-slate-400 font-mono mt-1" id="rep-target-coords">
@@ -1124,28 +1119,28 @@
 
           <div class="text-right font-mono text-xs">
             <span class="text-slate-500 block uppercase">Mission Status</span>
-            <span class="text-emerald-400 font-bold text-sm">INVESTIGATION COMPLETE</span>
+            <span class="text-emerald-400 font-medium">COMPLETE</span>
             <span class="text-slate-400 block text-[11px]" id="rep-gen-date">Report Date: Nov 2026</span>
           </div>
         </div>
 
         <!-- Investigation Summary Grid -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 font-mono text-xs">
-          <div class="p-3 rounded-xl bg-space-950 border border-space-border/40">
+          <div class="p-3 rounded-lg bg-space-950 border border-space-border">
             <span class="text-slate-500 block text-[10px] uppercase">Observations Analyzed</span>
-            <span class="text-white font-bold text-sm" id="rep-obs-count">31 Observations</span>
+            <span class="text-white font-medium text-sm" id="rep-obs-count">31 Observations</span>
           </div>
-          <div class="p-3 rounded-xl bg-space-950 border border-space-border/40">
+          <div class="p-3 rounded-lg bg-space-950 border border-space-border">
             <span class="text-slate-500 block text-[10px] uppercase">Temporal Baseline</span>
-            <span class="text-white font-bold text-sm" id="rep-date-range">2025-05 to 2026-08</span>
+            <span class="text-white font-medium text-sm" id="rep-date-range">2025-05 to 2026-08</span>
           </div>
-          <div class="p-3 rounded-xl bg-space-950 border border-space-border/40">
+          <div class="p-3 rounded-lg bg-space-950 border border-space-border">
             <span class="text-slate-500 block text-[10px] uppercase">Spectral Channel</span>
-            <span class="text-cyan-300 font-bold text-sm">SPHEREx-D2 (1.10–1.62 µm)</span>
+            <span class="text-slate-200 font-medium text-sm">SPHEREx-D2 (1.10–1.62 µm)</span>
           </div>
-          <div class="p-3 rounded-xl bg-space-950 border border-space-border/40">
+          <div class="p-3 rounded-lg bg-space-950 border border-space-border">
             <span class="text-slate-500 block text-[10px] uppercase">Detection Threshold</span>
-            <span class="text-rose-300 font-bold text-sm">> 5.0σ MAD Significance</span>
+            <span class="text-slate-200 font-medium text-sm">> 5.0σ MAD Significance</span>
           </div>
         </div>
 
@@ -1155,16 +1150,16 @@
             Observational Photographic Evidence
           </h4>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="rounded-xl overflow-hidden bg-black border border-space-border/60 p-2 text-center">
+            <div class="rounded-lg bg-black border border-space-border p-2 text-center">
               <span class="text-[10px] font-mono text-slate-400 block mb-1">Baseline Frame (Ref Epoch)</span>
               <img id="rep-thumb-ref" src="" alt="Reference Thumbnail" class="h-44 w-full object-contain mx-auto" />
             </div>
-            <div class="rounded-xl overflow-hidden bg-black border border-space-border/60 p-2 text-center">
+            <div class="rounded-lg bg-black border border-space-border p-2 text-center">
               <span class="text-[10px] font-mono text-slate-400 block mb-1">Follow-Up Frame (Target Epoch)</span>
               <img id="rep-thumb-tgt" src="" alt="Target Thumbnail" class="h-44 w-full object-contain mx-auto" />
             </div>
-            <div class="rounded-xl overflow-hidden bg-black border border-rose-500/40 p-2 text-center">
-              <span class="text-[10px] font-mono text-rose-300 block mb-1">Difference Residual (Tgt − Ref)</span>
+            <div class="rounded-lg bg-black border border-space-border p-2 text-center">
+              <span class="text-[10px] font-mono text-slate-400 block mb-1">Difference Residual (Tgt − Ref)</span>
               <img id="rep-thumb-diff" src="" alt="Difference Thumbnail" class="h-44 w-full object-contain mx-auto" />
             </div>
           </div>
@@ -1172,29 +1167,29 @@
 
         <!-- Scientific Findings & Caveats -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed">
-          <div class="p-4 rounded-xl bg-space-950 border border-space-border/50">
+          <div class="p-4 rounded-lg bg-space-950 border border-space-border">
             <h5 class="font-bold text-white uppercase font-mono mb-1.5 flex items-center gap-1.5">
               <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
               <span>Observed Astrometric Changes</span>
             </h5>
             <p class="text-slate-300" id="rep-findings-text">
-              Analysis of SPHEREx multi-epoch observations reveals measurable displacement of WISE 0855−0714 relative to background field stars. The high-contrast difference image exhibits the classic paired dipole residual characteristic of proper motion.
+              Analysis of SPHEREx multi-epoch observations for WISE 0855−0714 reveals measurable displacement relative to background field stars. The difference image exhibits a dipole residual characteristic of proper motion.
             </p>
           </div>
 
-          <div class="p-4 rounded-xl bg-space-950 border border-space-border/50">
-            <h5 class="font-bold text-amber-300 uppercase font-mono mb-1.5 flex items-center gap-1.5">
+          <div class="p-4 rounded-lg bg-space-950 border border-space-border">
+            <h5 class="font-bold text-slate-300 uppercase font-mono mb-1.5 flex items-center gap-1.5">
               <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
               <span>Scientific Caveats & Limitations</span>
             </h5>
             <p class="text-slate-400">
-              Automated difference residuals do not constitute peer-reviewed discoveries without parallax deconvolution and cross-match verification against 2MASS/WISE catalog baselines.
+              Automated difference residuals do not constitute peer-reviewed discoveries without parallax deconvolution and cross-match verification against established astronomical catalog baselines.
             </p>
           </div>
         </div>
 
         <!-- Attribution Footer -->
-        <div class="pt-4 border-t border-space-border/40 flex flex-wrap items-center justify-between text-[11px] font-mono text-slate-500">
+        <div class="pt-4 border-t border-space-border flex flex-wrap items-center justify-between text-[11px] font-mono text-slate-500">
           <span>SkyBlink • NASA Space Apps Challenge Cairo 2026 • Planet X & SPHEREx</span>
           <span>Data Source: NASA IPAC / IRSA SPHEREx Pipelines</span>
         </div>
@@ -1208,36 +1203,36 @@
     <!-- ===================================================================== -->
     <section id="section-about" class="view-section transition-all duration-300 flex flex-col gap-6">
       
-      <div class="p-6 lg:p-10 rounded-3xl bg-space-900/90 border border-space-border/80 shadow-glass flex flex-col gap-6">
+      <div class="p-6 lg:p-8 rounded-2xl bg-space-900/60 border border-space-border flex flex-col gap-6">
         <div>
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-space-850 text-cyan-300 text-xs font-mono font-semibold mb-3 border border-space-border">
+          <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-space-850 text-slate-400 text-xs font-mono font-medium mb-3 border border-space-border">
             NASA Space Apps Cairo 2026 • Team ANVILD
           </div>
-          <h2 class="text-2xl sm:text-3xl font-display font-bold text-white uppercase tracking-tight">
+          <h2 class="text-2xl font-display font-bold text-white uppercase tracking-tight">
             ABOUT SKYBLINK — THE COSMIC DETECTIVE
           </h2>
           <p class="text-sm text-slate-300 max-w-3xl mt-2 leading-relaxed">
-            SkyBlink was built for the NASA Space Apps Challenge to solve the mystery of what changes in our night sky. By transforming raw NASA SPHEREx satellite observations into an interactive, zero-latency Cosmic Time Machine, SkyBlink empowers everyone—from school students to professional astrophysicists—to track moving brown dwarfs, variable stars, and candidate Planet X transits.
+            SkyBlink was built for the NASA Space Apps Challenge to solve the mystery of what changes in our night sky. By transforming raw NASA SPHEREx satellite observations into an interactive, zero-latency Cosmic Time Machine, SkyBlink empowers everyone to track moving brown dwarfs, variable stars, and candidate Planet X transits.
           </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
-          <div class="p-4 rounded-2xl bg-space-950 border border-space-border/50">
-            <h4 class="font-bold text-cyan-300 text-sm mb-1.5">NASA SPHEREx</h4>
+          <div class="p-4 rounded-xl bg-space-950 border border-space-border">
+            <h4 class="font-medium text-slate-200 text-sm mb-1.5">NASA SPHEREx</h4>
             <p class="text-slate-400 leading-relaxed">
               Spectro-Photometer for the History of the Universe, Epoch of Reionization, and Ices Explorer. NASA's premier all-sky surveyor observing in 102 spectroscopic bands between 0.75 and 5.0 µm.
             </p>
           </div>
-          <div class="p-4 rounded-2xl bg-space-950 border border-space-border/50">
-            <h4 class="font-bold text-amber-300 text-sm mb-1.5">Planet X & Brown Dwarfs</h4>
+          <div class="p-4 rounded-xl bg-space-950 border border-space-border">
+            <h4 class="font-medium text-slate-200 text-sm mb-1.5">Planet X & Brown Dwarfs</h4>
             <p class="text-slate-400 leading-relaxed">
-              Hypothetical outer Solar System bodies and cold brown dwarfs emit primarily in thermal infrared and move rapidly against distant stars. Blinking temporal epochs makes their motion instantly visible to human and algorithmic detectives.
+              Hypothetical outer Solar System bodies and cold brown dwarfs emit primarily in thermal infrared and move rapidly against distant stars. Blinking temporal epochs makes their motion instantly visible.
             </p>
           </div>
-          <div class="p-4 rounded-2xl bg-space-950 border border-space-border/50">
-            <h4 class="font-bold text-emerald-300 text-sm mb-1.5">100% Scientific Honesty</h4>
+          <div class="p-4 rounded-xl bg-space-950 border border-space-border">
+            <h4 class="font-medium text-slate-200 text-sm mb-1.5">100% Scientific Honesty</h4>
             <p class="text-slate-400 leading-relaxed">
-              SkyBlink executes genuine numerical reprojection, Median Absolute Deviation (MAD) noise estimation, and difference subtraction over real FITS files. No fabricated astronomical data.
+              SkyBlink executes genuine numerical reprojection, Median Absolute Deviation (MAD) noise estimation, and difference subtraction over real FITS files.
             </p>
           </div>
         </div>
@@ -1249,33 +1244,33 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- MODAL 1: MISSION BRIEFING INTRODUCTION (CINEMATIC STORY) -->
+  <!-- MODAL 1: MISSION BRIEFING INTRODUCTION -->
   <!-- ========================================================================= -->
-  <div id="modal-briefing" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
-    <div class="bg-space-900 border border-space-border/80 rounded-3xl max-w-2xl w-full p-6 lg:p-8 shadow-2xl relative text-slate-200">
+  <div id="modal-briefing" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-space-900 border border-space-border rounded-2xl max-w-2xl w-full p-6 lg:p-8 shadow-2xl relative text-slate-200">
       <button onclick="closeBriefingModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white transition-colors">
-        <i data-lucide="x" class="w-6 h-6"></i>
+        <i data-lucide="x" class="w-5 h-5"></i>
       </button>
 
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-2xl bg-electric-500/20 text-electric-400 flex items-center justify-center border border-electric-500/30 shadow-glow-cyan">
+        <div class="w-9 h-9 rounded-lg bg-space-850 text-sky-400 flex items-center justify-center border border-space-border">
           <i data-lucide="shield" class="w-5 h-5"></i>
         </div>
         <div>
-          <span class="text-[10px] font-mono uppercase text-electric-400 tracking-wider font-bold">Investigation Briefing</span>
-          <h3 class="font-display font-bold text-xl text-white" id="modal-briefing-title">MISSION: WISE 0855−0714</h3>
+          <span class="text-[10px] font-mono uppercase text-slate-400 tracking-wider font-medium">Investigation Briefing</span>
+          <h3 class="font-display font-bold text-lg text-white" id="modal-briefing-title">MISSION: WISE 0855−0714</h3>
         </div>
       </div>
 
       <div class="space-y-3 text-xs leading-relaxed text-slate-300 mb-6">
-        <div class="p-3.5 rounded-2xl bg-space-950 border border-space-border/40">
+        <div class="p-3.5 rounded-xl bg-space-950 border border-space-border">
           <h4 class="font-bold text-white uppercase font-mono text-[11px] mb-1">What We Are Investigating:</h4>
           <p class="text-slate-300" id="modal-briefing-what">
             Track a cold, faint brown dwarf moving across the cosmos. Can we detect its proper motion across SPHEREx observations?
           </p>
         </div>
 
-        <div class="p-3.5 rounded-2xl bg-space-950 border border-space-border/40">
+        <div class="p-3.5 rounded-xl bg-space-950 border border-space-border">
           <h4 class="font-bold text-white uppercase font-mono text-[11px] mb-1">Why It Matters:</h4>
           <p class="text-slate-400" id="modal-briefing-why">
             WISE 0855 is the fourth-closest known system to the Sun and the coldest sub-stellar object known. Infrared blink analysis reveals subtle parallactic shifts and extreme apparent velocity.
@@ -1283,23 +1278,23 @@
         </div>
 
         <div class="grid grid-cols-2 gap-3 font-mono text-[11px]">
-          <div class="p-2.5 rounded-xl bg-space-950 border border-space-border/40">
+          <div class="p-2.5 rounded-lg bg-space-950 border border-space-border">
             <span class="text-slate-500 block">Catalog Coordinates:</span>
-            <span class="text-white font-semibold" id="modal-briefing-coords">RA 133.785° Dec -7.244°</span>
+            <span class="text-white font-medium" id="modal-briefing-coords">RA 133.785° Dec -7.244°</span>
           </div>
-          <div class="p-2.5 rounded-xl bg-space-950 border border-space-border/40">
+          <div class="p-2.5 rounded-lg bg-space-950 border border-space-border">
             <span class="text-slate-500 block">Observations Available:</span>
-            <span class="text-cyan-300 font-semibold" id="modal-briefing-obs">31 Observations</span>
+            <span class="text-sky-400 font-medium" id="modal-briefing-obs">31 Observations</span>
           </div>
         </div>
       </div>
 
       <div class="flex items-center gap-3">
-        <button onclick="confirmStartInvestigation()" class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-electric-500 to-cosmic-600 hover:from-electric-400 hover:to-cosmic-500 text-white font-bold text-xs shadow-glow-cyan transition-all flex items-center justify-center gap-2">
+        <button onclick="confirmStartInvestigation()" class="btn-press flex-1 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs transition-colors flex items-center justify-center gap-2">
           <i data-lucide="play" class="w-4 h-4 fill-white"></i>
           <span>START INVESTIGATION</span>
         </button>
-        <button onclick="closeBriefingModal()" class="px-5 py-3 rounded-2xl bg-space-850 hover:bg-space-800 text-slate-300 hover:text-white border border-space-border text-xs font-semibold transition-all">
+        <button onclick="closeBriefingModal()" class="btn-press px-4 py-2.5 rounded-lg bg-space-850 hover:bg-space-800 text-slate-300 hover:text-white border border-space-border text-xs font-medium transition-colors">
           Skip
         </button>
       </div>
@@ -1310,47 +1305,47 @@
   <!-- ========================================================================= -->
   <!-- MODAL 2: "WHAT AM I SEEING?" ASTRONOMY EXPLAINER -->
   <!-- ========================================================================= -->
-  <div id="modal-explainer" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
-    <div class="bg-space-900 border border-space-border rounded-3xl max-w-2xl w-full p-6 lg:p-8 shadow-2xl relative text-slate-200">
+  <div id="modal-explainer" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-space-900 border border-space-border rounded-2xl max-w-2xl w-full p-6 lg:p-8 shadow-2xl relative text-slate-200">
       <button onclick="closeExplainerModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white transition-colors">
-        <i data-lucide="x" class="w-6 h-6"></i>
+        <i data-lucide="x" class="w-5 h-5"></i>
       </button>
 
       <div class="flex items-center gap-2.5 mb-4">
-        <div class="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30">
+        <div class="w-8 h-8 rounded-lg bg-space-850 text-slate-300 flex items-center justify-center border border-space-border">
           <i data-lucide="help-circle" class="w-5 h-5"></i>
         </div>
-        <h3 class="font-display font-bold text-lg text-white">What Am I Seeing? Plain-English Guide</h3>
+        <h3 class="font-display font-bold text-base text-white">What Am I Seeing? Plain-English Guide</h3>
       </div>
 
       <div class="space-y-2.5 text-xs text-slate-300 max-h-[420px] overflow-y-auto pr-1">
-        <div class="p-3 rounded-xl bg-space-950 border border-space-border/40">
-          <h4 class="font-bold text-cyan-300 font-mono text-[11px] mb-0.5">✦ Infrared Observation</h4>
+        <div class="p-3 rounded-lg bg-space-950 border border-space-border">
+          <h4 class="font-medium text-white font-mono text-[11px] mb-0.5">✦ Infrared Observation</h4>
           <p class="text-slate-400">Light beyond red visible wavelengths (0.75 to 5.0 µm). Cool objects like brown dwarfs and distant galaxies glow in infrared, penetrating interstellar dust clouds.</p>
         </div>
-        <div class="p-3 rounded-xl bg-space-950 border border-space-border/40">
-          <h4 class="font-bold text-amber-300 font-mono text-[11px] mb-0.5">✦ Temporal Epoch</h4>
+        <div class="p-3 rounded-lg bg-space-950 border border-space-border">
+          <h4 class="font-medium text-white font-mono text-[11px] mb-0.5">✦ Temporal Epoch</h4>
           <p class="text-slate-400">A cluster of observations taken at a distinct date or timestamp. By comparing epochs separated by weeks or years, detectives catch proper motion and brightness changes.</p>
         </div>
-        <div class="p-3 rounded-xl bg-space-950 border border-space-border/40">
-          <h4 class="font-bold text-rose-300 font-mono text-[11px] mb-0.5">✦ Difference Image Subtraction</h4>
+        <div class="p-3 rounded-lg bg-space-950 border border-space-border">
+          <h4 class="font-medium text-white font-mono text-[11px] mb-0.5">✦ Difference Image Subtraction</h4>
           <p class="text-slate-400">Subtracting a baseline epoch from a later epoch. Stationary stars cancel out to neutral grey, while moving bodies leave a paired dark/bright dipole.</p>
         </div>
-        <div class="p-3 rounded-xl bg-space-950 border border-space-border/40">
-          <h4 class="font-bold text-emerald-300 font-mono text-[11px] mb-0.5">✦ Flux (MJy/sr)</h4>
+        <div class="p-3 rounded-lg bg-space-950 border border-space-border">
+          <h4 class="font-medium text-white font-mono text-[11px] mb-0.5">✦ Flux (MJy/sr)</h4>
           <p class="text-slate-400">Megajanskys per steradian: the standard astronomical unit of surface brightness measured by SPHEREx detectors.</p>
         </div>
-        <div class="p-3 rounded-xl bg-space-950 border border-space-border/40">
-          <h4 class="font-bold text-indigo-300 font-mono text-[11px] mb-0.5">✦ Significance (>5.0σ MAD)</h4>
-          <p class="text-slate-400">Signal-to-Noise Ratio calculated using Median Absolute Deviation. Detections exceeding 5σ have less than 1 in 3.5 million odds of being random Gaussian noise.</p>
+        <div class="p-3 rounded-lg bg-space-950 border border-space-border">
+          <h4 class="font-medium text-white font-mono text-[11px] mb-0.5">✦ Significance (>5.0σ MAD)</h4>
+          <p class="text-slate-400">Signal-to-Noise Ratio calculated using Median Absolute Deviation. Detections exceeding 5σ have less than 1 in 3.5 million odds of being random noise.</p>
         </div>
-        <div class="p-3 rounded-xl bg-space-950 border border-space-border/40">
-          <h4 class="font-bold text-cyan-300 font-mono text-[11px] mb-0.5">✦ Spectral Channels & Wavelength (µm)</h4>
+        <div class="p-3 rounded-lg bg-space-950 border border-space-border">
+          <h4 class="font-medium text-white font-mono text-[11px] mb-0.5">✦ Spectral Channels & Wavelength (µm)</h4>
           <p class="text-slate-400">SPHEREx splits light into 102 narrow color slices. Each slice reveals unique chemical absorption features, from water vapor to methane ice.</p>
         </div>
       </div>
 
-      <button onclick="closeExplainerModal()" class="w-full mt-4 bg-space-850 hover:bg-space-800 text-white font-bold text-xs py-2.5 rounded-xl border border-space-border transition-all">
+      <button onclick="closeExplainerModal()" class="w-full mt-4 bg-space-850 hover:bg-space-800 text-white font-medium text-xs py-2.5 rounded-lg border border-space-border transition-colors">
         Back to Investigation
       </button>
     </div>
@@ -1359,49 +1354,49 @@
   <!-- ========================================================================= -->
   <!-- MODAL 3: KEYBOARD SHORTCUTS -->
   <!-- ========================================================================= -->
-  <div id="modal-shortcuts" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
-    <div class="bg-space-900 border border-space-border rounded-3xl max-w-md w-full p-6 shadow-2xl relative text-slate-200">
+  <div id="modal-shortcuts" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-space-900 border border-space-border rounded-2xl max-w-md w-full p-6 shadow-2xl relative text-slate-200">
       <button onclick="closeShortcutsModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white transition-colors">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
 
       <div class="flex items-center gap-2 mb-4">
-        <i data-lucide="keyboard" class="w-5 h-5 text-electric-400"></i>
+        <i data-lucide="keyboard" class="w-4 h-4 text-slate-400"></i>
         <h3 class="font-display font-bold text-base text-white">Keyboard Shortcuts</h3>
       </div>
 
       <div class="space-y-2 text-xs font-mono text-slate-300">
-        <div class="flex items-center justify-between p-2 rounded-xl bg-space-950 border border-space-border/40">
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border">
           <span class="text-slate-400">Play / Pause Flipbook</span>
-          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">Space</kbd>
+          <kbd class="px-2 py-0.5 bg-space-850 text-slate-200 rounded border border-space-border">Space</kbd>
         </div>
-        <div class="flex items-center justify-between p-2 rounded-xl bg-space-950 border border-space-border/40">
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border">
           <span class="text-slate-400">Next Frame / Prev Frame</span>
-          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">← / →</kbd>
+          <kbd class="px-2 py-0.5 bg-space-850 text-slate-200 rounded border border-space-border">← / →</kbd>
         </div>
-        <div class="flex items-center justify-between p-2 rounded-xl bg-space-950 border border-space-border/40">
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border">
           <span class="text-slate-400">First / Last Frame</span>
-          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">Home / End</kbd>
+          <kbd class="px-2 py-0.5 bg-space-850 text-slate-200 rounded border border-space-border">Home / End</kbd>
         </div>
-        <div class="flex items-center justify-between p-2 rounded-xl bg-space-950 border border-space-border/40">
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border">
           <span class="text-slate-400">Switch to Difference Mode</span>
-          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">D</kbd>
+          <kbd class="px-2 py-0.5 bg-space-850 text-slate-200 rounded border border-space-border">D</kbd>
         </div>
-        <div class="flex items-center justify-between p-2 rounded-xl bg-space-950 border border-space-border/40">
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border">
           <span class="text-slate-400">Switch to Blink Mode</span>
-          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">B</kbd>
+          <kbd class="px-2 py-0.5 bg-space-850 text-slate-200 rounded border border-space-border">B</kbd>
         </div>
-        <div class="flex items-center justify-between p-2 rounded-xl bg-space-950 border border-space-border/40">
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border">
           <span class="text-slate-400">Reset Zoom & Pan</span>
-          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">R</kbd>
+          <kbd class="px-2 py-0.5 bg-space-850 text-slate-200 rounded border border-space-border">R</kbd>
         </div>
-        <div class="flex items-center justify-between p-2 rounded-xl bg-space-950 border border-space-border/40">
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border">
           <span class="text-slate-400">Toggle Fullscreen View</span>
-          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">F</kbd>
+          <kbd class="px-2 py-0.5 bg-space-850 text-slate-200 rounded border border-space-border">F</kbd>
         </div>
-        <div class="flex items-center justify-between p-2 rounded-xl bg-space-950 border border-space-border/40">
+        <div class="flex items-center justify-between p-2 rounded-lg bg-space-950 border border-space-border">
           <span class="text-slate-400">Select Mission Targets 1–6</span>
-          <kbd class="px-2 py-0.5 bg-space-800 text-cyan-300 rounded border border-space-border">1 .. 6</kbd>
+          <kbd class="px-2 py-0.5 bg-space-850 text-slate-200 rounded border border-space-border">1 .. 6</kbd>
         </div>
       </div>
     </div>
@@ -1413,20 +1408,20 @@
   <!-- ========================================================================= -->
   <!-- FOOTER -->
   <!-- ========================================================================= -->
-  <footer class="mt-auto border-t border-space-border/40 bg-space-950/90 px-4 py-4 text-center text-xs text-slate-500 flex flex-wrap items-center justify-between gap-3 relative z-10">
+  <footer class="mt-auto border-t border-space-border bg-space-950 px-4 py-4 text-center text-xs text-slate-500 flex flex-wrap items-center justify-between gap-3 relative z-10">
     <div class="flex items-center gap-2">
-      <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+      <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
       <span>NASA Space Apps Cairo 2026 • Planet X and SPHEREx Challenge • Team ANVILD</span>
     </div>
     <div class="flex items-center gap-3 font-mono text-[11px]">
       <span class="text-slate-400">100% Offline Buffer Ready</span>
       <span>•</span>
-      <span class="text-electric-400 font-semibold">SkyBlink v3.0 Cosmic Detective</span>
+      <span class="text-slate-400">SkyBlink v3.1</span>
     </div>
   </footer>
 
   <!-- ========================================================================= -->
-  <!-- HIGH-PERFORMANCE REACTIVE CORE SCRIPT -->
+  <!-- CORE CONTROLLER SCRIPT -->
   <!-- ========================================================================= -->
   <script>
     'use strict';
@@ -1435,7 +1430,7 @@
     const _urlParams = new URLSearchParams(window.location.search);
     const API = _urlParams.get('api') || window.SKYBLINK_API || (window.location.port === '5500' ? 'http://localhost:8000' : window.location.origin);
 
-    // 2. Preset Astronomical Targets Data (Challenge Catalog)
+    // 2. Preset Astronomical Targets Data
     const TARGETS = [
       {
         name: "WISE 0855-0714",
@@ -1516,7 +1511,7 @@
       bandpass: 'SPHEREx-D2',
       colormap: 'inferno',
       mode: 'blink', // 'blink' | 'diff' | 'stack'
-      viewMode: 'beginner', // 'beginner' | 'advanced'
+      viewMode: 'beginner',
       currentTab: 'investigation',
       
       observations: [],
@@ -1529,10 +1524,8 @@
       panX: 0,
       panY: 0,
       
-      // Image cache key: `${ra}_${dec}_${cmap}_${frameIdx}`
       imageCache: new Map(),
       
-      // Stored frames for Discovery Lab and Reports
       refImageB64: '',
       tgtImageB64: '',
       diffImageB64: '',
@@ -1642,51 +1635,44 @@
     // 5. Toast Notification System
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
-      const borderClass = type === 'success' ? 'border-emerald-500/80 bg-space-900/95 text-emerald-200 shadow-glow-cyan' :
-                          type === 'warn' ? 'border-amber-500/80 bg-space-900/95 text-amber-200 shadow-glow-amber' :
-                          'border-electric-500/80 bg-space-900/95 text-electric-300 shadow-glow-cyan';
-      
-      toast.className = `px-4 py-2.5 rounded-2xl border ${borderClass} backdrop-blur-md shadow-glass text-xs font-mono font-medium flex items-center gap-2.5 transform transition-all duration-300 translate-y-3 opacity-0 pointer-events-auto max-w-md`;
-      toast.innerHTML = `<span class="text-electric-400">✦</span><span>${message}</span>`;
+      toast.className = 'px-3.5 py-2 rounded-lg bg-space-900 border border-space-border text-xs font-mono text-slate-200 shadow-lg flex items-center gap-2 transform transition-all duration-200 translate-y-2 opacity-0 pointer-events-auto max-w-md';
+      toast.innerHTML = `<span class="text-sky-400">✦</span><span>${message}</span>`;
       
       UI.toastContainer.appendChild(toast);
       requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-3', 'opacity-0');
+        toast.classList.remove('translate-y-2', 'opacity-0');
       });
 
       setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-3');
-        setTimeout(() => toast.remove(), 350);
-      }, 3500);
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 250);
+      }, 3000);
     }
 
-    // 6. Section Navigation (Single-Page App Flow)
+    // 6. Section Navigation
     function navigateTo(tabName) {
       AppState.currentTab = tabName;
       
-      // Update top desktop nav buttons
       document.querySelectorAll('.nav-step-btn').forEach(btn => {
         if (btn.dataset.tab === tabName) {
-          btn.classList.add('active', 'bg-gradient-to-r', 'from-electric-500', 'to-cosmic-600', 'text-white', 'font-semibold', 'shadow-sm');
-          btn.classList.remove('text-slate-300', 'text-slate-400');
+          btn.classList.add('active', 'bg-space-800', 'text-white', 'font-medium');
+          btn.classList.remove('text-slate-400');
         } else {
-          btn.classList.remove('active', 'bg-gradient-to-r', 'from-electric-500', 'to-cosmic-600', 'text-white', 'font-semibold', 'shadow-sm');
-          btn.classList.add('text-slate-300');
+          btn.classList.remove('active', 'bg-space-800', 'text-white', 'font-medium');
+          btn.classList.add('text-slate-400');
         }
       });
 
-      // Update mobile nav buttons
       document.querySelectorAll('.nav-step-mobile').forEach(btn => {
         if (btn.dataset.tab === tabName) {
-          btn.classList.add('active', 'bg-electric-500', 'text-white', 'font-bold');
-          btn.classList.remove('text-slate-300', 'text-slate-400');
+          btn.classList.add('active', 'bg-space-800', 'text-white', 'font-medium');
+          btn.classList.remove('text-slate-400');
         } else {
-          btn.classList.remove('active', 'bg-electric-500', 'text-white', 'font-bold');
-          btn.classList.add('text-slate-300');
+          btn.classList.remove('active', 'bg-space-800', 'text-white', 'font-medium');
+          btn.classList.add('text-slate-400');
         }
       });
 
-      // Smoothly display target section
       document.querySelectorAll('.view-section').forEach(sec => {
         if (sec.id === `section-${tabName}`) {
           sec.classList.remove('hidden');
@@ -1697,7 +1683,6 @@
         }
       });
 
-      // Special tab handlers
       if (tabName === 'spectrum') {
         setTimeout(initSpectrumPlot, 100);
       }
@@ -1714,22 +1699,22 @@
     // 7. Detective View vs Advanced Astrometry View Mode
     document.getElementById('toggle-view-beginner').addEventListener('click', () => {
       AppState.viewMode = 'beginner';
-      document.getElementById('toggle-view-beginner').classList.add('bg-electric-500/20', 'text-electric-400', 'border-electric-500/40');
+      document.getElementById('toggle-view-beginner').classList.add('bg-space-800', 'text-white');
       document.getElementById('toggle-view-beginner').classList.remove('text-slate-400');
-      document.getElementById('toggle-view-advanced').classList.remove('bg-electric-500/20', 'text-electric-400', 'border-electric-500/40');
+      document.getElementById('toggle-view-advanced').classList.remove('bg-space-800', 'text-white');
       document.getElementById('toggle-view-advanced').classList.add('text-slate-400');
       UI.advancedTelemetry.classList.add('hidden');
-      showToast('Detective View Active: Clean astronomical exploration', 'info');
+      showToast('Detective View Active', 'info');
     });
 
     document.getElementById('toggle-view-advanced').addEventListener('click', () => {
       AppState.viewMode = 'advanced';
-      document.getElementById('toggle-view-advanced').classList.add('bg-electric-500/20', 'text-electric-400', 'border-electric-500/40');
+      document.getElementById('toggle-view-advanced').classList.add('bg-space-800', 'text-white');
       document.getElementById('toggle-view-advanced').classList.remove('text-slate-400');
-      document.getElementById('toggle-view-beginner').classList.remove('bg-electric-500/20', 'text-electric-400', 'border-electric-500/40');
+      document.getElementById('toggle-view-beginner').classList.remove('bg-space-800', 'text-white');
       document.getElementById('toggle-view-beginner').classList.add('text-slate-400');
       UI.advancedTelemetry.classList.remove('hidden');
-      showToast('Astrometry View Active: Full telemetry & WCS matrices revealed', 'info');
+      showToast('Astrometry View Active', 'info');
     });
 
     // 8. Investigation Mission Initiation
@@ -1738,7 +1723,6 @@
       AppState.targetIdx = targetIndex;
       const t = TARGETS[targetIndex];
 
-      // Update inputs
       UI.inpName.value = t.name;
       UI.inpRa.value = t.ra;
       UI.inpDec.value = t.dec;
@@ -1748,32 +1732,18 @@
       AppState.dec = t.dec;
       AppState.fov = t.fov;
 
-      // Update Mission Dossier card styles
-      document.querySelectorAll('.mission-card').forEach((card, i) => {
-        if (i === targetIndex) {
-          card.classList.add('border-electric-500/70', 'shadow-glow-cyan');
-          card.classList.remove('border-space-border/70');
-        } else {
-          card.classList.remove('border-electric-500/70', 'shadow-glow-cyan');
-          card.classList.add('border-space-border/70');
-        }
-      });
-
-      // Update HUD target chip
       document.querySelectorAll('.quick-target-chip').forEach((chip, i) => {
         if (i === targetIndex) {
-          chip.classList.add('active', 'border-electric-400', 'text-electric-400', 'bg-space-800');
+          chip.classList.add('active', 'bg-space-800', 'text-white');
           chip.classList.remove('text-slate-300');
         } else {
-          chip.classList.remove('active', 'border-electric-400', 'text-electric-400', 'bg-space-800');
+          chip.classList.remove('active', 'bg-space-800', 'text-white');
           chip.classList.add('text-slate-300');
         }
       });
 
-      // Update HUD active text
-      UI.hudTarget.innerHTML = `<span>${t.label}</span><span class="text-slate-500 font-mono text-xs font-normal">• RA ${t.ra.toFixed(4)}° Dec ${t.dec.toFixed(4)}°</span>`;
+      UI.hudTarget.innerHTML = `<span>${t.label}</span><span class="text-slate-400 font-mono text-xs font-normal">• RA ${t.ra.toFixed(4)}° Dec ${t.dec.toFixed(4)}°</span>`;
 
-      // Open Briefing Modal for cinematic introduction
       openBriefingModal();
     }
 
@@ -1828,7 +1798,7 @@
           UI.canvasImg.style.display = 'block';
           await displayFrame(0);
           preloadTargetFrames();
-          showToast(`Case Loaded: ${AppState.observations.length} SPHEREx observations ready`, 'success');
+          showToast(`Loaded ${AppState.observations.length} SPHEREx frames`, 'success');
         } else {
           UI.placeholder.style.display = 'flex';
           UI.canvasImg.style.display = 'none';
@@ -1862,13 +1832,11 @@
       const cmap = UI.selCmap.value;
       const key = getCacheKey(idx, cmap);
 
-      // Check RAM cache
       if (AppState.imageCache.has(key)) {
         renderImageBase64(AppState.imageCache.get(key));
         return;
       }
 
-      // Fetch from backend
       try {
         const url = `${API}/api/image/${idx}?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&cmap=${cmap}`;
         const res = await fetch(url);
@@ -1925,7 +1893,7 @@
     function updateBufferUI(loaded, total) {
       const pct = Math.round((loaded / Math.max(1, total)) * 100);
       UI.bufferFill.style.width = `${pct}%`;
-      UI.bufferPct.textContent = `${pct}% Buffered (${loaded}/${total})`;
+      UI.bufferPct.textContent = `${pct}% Cached (${loaded}/${total})`;
     }
 
     // 13. Telemetry HUD Update
@@ -1939,14 +1907,14 @@
       UI.reticleCoords.textContent = `Center: Pixel (49, 49) | α ${AppState.ra.toFixed(4)}° δ ${AppState.dec.toFixed(4)}°`;
     }
 
-    // 14. High-FPS Playback Loop
+    // 14. Playback Loop
     function startPlayback() {
       if (AppState.observations.length <= 1) return;
       AppState.isPlaying = true;
       UI.playText.textContent = 'PAUSE';
       UI.playIcon.setAttribute('data-lucide', 'pause');
-      UI.btnPlay.classList.add('from-rose-500', 'to-red-600', 'shadow-glow-amber');
-      UI.btnPlay.classList.remove('from-electric-500', 'to-cosmic-600', 'shadow-glow-cyan');
+      UI.btnPlay.classList.add('bg-slate-700');
+      UI.btnPlay.classList.remove('bg-sky-600');
       lucide.createIcons();
 
       AppState.lastTickTime = performance.now();
@@ -1957,8 +1925,8 @@
       AppState.isPlaying = false;
       UI.playText.textContent = 'PLAY FLIPBOOK';
       UI.playIcon.setAttribute('data-lucide', 'play');
-      UI.btnPlay.classList.remove('from-rose-500', 'to-red-600', 'shadow-glow-amber');
-      UI.btnPlay.classList.add('from-electric-500', 'to-cosmic-600', 'shadow-glow-cyan');
+      UI.btnPlay.classList.remove('bg-slate-700');
+      UI.btnPlay.classList.add('bg-sky-600');
       lucide.createIcons();
 
       if (AppState.animationId) {
@@ -1997,8 +1965,6 @@
 
     // 15. Colormap Event Handler
     UI.selCmap.addEventListener('change', () => {
-      const chosenCmap = UI.selCmap.value;
-      showToast(`Colormap updated to ${chosenCmap.toUpperCase()}`, 'info');
       displayFrame(AppState.currentFrameIdx);
       preloadTargetFrames();
     });
@@ -2017,10 +1983,10 @@
         const firstObs = AppState.observations[epoch[0]];
         const dateStr = (firstObs?.obs_date || '').slice(0, 10);
         const el = document.createElement('button');
-        el.className = `epoch-pill w-full flex items-center justify-between px-3 py-1.5 rounded-xl border text-left transition-all ${i === 0 ? 'bg-cyan-950/70 border-cyan-500/60 text-cyan-200' : 'bg-space-950/50 border-space-border/40 text-slate-300 hover:border-cyan-500/40'}`;
+        el.className = `epoch-pill w-full flex items-center justify-between px-3 py-1.5 rounded-lg border text-left transition-colors ${i === 0 ? 'bg-space-850 border-slate-700 text-white' : 'bg-space-950 border-space-border text-slate-400 hover:text-white hover:border-slate-700'}`;
         el.innerHTML = `
-          <span class="font-mono text-xs font-semibold">Epoch #${i+1} (${dateStr})</span>
-          <span class="font-mono text-[10px] text-slate-400 bg-space-850 px-2 py-0.5 rounded">${epoch.length} frame${epoch.length !== 1 ? 's' : ''}</span>
+          <span class="font-mono text-xs font-medium">Epoch #${i+1} (${dateStr})</span>
+          <span class="font-mono text-[10px] text-slate-500 bg-space-900 px-1.5 py-0.5 rounded">${epoch.length} frame${epoch.length !== 1 ? 's' : ''}</span>
         `;
         el.onclick = () => {
           stopPlayback();
@@ -2035,11 +2001,11 @@
       pills.forEach((pill, i) => {
         const epoch = AppState.epochs[i] || [];
         if (epoch.includes(frameIdx)) {
-          pill.classList.add('bg-cyan-950/70', 'border-cyan-500/60', 'text-cyan-200');
-          pill.classList.remove('bg-space-950/50', 'border-space-border/40');
+          pill.classList.add('bg-space-850', 'border-slate-700', 'text-white');
+          pill.classList.remove('bg-space-950', 'border-space-border', 'text-slate-400');
         } else {
-          pill.classList.remove('bg-cyan-950/70', 'border-cyan-500/60', 'text-cyan-200');
-          pill.classList.add('bg-space-950/50', 'border-space-border/40');
+          pill.classList.remove('bg-space-850', 'border-slate-700', 'text-white');
+          pill.classList.add('bg-space-950', 'border-space-border', 'text-slate-400');
         }
       });
     }
@@ -2064,8 +2030,6 @@
       const refIdx = parseInt(UI.diffRefSelect.value || 0);
       const tgtIdx = AppState.currentFrameIdx === refIdx ? (refIdx + 1) % AppState.observations.length : AppState.currentFrameIdx;
 
-      showToast(`Computing difference: Frame #${tgtIdx + 1} minus Reference #${refIdx + 1}...`, 'info');
-
       try {
         const url = `${API}/api/difference?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&ref_index=${refIdx}&target_index=${tgtIdx}`;
         const res = await fetch(url);
@@ -2077,13 +2041,11 @@
           renderImageBase64(data.diff_b64);
           renderCandidatesTable(data.candidates || []);
 
-          // Cache reference & target frames for Discovery Lab
           const refKey = getCacheKey(refIdx, UI.selCmap.value);
           const tgtKey = getCacheKey(tgtIdx, UI.selCmap.value);
           AppState.refImageB64 = AppState.imageCache.get(refKey) || '';
           AppState.tgtImageB64 = AppState.imageCache.get(tgtKey) || '';
 
-          // Update Discovery Lab View
           const refDate = (AppState.observations[refIdx]?.obs_date || '').slice(0, 10);
           const tgtDate = (AppState.observations[tgtIdx]?.obs_date || '').slice(0, 10);
           UI.labRefDate.textContent = `UTC: ${refDate}`;
@@ -2095,7 +2057,7 @@
           const stdVal = data.stats?.std ? `σ = ${data.stats.std.toFixed(3)}` : 'σ = 0.042';
           UI.labDiffStats.textContent = stdVal;
 
-          showToast(`Difference computed successfully (${stdVal})`, 'success');
+          showToast(`Difference computed (${stdVal})`, 'success');
         }
       } catch (err) {
         console.error('Difference computation error:', err);
@@ -2114,17 +2076,16 @@
 
       candidates.slice(0, 20).forEach((c, idx) => {
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-cyan-950/50 cursor-pointer transition-colors';
+        tr.className = 'hover:bg-space-900 cursor-pointer transition-colors';
         tr.innerHTML = `
-          <td class="py-1 px-2.5 text-cyan-300">${c.ra?.toFixed(4)}</td>
-          <td class="py-1 px-2 text-cyan-300">${c.dec?.toFixed(4)}</td>
+          <td class="py-1 px-2.5 text-slate-300">${c.ra?.toFixed(4)}</td>
+          <td class="py-1 px-2 text-slate-300">${c.dec?.toFixed(4)}</td>
           <td class="py-1 px-2 ${c.diff_value >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${c.diff_value?.toFixed(2)}</td>
-          <td class="py-1 px-2 font-bold text-rose-300">${c.significance?.toFixed(1)}σ</td>
+          <td class="py-1 px-2 font-medium text-slate-200">${c.significance?.toFixed(1)}σ</td>
         `;
         tr.onclick = () => inspectCandidateEvidence(c);
         UI.candTbody.appendChild(tr);
 
-        // Highlight top candidate by default
         if (idx === 0) inspectCandidateEvidence(c);
       });
     }
@@ -2135,13 +2096,12 @@
       const status = parseFloat(sig) > 7.0 ? 'Candidate' : 'Needs Validation';
       
       UI.evidenceStatus.textContent = status;
-      UI.evidenceStatus.className = `text-[10px] font-mono px-2 py-0.5 rounded font-bold ${status === 'Candidate' ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-amber-950 text-amber-300 border border-amber-600'}`;
+      UI.evidenceStatus.className = `text-[10px] font-mono px-2 py-0.5 rounded font-medium ${status === 'Candidate' ? 'bg-space-900 text-emerald-400 border border-space-border' : 'bg-space-900 text-amber-400 border border-space-border'}`;
       
-      UI.evidenceDesc.textContent = `Candidate at pixel (${c.pixel_x}, ${c.pixel_y}) exceeds background noise by ${sig}σ. Displays characteristic flux discrepancy across epochs.`;
+      UI.evidenceDesc.textContent = `Candidate at pixel (${c.pixel_x}, ${c.pixel_y}) exceeds background noise by ${sig}σ. Displays flux discrepancy across epochs.`;
       UI.evidenceCoords.textContent = `Pixel: (${c.pixel_x}, ${c.pixel_y}) | α ${c.ra?.toFixed(4)}° δ ${c.dec?.toFixed(4)}°`;
       UI.evidenceSnr.textContent = `SNR: ${sig}σ MAD`;
 
-      // Highlight on canvas stage
       const rect = UI.canvasImg.getBoundingClientRect();
       const stageRect = UI.stage.getBoundingClientRect();
       if (rect.width && rect.height) {
@@ -2152,18 +2112,17 @@
         UI.reticleTarget.classList.remove('hidden');
       }
 
-      UI.reticleCoords.innerHTML = `<span class="text-amber-400 font-bold">🎯 Targeted: (${c.pixel_x}, ${c.pixel_y}) | α ${c.ra?.toFixed(4)}° δ ${c.dec?.toFixed(4)}° (${sig}σ)</span>`;
-      showToast(`Locked candidate at RA ${c.ra?.toFixed(4)}°, Dec ${c.dec?.toFixed(4)}°`, 'info');
+      UI.reticleCoords.innerHTML = `<span class="text-slate-200 font-medium">🎯 Target: (${c.pixel_x}, ${c.pixel_y}) | α ${c.ra?.toFixed(4)}° δ ${c.dec?.toFixed(4)}° (${sig}σ)</span>`;
     }
 
     // 18. Mode Switcher (Blink / Difference / Stack)
     UI.modeBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         UI.modeBtns.forEach(b => {
-          b.classList.remove('active', 'text-white', 'bg-gradient-to-r', 'from-electric-500', 'to-cosmic-600', 'shadow-sm');
+          b.classList.remove('active', 'text-white', 'bg-space-800');
           b.classList.add('text-slate-400');
         });
-        btn.classList.add('active', 'text-white', 'bg-gradient-to-r', 'from-electric-500', 'to-cosmic-600', 'shadow-sm');
+        btn.classList.add('active', 'text-white', 'bg-space-800');
         btn.classList.remove('text-slate-400');
 
         const mode = btn.dataset.mode;
@@ -2187,7 +2146,7 @@
     });
 
     async function executeCoAddStack() {
-      showToast('Computing Inverse-Variance Weighted Mean Co-Add Stack...', 'info');
+      showToast('Computing Co-Add Stack...', 'info');
       try {
         const count = Math.min(8, AppState.observations.length);
         const indices = Array.from({length: count}, (_, i) => i).join(',');
@@ -2196,7 +2155,7 @@
         const data = await res.json();
         if (data.stack_b64) {
           renderImageBase64(data.stack_b64);
-          showToast(`Co-added ${data.count} observation epochs into high-SNR stack`, 'success');
+          showToast(`Co-added ${data.count} observation epochs`, 'success');
         }
       } catch (err) {
         console.error('Stack error:', err);
@@ -2212,10 +2171,10 @@
         x: wavelengths,
         y: flux,
         mode: 'lines+markers',
-        line: { color: '#38bdf8', width: 2.5, shape: 'spline' },
-        marker: { size: 6, color: '#fbbf24', line: { width: 1.5, color: '#ffffff' } },
+        line: { color: '#38bdf8', width: 2, shape: 'spline' },
+        marker: { size: 5, color: '#f1f5f9' },
         fill: 'tozeroy',
-        fillcolor: 'rgba(56, 189, 248, 0.12)',
+        fillcolor: 'rgba(56, 189, 248, 0.05)',
         hovertemplate: 'λ: %{x:.3f} µm<br>Flux: %{y:.3f} MJy/sr<extra></extra>'
       };
 
@@ -2224,18 +2183,18 @@
         paper_bgcolor: 'transparent',
         plot_bgcolor: 'transparent',
         xaxis: {
-          title: { text: 'Wavelength λ (µm)', font: { size: 11, color: '#94a3b8' } },
-          color: '#94a3b8',
-          gridcolor: 'rgba(255,255,255,0.06)',
+          title: { text: 'Wavelength λ (µm)', font: { size: 11, color: '#64748b' } },
+          color: '#64748b',
+          gridcolor: '#1f2937',
           zeroline: false
         },
         yaxis: {
-          title: { text: 'Flux (MJy/sr)', font: { size: 11, color: '#94a3b8' } },
-          color: '#94a3b8',
-          gridcolor: 'rgba(255,255,255,0.06)',
+          title: { text: 'Flux (MJy/sr)', font: { size: 11, color: '#64748b' } },
+          color: '#64748b',
+          gridcolor: '#1f2937',
           zeroline: false
         },
-        font: { family: 'JetBrains Mono', size: 10, color: '#cbd5e1' }
+        font: { family: 'JetBrains Mono', size: 10, color: '#94a3b8' }
       };
 
       Plotly.newPlot('spectrum-chart-container', [trace], layout, { displayModeBar: false, responsive: true });
@@ -2250,7 +2209,6 @@
       const pxY = Math.floor(((e.clientY - rect.top) / rect.height) * 98);
 
       if (pxX >= 0 && pxX < 98 && pxY >= 0 && pxY < 98) {
-        // Query genuine backend pixel spectrum
         try {
           const specUrl = `${API}/api/pixel-spectrum?ra=${AppState.ra}&dec=${AppState.dec}&fov_arcmin=${AppState.fov}&bandpass=${encodeURIComponent(AppState.bandpass)}&obs_index=${AppState.currentFrameIdx}&pixel_x=${pxX}&pixel_y=${pxY}`;
           const res = await fetch(specUrl);
@@ -2263,7 +2221,6 @@
             UI.specFlag.textContent = `${data.flag_value} (${data.flag_clean ? 'Clean' : 'Flagged'})`;
             UI.specPixelSummary.textContent = `Pixel: (${pxX}, ${pxY}) | α ${data.ra}° δ ${data.dec}°`;
 
-            // Plot epoch series or spectral interpolation
             if (data.epoch_series && data.epoch_series.length > 0) {
               const waves = [1.10, 1.15, 1.20, 1.25, 1.30, 1.35, 1.40, 1.45, 1.50, 1.55, 1.62];
               const baseF = data.flux || 0.24;
@@ -2271,8 +2228,7 @@
               Plotly.restyle('spectrum-chart-container', { y: [fluxes] });
             }
 
-            UI.reticleCoords.innerHTML = `<span class="text-cyan-300 font-bold">Pixel (${pxX}, ${pxY}) | α ${data.ra}° δ ${data.dec}° | ${data.flux?.toFixed(3)} MJy/sr</span>`;
-            showToast(`Calibrated spectrum extracted at (${pxX}, ${pxY})`, 'info');
+            UI.reticleCoords.innerHTML = `<span class="text-slate-200 font-medium">Pixel (${pxX}, ${pxY}) | α ${data.ra}° δ ${data.dec}° | ${data.flux?.toFixed(3)} MJy/sr</span>`;
           }
         } catch (err) {
           console.error('Spectrum extraction error:', err);
@@ -2292,7 +2248,6 @@
       UI.repDateRange.textContent = `${firstDate} to ${lastDate}`;
       UI.repGenDate.textContent = `Report Date: ${new Date().toISOString().slice(0, 10)}`;
 
-      // Update thumbnails
       const currentCmap = UI.selCmap.value;
       const refB64 = AppState.imageCache.get(getCacheKey(0, currentCmap)) || UI.canvasImg.src;
       const tgtB64 = AppState.imageCache.get(getCacheKey(AppState.observations.length - 1, currentCmap)) || UI.canvasImg.src;
@@ -2301,17 +2256,16 @@
       UI.repThumbTgt.src = tgtB64;
       UI.repThumbDiff.src = AppState.diffImageB64 || refB64;
 
-      // Findings text
       UI.repFindings.textContent = `Analysis of SPHEREx multi-epoch observations for ${t.name} reveals ${AppState.diffCandidates.length} candidate spatial flux changes above 5.0σ MAD noise threshold. Difference imaging reveals characteristic proper motion/variability signatures consistent with ${t.category}.`;
     }
 
     function copyShareableSummary() {
       const t = TARGETS[AppState.targetIdx] || TARGETS[0];
-      const summary = `✦ SkyBlink Astronomical Investigation Report\nTarget: ${t.name}\nCoordinates: RA ${t.ra.toFixed(4)}°, Dec ${t.dec.toFixed(4)}°\nObservations: ${AppState.observations.length} epochs analyzed\nSPHEREx Band: ${AppState.bandpass}\nCandidates Detected: ${AppState.diffCandidates.length} (>5.0σ MAD)\nNASA Space Apps Challenge Cairo 2026 • Planet X and SPHEREx`;
+      const summary = `SkyBlink Astronomical Investigation Report\nTarget: ${t.name}\nCoordinates: RA ${t.ra.toFixed(4)}°, Dec ${t.dec.toFixed(4)}°\nObservations: ${AppState.observations.length} epochs analyzed\nSPHEREx Band: ${AppState.bandpass}\nCandidates Detected: ${AppState.diffCandidates.length} (>5.0σ MAD)\nNASA Space Apps Challenge Cairo 2026`;
       navigator.clipboard.writeText(summary).then(() => {
-        showToast('Shareable investigation summary copied to clipboard!', 'success');
+        showToast('Summary copied to clipboard', 'success');
       }).catch(() => {
-        showToast('Report ready for export', 'info');
+        showToast('Report ready', 'info');
       });
     }
 
@@ -2358,11 +2312,9 @@
     UI.btnApplyDiff.onclick = computeDifference;
     UI.btnLoad.onclick = loadTargetObservations;
 
-    // Resolve Name Button Handler
     UI.btnResolve.onclick = async () => {
       const name = UI.inpName.value.trim();
       if (!name) return;
-      showToast(`Resolving object: ${name}...`, 'info');
       try {
         const res = await fetch(`${API}/api/resolve?name=${encodeURIComponent(name)}`);
         if (res.ok) {
@@ -2371,16 +2323,14 @@
           UI.inpDec.value = d.dec.toFixed(4);
           AppState.ra = d.ra;
           AppState.dec = d.dec;
-          showToast(`Resolved '${name}' → RA ${d.ra.toFixed(4)}°, Dec ${d.dec.toFixed(4)}°`, 'success');
-        } else {
-          showToast(`Could not resolve coordinates for '${name}'`, 'warn');
+          showToast(`Resolved '${name}'`, 'success');
         }
       } catch (err) {
-        showToast('Name resolution service unavailable', 'warn');
+        showToast('Name resolution failed', 'warn');
       }
     };
 
-    // Modal Triggers
+    // Modals
     document.getElementById('btn-open-explainer').onclick = () => {
       UI.modalExplainer.classList.remove('hidden');
       UI.modalExplainer.classList.add('flex');
@@ -2451,42 +2401,72 @@
       }
     });
 
-    // 24. Subtle Ambient Starfield Canvas Animation
+    // 24. Refined Ambient Physics Starfield (Interactive, zero neon glow)
     function initStarfield() {
       const canvas = document.getElementById('ambient-stars');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       let stars = [];
+      let mouse = { x: -1000, y: -1000 };
 
       function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         stars = [];
-        const count = Math.floor((canvas.width * canvas.height) / 8000);
+        const count = Math.floor((canvas.width * canvas.height) / 10000);
         for (let i = 0; i < count; i++) {
           stars.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
-            size: Math.random() * 1.5 + 0.5,
-            baseAlpha: Math.random() * 0.4 + 0.1,
-            alpha: Math.random() * 0.4 + 0.1,
-            speed: Math.random() * 0.02 + 0.005
+            size: Math.random() * 1.2 + 0.4,
+            baseAlpha: Math.random() * 0.35 + 0.1,
+            alpha: Math.random() * 0.35 + 0.1,
+            speed: Math.random() * 0.015 + 0.005,
+            vx: (Math.random() - 0.5) * 0.15,
+            vy: (Math.random() - 0.5) * 0.15
           });
         }
       }
 
       window.addEventListener('resize', resize);
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
       resize();
 
       function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let s of stars) {
+        
+        for (let i = 0; i < stars.length; i++) {
+          const s = stars[i];
+          s.x += s.vx;
+          s.y += s.vy;
           s.alpha += s.speed;
-          const currentAlpha = s.baseAlpha + Math.sin(s.alpha) * 0.25;
-          ctx.fillStyle = `rgba(186, 230, 253, ${Math.max(0.05, currentAlpha)})`;
+
+          if (s.x < 0) s.x = canvas.width;
+          if (s.x > canvas.width) s.x = 0;
+          if (s.y < 0) s.y = canvas.height;
+          if (s.y > canvas.height) s.y = 0;
+
+          const currentAlpha = s.baseAlpha + Math.sin(s.alpha) * 0.15;
+          ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0.05, Math.min(0.6, currentAlpha))})`;
           ctx.beginPath();
           ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
           ctx.fill();
+
+          // Subtle connection to mouse cursor when close
+          const dx = mouse.x - s.x;
+          const dy = mouse.y - s.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 80) {
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.15 * (1 - dist / 80)})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(s.x, s.y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.stroke();
+          }
         }
         requestAnimationFrame(animate);
       }
@@ -2499,7 +2479,6 @@
       initStarfield();
       initSpectrumPlot();
       
-      // Default to Time Machine with WISE 0855
       navigateTo('investigation');
       startInvestigationWorkflow(0);
     });
