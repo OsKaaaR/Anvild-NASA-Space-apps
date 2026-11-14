@@ -76,7 +76,7 @@ for t_key, t_info in TARGETS.items():
                 "mjd": 60805.0 + (i * 15.5),
                 "bandpass": "SPHEREx-D2",
                 "planeid": f"{t_key}_{len(t_info['obs'])}",
-                "obs_date": f"2025-0{5+i%7:02d}-15T12:00:00"
+                "obs_date": f"2025-{5+i%7:02d}-15T12:00:00"
             })
     print(f"  Target '{t_key}' ({t_info['name']}): {len(t_info['obs'])} local observations ready.")
 
