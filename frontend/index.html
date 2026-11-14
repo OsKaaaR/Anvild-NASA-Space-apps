@@ -161,16 +161,46 @@
 
 <body class="bg-space-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-slate-800 selection:text-white relative">
 
-  <!-- Top Global Loading Progress Bar -->
-  <div id="global-progress-container" class="fixed top-0 left-0 w-full h-[3px] bg-transparent z-[100] pointer-events-none overflow-hidden">
-    <div id="global-progress-bar" class="h-full bg-gradient-to-r from-sky-500 via-cyan-400 to-amber-400 w-0 transition-all duration-300 ease-out shadow-[0_0_8px_rgba(56,189,248,0.6)]"></div>
-  </div>
+  <!-- Centered Modal Blocking Loading Overlay (Locks Interface During Processing) -->
+  <div id="global-loading-overlay" class="fixed inset-0 z-[9999] bg-space-950/85 backdrop-blur-md flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none select-none">
+    <!-- Central Sci-Fi HUD Container -->
+    <div class="relative flex flex-col items-center p-8 rounded-2xl bg-space-900/95 border border-sky-500/40 shadow-[0_0_60px_rgba(14,165,233,0.3)] max-w-sm w-full mx-4 text-center">
+      <!-- Concentric Aperture Rings & Center Pulsar -->
+      <div class="relative w-20 h-20 flex items-center justify-center mb-5">
+        <!-- Outer rotating dashed ring -->
+        <div class="absolute inset-0 rounded-full border-2 border-dashed border-sky-400/40 animate-spin" style="animation-duration: 8s;"></div>
+        <!-- Middle counter-rotating ring -->
+        <div class="absolute inset-2 rounded-full border-2 border-t-sky-400 border-r-transparent border-b-cyan-400 border-l-transparent animate-spin" style="animation-duration: 2.5s; animation-direction: reverse;"></div>
+        <!-- Inner glowing core -->
+        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-sky-500 to-cyan-300 flex items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.9)] animate-pulse">
+          <i data-lucide="satellite" class="w-4 h-4 text-white"></i>
+        </div>
+      </div>
 
-  <!-- Friendly Floating Operations Status Pill -->
-  <div id="global-status-pill" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none transition-all duration-300 transform -translate-y-12 opacity-0 flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-space-900/95 border border-sky-500/40 text-xs font-mono text-slate-200 shadow-xl backdrop-blur-md">
-    <span id="global-status-spinner" class="w-3.5 h-3.5 border-2 border-sky-400 border-t-transparent rounded-full animate-spin"></span>
-    <span id="global-status-icon" class="text-emerald-400 font-bold hidden">✓</span>
-    <span id="global-status-text" class="text-[11px] font-medium tracking-wide">Calibrating SPHEREx Data...</span>
+      <!-- Live Operation Title -->
+      <h3 id="global-loading-title" class="text-base font-display font-bold text-white tracking-wide mb-1.5">
+        Calibrating SPHEREx Data...
+      </h3>
+
+      <!-- Friendly Subtext / Step -->
+      <p id="global-loading-subtext" class="text-xs font-mono text-slate-400 mb-5">
+        Querying local photometric cache & aligning WCS
+      </p>
+
+      <!-- Center Neon Progress Track -->
+      <div class="w-full h-2 rounded-full bg-space-950 border border-space-border overflow-hidden p-0.5 relative">
+        <div id="global-loading-bar" class="h-full rounded-full bg-gradient-to-r from-sky-500 via-cyan-400 to-amber-400 w-0 transition-all duration-200 ease-out shadow-[0_0_12px_rgba(56,189,248,0.8)]"></div>
+      </div>
+
+      <!-- Percentage and Lock Indicator -->
+      <div class="w-full flex items-center justify-between mt-3 px-0.5 text-[11px] font-mono text-slate-400">
+        <span class="flex items-center gap-1.5 text-sky-400 font-semibold tracking-wide">
+          <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping"></span>
+          <span>PROCESSING LOCKED</span>
+        </span>
+        <span id="global-loading-pct" class="font-semibold text-slate-200">0%</span>
+      </div>
+    </div>
   </div>
 
   <!-- Interactive Subtle Cosmic Background Particles -->
@@ -179,30 +209,18 @@
   <!-- ========================================================================= -->
   <!-- 1. TOP MINIMAL NAVIGATION BAR -->
   <!-- ========================================================================= -->
-  <header class="sticky top-0 z-50 backdrop-blur-md bg-space-950/90 border-b border-space-border px-4 lg:px-8 py-3">
+  <header class="sticky top-0 z-50 backdrop-blur-md bg-space-950/90 border-b border-space-border px-4 lg:px-8 py-2.5">
     <div class="max-w-[1720px] mx-auto flex items-center justify-between gap-4">
       
-      <!-- Logo & Brand Identity -->
-      <div class="flex items-center gap-3.5">
-        <a href="#home" onclick="navigateTo('home')" class="flex items-center gap-3 group">
-          <div class="w-9 h-9 rounded-lg bg-space-900 border border-slate-700/80 flex items-center justify-center overflow-hidden transition-colors group-hover:border-slate-500">
-            <img src="/Logo.png" alt="SkyBlink Emblem" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='Logo.png';" />
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-display font-bold text-lg tracking-tight text-white">
-                SkyBlink
-              </span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-space-850 text-slate-400 border border-space-border font-medium">
-                SPHEREx
-              </span>
-            </div>
-            <p class="text-[11px] text-slate-400 hidden sm:flex items-center gap-1.5 font-normal">
-              <span>NASA Space Apps Cairo 2026</span>
-              <span class="text-slate-600">•</span>
-              <span>Cosmic Detective</span>
-            </p>
-          </div>
+      <!-- Logo & Brand Identity (Full Cosmic Galaxy Artwork) -->
+      <div class="flex items-center">
+        <a href="#home" onclick="navigateTo('home')" class="flex items-center group py-0.5" title="SkyBlink - NASA Space Apps Cairo 2026">
+          <img 
+            src="SkyBlink Cosmic Galaxy Logo.png" 
+            alt="SkyBlink Cosmic Galaxy Logo" 
+            class="h-12 md:h-14 w-auto max-w-[260px] md:max-w-[320px] object-contain transition-transform duration-200 group-hover:scale-[1.02]" 
+            onerror="this.onerror=null; this.src='/SkyBlink Cosmic Galaxy Logo.png';"
+          />
         </a>
       </div>
 
@@ -1862,15 +1880,15 @@
       toastContainer: document.getElementById('toast-container')
     };
 
-    // 4b. Global Progress Bar & Friendly Operations Pill
+    // 4b. Global Fullscreen Command-Locking Progress Overlay
     let globalProgressTimer = null;
 
-    function showGlobalProgress(message = 'Processing SPHEREx Data...', initialPct = 25) {
-      const bar = document.getElementById('global-progress-bar');
-      const pill = document.getElementById('global-status-pill');
-      const txt = document.getElementById('global-status-text');
-      const spinner = document.getElementById('global-status-spinner');
-      const icon = document.getElementById('global-status-icon');
+    function showGlobalProgress(message = 'Processing SPHEREx Data...', initialPct = 25, subtext = 'Instrument calibration in progress...') {
+      const overlay = document.getElementById('global-loading-overlay');
+      const bar = document.getElementById('global-loading-bar');
+      const title = document.getElementById('global-loading-title');
+      const subtitle = document.getElementById('global-loading-subtext');
+      const pctLabel = document.getElementById('global-loading-pct');
 
       if (globalProgressTimer) clearTimeout(globalProgressTimer);
 
@@ -1878,45 +1896,52 @@
         bar.style.transition = 'width 250ms ease-out';
         bar.style.width = `${initialPct}%`;
       }
-      if (txt) txt.textContent = message;
-      if (spinner) spinner.classList.remove('hidden');
-      if (icon) icon.classList.add('hidden');
-      if (pill) {
-        pill.classList.remove('-translate-y-12', 'opacity-0');
-        pill.classList.add('translate-y-0', 'opacity-100');
+      if (title) title.textContent = message;
+      if (subtitle) subtitle.textContent = subtext;
+      if (pctLabel) pctLabel.textContent = `${Math.round(initialPct)}%`;
+
+      if (overlay) {
+        overlay.classList.remove('opacity-0', 'pointer-events-none');
+        overlay.classList.add('opacity-100', 'pointer-events-auto');
       }
     }
 
-    function updateGlobalProgress(pct, message = null) {
-      const bar = document.getElementById('global-progress-bar');
-      const txt = document.getElementById('global-status-text');
-      if (bar) bar.style.width = `${Math.min(95, Math.max(5, pct))}%`;
-      if (message && txt) txt.textContent = message;
+    function updateGlobalProgress(pct, message = null, subtext = null) {
+      const bar = document.getElementById('global-loading-bar');
+      const title = document.getElementById('global-loading-title');
+      const subtitle = document.getElementById('global-loading-subtext');
+      const pctLabel = document.getElementById('global-loading-pct');
+
+      const clamped = Math.min(95, Math.max(5, pct));
+      if (bar) bar.style.width = `${clamped}%`;
+      if (pctLabel) pctLabel.textContent = `${Math.round(clamped)}%`;
+      if (message && title) title.textContent = message;
+      if (subtext && subtitle) subtitle.textContent = subtext;
     }
 
     function finishGlobalProgress(successText = 'Operation Complete') {
-      const bar = document.getElementById('global-progress-bar');
-      const pill = document.getElementById('global-status-pill');
-      const txt = document.getElementById('global-status-text');
-      const spinner = document.getElementById('global-status-spinner');
-      const icon = document.getElementById('global-status-icon');
+      const overlay = document.getElementById('global-loading-overlay');
+      const bar = document.getElementById('global-loading-bar');
+      const title = document.getElementById('global-loading-title');
+      const subtitle = document.getElementById('global-loading-subtext');
+      const pctLabel = document.getElementById('global-loading-pct');
 
       if (bar) bar.style.width = '100%';
-      if (txt) txt.textContent = successText;
-      if (spinner) spinner.classList.add('hidden');
-      if (icon) icon.classList.remove('hidden');
+      if (pctLabel) pctLabel.textContent = '100%';
+      if (title) title.textContent = successText;
+      if (subtitle) subtitle.textContent = 'All operations synchronized ✓';
 
       if (globalProgressTimer) clearTimeout(globalProgressTimer);
       globalProgressTimer = setTimeout(() => {
-        if (pill) {
-          pill.classList.remove('translate-y-0', 'opacity-100');
-          pill.classList.add('-translate-y-12', 'opacity-0');
+        if (overlay) {
+          overlay.classList.remove('opacity-100', 'pointer-events-auto');
+          overlay.classList.add('opacity-0', 'pointer-events-none');
         }
         if (bar) {
           bar.style.transition = 'none';
           bar.style.width = '0%';
         }
-      }, 700);
+      }, 450);
     }
 
     // 5. Toast Notification System
@@ -2019,6 +2044,7 @@
     // 8. Investigation Mission Initiation
     function startInvestigationWorkflow(targetIndex) {
       if (targetIndex < 0 || targetIndex >= TARGETS.length) return;
+      resetImageTuning(true);
       AppState.targetIdx = targetIndex;
       const t = TARGETS[targetIndex];
 
@@ -2071,6 +2097,7 @@
     // 9. Load Observations from SPHEREx Cache API
     async function loadTargetObservations() {
       stopPlayback();
+      resetImageTuning(true);
       AppState.currentFrameIdx = 0;
       AppState.ra = parseFloat(UI.inpRa.value);
       AppState.dec = parseFloat(UI.inpDec.value);
@@ -2712,8 +2739,8 @@
       triggerTuningUpdate();
     });
 
-    // 15f. Reset Tuning
-    UI.btnResetTuning.addEventListener('click', () => {
+    // 15f. Reset Tuning (Automatic on target switch & manual button)
+    function resetImageTuning(silent = true) {
       AppState.brightnessFilter = 100;
       AppState.contrastFilter = 100;
       AppState.clipLo = 2.0;
@@ -2721,21 +2748,38 @@
       AppState.gamma = 1.0;
       AppState.stretch = 'linear';
 
-      UI.sliderBrightness.value = 100;
-      UI.valBrightness.textContent = '100%';
-      UI.sliderContrast.value = 100;
-      UI.valContrast.textContent = '100%';
-      UI.sliderClipLo.value = 2.0;
-      UI.valClipLo.textContent = '2.0%';
-      UI.sliderGamma.value = 1.0;
-      UI.valGamma.textContent = '1.0';
-      UI.selStretch.value = 'linear';
+      if (UI.sliderBrightness) {
+        UI.sliderBrightness.value = 100;
+        if (UI.valBrightness) UI.valBrightness.textContent = '100%';
+      }
+      if (UI.sliderContrast) {
+        UI.sliderContrast.value = 100;
+        if (UI.valContrast) UI.valContrast.textContent = '100%';
+      }
+      if (UI.sliderClipLo) {
+        UI.sliderClipLo.value = 2.0;
+        if (UI.valClipLo) UI.valClipLo.textContent = '2.0%';
+      }
+      if (UI.sliderGamma) {
+        UI.sliderGamma.value = 1.0;
+        if (UI.valGamma) UI.valGamma.textContent = '1.0';
+      }
+      if (UI.selStretch) {
+        UI.selStretch.value = 'linear';
+      }
 
       applyImageFilters();
-      displayFrame(AppState.currentFrameIdx);
-      preloadTargetFrames();
-      showToast('Image tuning reset to default', 'info');
-    });
+
+      if (!silent) {
+        displayFrame(AppState.currentFrameIdx);
+        preloadTargetFrames();
+        showToast('Image tuning reset to default', 'info');
+      }
+    }
+
+    if (UI.btnResetTuning) {
+      UI.btnResetTuning.addEventListener('click', () => resetImageTuning(false));
+    }
 
     // 15g. Toggle Target Follow Tracker
     if (UI.btnToggleTracker) {
